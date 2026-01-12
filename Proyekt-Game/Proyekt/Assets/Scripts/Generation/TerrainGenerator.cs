@@ -1,3 +1,4 @@
+using System.Linq;
 using UnityEngine;
 
 namespace Generation
@@ -94,21 +95,21 @@ namespace Generation
             if (enableCollapse)
             {
                 _collapsePositions = new Vector2[collapseCount];
-                for (int i = 0; i < collapseCount; i++)
+                for (var i = 0; i < collapseCount; i++)
                 {
-                    float x = Random.Range(terrainSize * 0.2f, terrainSize * 0.8f);
-                    float z = Random.Range(terrainSize * 0.2f, terrainSize * 0.8f);
+                    var x = Random.Range(terrainSize * 0.2f, terrainSize * 0.8f);
+                    var z = Random.Range(terrainSize * 0.2f, terrainSize * 0.8f);
                     _collapsePositions[i] = new Vector2(x, z);
                 }
             }
-            
-            if (enableRocks)
+
+            if (!enableRocks) return;
             {
                 _rockPositions = new Vector2[rockCount];
-                for (int i = 0; i < rockCount; i++)
+                for (var i = 0; i < rockCount; i++)
                 {
-                    float x = Random.Range(terrainSize * 0.15f, terrainSize * 0.85f);
-                    float z = Random.Range(terrainSize * 0.15f, terrainSize * 0.85f);
+                    var x = Random.Range(terrainSize * 0.15f, terrainSize * 0.85f);
+                    var z = Random.Range(terrainSize * 0.15f, terrainSize * 0.85f);
                     _rockPositions[i] = new Vector2(x, z);
                 }
             }
@@ -118,21 +119,21 @@ namespace Generation
         {
             _heightMap = new float[terrainSize + 1, terrainSize + 1];
             
-            for (int z = 0; z <= terrainSize; z++)
+            for (var z = 0; z <= terrainSize; z++)
             {
-                for (int x = 0; x <= terrainSize; x++)
+                for (var x = 0; x <= terrainSize; x++)
                 {
-                    float height = 0f;
+                    var height = 0f;
                     
                     // Apply domain warping to position
-                    Vector2 warpedPos = ApplyDomainWarp(x, z);
+                    var warpedPos = ApplyDomainWarp(x, z);
                     
                     // Base heightfield (accumulated)
                     height += GenerateNoise((int)warpedPos.x, (int)warpedPos.y, baseScale, baseHeight, baseOctaves);
                     
                     // Elevation feature (accumulated)
-                    Vector2 pos = new Vector2(x, z);
-                    float distToElevation = Vector2.Distance(pos, elevationCenter);
+                    var pos = new Vector2(x, z);
+                    var distToElevation = Vector2.Distance(pos, elevationCenter);
                     
                     if (distToElevation < elevationRadius)
                     {
@@ -140,7 +141,7 @@ namespace Generation
                     }
                     else if (distToElevation < elevationRadius + elevationFalloff)
                     {
-                        float falloff = (distToElevation - elevationRadius) / elevationFalloff;
+                        var falloff = (distToElevation - elevationRadius) / elevationFalloff;
                         falloff = Mathf.SmoothStep(0, 1, falloff);
                         height += elevationAmount * (1f - falloff);
                     }
@@ -148,34 +149,13 @@ namespace Generation
                     // Collapse features (subtract material)
                     if (enableCollapse && _collapsePositions != null)
                     {
-                        foreach (var collapsePos in _collapsePositions)
-                        {
-                            float distToCollapse = Vector2.Distance(pos, collapsePos);
-                            if (distToCollapse < collapseRadius)
-                            {
-                                float collapseInfluence = 1f - (distToCollapse / collapseRadius);
-                                collapseInfluence = Mathf.Pow(collapseInfluence, 1.5f);
-                                height -= collapseDepth * collapseInfluence;
-                            }
-                        }
+                        height = (from collapsePos in _collapsePositions select Vector2.Distance(pos, collapsePos) into distToCollapse where distToCollapse < collapseRadius select 1f - (distToCollapse / collapseRadius) into collapseInfluence select Mathf.Pow(collapseInfluence, 1.5f)).Aggregate(height, (current, collapseInfluence) => current - collapseDepth * collapseInfluence);
                     }
                     
                     // Rock features (accumulated)
                     if (enableRocks && _rockPositions != null)
                     {
-                        foreach (var rockPos in _rockPositions)
-                        {
-                            float distToRock = Vector2.Distance(pos, rockPos);
-                            if (distToRock < rockRadius)
-                            {
-                                float rockInfluence = 1f - (distToRock / rockRadius);
-                                rockInfluence = Mathf.Pow(rockInfluence, 1.2f);
-                                
-                                float rockAdd = rockHeight * rockInfluence;
-                                float embedding = Mathf.Lerp(0.7f, 1f, rockInfluence);
-                                height += rockAdd * embedding;
-                            }
-                        }
+                        height += (from rockPos in _rockPositions select Vector2.Distance(pos, rockPos) into distToRock where distToRock < rockRadius select 1f - (distToRock / rockRadius) into rockInfluence select Mathf.Pow(rockInfluence, 1.2f) into rockInfluence let rockAdd = rockHeight * rockInfluence let embedding = Mathf.Lerp(0.7f, 1f, rockInfluence) select rockAdd * embedding).Sum();
                     }
                     
                     _heightMap[x, z] = height;
@@ -185,8 +165,8 @@ namespace Generation
 
         private Vector2 ApplyDomainWarp(int x, int z)
         {
-            float warpX = Mathf.PerlinNoise((x + noiseOffset.x) / warpScale, (z + noiseOffset.y) / warpScale);
-            float warpZ = Mathf.PerlinNoise((x + noiseOffset.x + 1000f) / warpScale, (z + noiseOffset.y + 1000f) / warpScale);
+            var warpX = Mathf.PerlinNoise((x + noiseOffset.x) / warpScale, (z + noiseOffset.y) / warpScale);
+            var warpZ = Mathf.PerlinNoise((x + noiseOffset.x + 1000f) / warpScale, (z + noiseOffset.y + 1000f) / warpScale);
             
             warpX = (warpX * 2f - 1f) * warpStrength;
             warpZ = (warpZ * 2f - 1f) * warpStrength;
@@ -199,50 +179,44 @@ namespace Generation
 
         private void SimulateErosion()
         {
-            float[,] eroded = new float[terrainSize + 1, terrainSize + 1];
+            var eroded = new float[terrainSize + 1, terrainSize + 1];
             
-            for (int iteration = 0; iteration < erosionIterations; iteration++)
+            for (var iteration = 0; iteration < erosionIterations; iteration++)
             {
                 System.Array.Copy(_heightMap, eroded, _heightMap.Length);
                 
-                for (int z = 1; z < terrainSize; z++)
+                for (var z = 1; z < terrainSize; z++)
                 {
-                    for (int x = 1; x < terrainSize; x++)
+                    for (var x = 1; x < terrainSize; x++)
                     {
-                        float currentHeight = _heightMap[x, z];
+                        var currentHeight = _heightMap[x, z];
                         
-                        float maxHeightDiff = 0f;
-                        int lowestX = x;
-                        int lowestZ = z;
+                        var maxHeightDiff = 0f;
+                        var lowestX = x;
+                        var lowestZ = z;
                         
-                        for (int dz = -1; dz <= 1; dz++)
+                        for (var dz = -1; dz <= 1; dz++)
                         {
-                            for (int dx = -1; dx <= 1; dx++)
+                            for (var dx = -1; dx <= 1; dx++)
                             {
                                 if (dx == 0 && dz == 0) continue;
                                 
-                                int nx = x + dx;
-                                int nz = z + dz;
-                                
-                                if (nx >= 0 && nx <= terrainSize && nz >= 0 && nz <= terrainSize)
-                                {
-                                    float heightDiff = currentHeight - _heightMap[nx, nz];
-                                    if (heightDiff > maxHeightDiff)
-                                    {
-                                        maxHeightDiff = heightDiff;
-                                        lowestX = nx;
-                                        lowestZ = nz;
-                                    }
-                                }
+                                var nx = x + dx;
+                                var nz = z + dz;
+
+                                if (nx < 0 || nx > terrainSize || nz < 0 || nz > terrainSize) continue;
+                                var heightDiff = currentHeight - _heightMap[nx, nz];
+                                if (!(heightDiff > maxHeightDiff)) continue;
+                                maxHeightDiff = heightDiff;
+                                lowestX = nx;
+                                lowestZ = nz;
                             }
                         }
-                        
-                        if (maxHeightDiff > slopeThreshold)
-                        {
-                            float erodeAmount = (maxHeightDiff - slopeThreshold) * erosionRate;
-                            eroded[x, z] -= erodeAmount;
-                            eroded[lowestX, lowestZ] += erodeAmount * 0.5f;
-                        }
+
+                        if (!(maxHeightDiff > slopeThreshold)) continue;
+                        var erodeAmount = (maxHeightDiff - slopeThreshold) * erosionRate;
+                        eroded[x, z] -= erodeAmount;
+                        eroded[lowestX, lowestZ] += erodeAmount * 0.5f;
                     }
                 }
                 
@@ -252,73 +226,65 @@ namespace Generation
 
         private void ApplyFlattening()
         {
-            float[,] flattened = new float[terrainSize + 1, terrainSize + 1];
+            var flattened = new float[terrainSize + 1, terrainSize + 1];
             System.Array.Copy(_heightMap, flattened, _heightMap.Length);
             
-            for (int z = 1; z < terrainSize; z++)
+            for (var z = 1; z < terrainSize; z++)
             {
-                for (int x = 1; x < terrainSize; x++)
+                for (var x = 1; x < terrainSize; x++)
                 {
-                    float height = _heightMap[x, z];
+                    var height = _heightMap[x, z];
                     
-                    // Flatten valley floors (low areas)
+                    // Flatten valley floors
                     if (enableValleyFlattening && height < valleyFloorHeight)
                     {
                         // Average with neighbors to create flat valley floor
-                        float sum = _heightMap[x, z];
-                        int count = 1;
+                        var sum = _heightMap[x, z];
+                        var count = 1;
                         
-                        for (int dz = -1; dz <= 1; dz++)
+                        for (var dz = -1; dz <= 1; dz++)
                         {
-                            for (int dx = -1; dx <= 1; dx++)
+                            for (var dx = -1; dx <= 1; dx++)
                             {
                                 if (dx == 0 && dz == 0) continue;
                                 
-                                int nx = x + dx;
-                                int nz = z + dz;
-                                
-                                if (nx >= 0 && nx <= terrainSize && nz >= 0 && nz <= terrainSize)
-                                {
-                                    if (_heightMap[nx, nz] < valleyFloorHeight)
-                                    {
-                                        sum += _heightMap[nx, nz];
-                                        count++;
-                                    }
-                                }
+                                var nx = x + dx;
+                                var nz = z + dz;
+
+                                if (nx < 0 || nx > terrainSize || nz < 0 || nz > terrainSize) continue;
+                                if (!(_heightMap[nx, nz] < valleyFloorHeight)) continue;
+                                sum += _heightMap[nx, nz];
+                                count++;
                             }
                         }
                         
-                        float avgHeight = sum / count;
+                        var avgHeight = sum / count;
                         flattened[x, z] = Mathf.Lerp(height, avgHeight, valleyFlattenStrength);
                     }
                     
-                    // Flatten mountain peaks (high areas)
-                    if (enablePeakFlattening && height > peakFlattenThreshold)
+                    // Flatten mountain peaks
+                    if (!enablePeakFlattening || !(height > peakFlattenThreshold)) continue;
                     {
-                        float sum = _heightMap[x, z];
-                        int count = 1;
+                        var sum = _heightMap[x, z];
+                        var count = 1;
                         
-                        for (int dz = -1; dz <= 1; dz++)
+                        for (var dz = -1; dz <= 1; dz++)
                         {
-                            for (int dx = -1; dx <= 1; dx++)
+                            for (var dx = -1; dx <= 1; dx++)
                             {
                                 if (dx == 0 && dz == 0) continue;
                                 
-                                int nx = x + dx;
-                                int nz = z + dz;
-                                
-                                if (nx >= 0 && nx <= terrainSize && nz >= 0 && nz <= terrainSize)
-                                {
-                                    if (_heightMap[nx, nz] > peakFlattenThreshold)
-                                    {
-                                        sum += _heightMap[nx, nz];
-                                        count++;
-                                    }
-                                }
+                                var nx = x + dx;
+                                var nz = z + dz;
+
+                                if (nx < 0 || nx > terrainSize || nz < 0 || nz > terrainSize) continue;
+                                if (!(_heightMap[nx, nz] > peakFlattenThreshold)) continue;
+                                sum += _heightMap[nx, nz];
+                                count++;
                             }
                         }
                         
-                        float avgHeight = sum / count;
+                        var avgHeight = sum / count;
                         flattened[x, z] = Mathf.Lerp(height, avgHeight, peakFlattenStrength);
                     }
                 }
@@ -339,7 +305,7 @@ namespace Generation
                 {
                     var xPos = x * cellSize;
                     var zPos = z * cellSize;
-                    float height = _heightMap[x, z];
+                    var height = _heightMap[x, z];
                 
                     _vertices[vertIndex] = new Vector3(xPos, height, zPos);
                     vertIndex++;
