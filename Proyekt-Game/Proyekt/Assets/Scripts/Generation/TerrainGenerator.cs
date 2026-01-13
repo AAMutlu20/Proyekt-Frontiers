@@ -15,23 +15,25 @@ namespace Generation
         public Color debugColor;
     }
 
-    [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
+    [RequireComponent(typeof(Terrain))]
     public class TerrainGenerator : MonoBehaviour
     {
         [Header("Terrain Settings")]
-        [SerializeField] private int terrainSize = 500;
-        [SerializeField] private float cellSize = 1f;
+        [SerializeField] private int terrainResolution = 513; // Terrain heightmap resolution (power of 2 + 1)
+        [SerializeField] private float terrainWidth = 500f;
+        [SerializeField] private float terrainLength = 500f;
+        [SerializeField] private float terrainHeight = 100f; // Maximum terrain height
         
         [Header("Chunk System")]
-        [SerializeField] private int biomeCount = 20; // More biomes
-        [SerializeField] private float minBiomeDistance = 60f; // Closer together
+        [SerializeField] private int biomeCount = 20;
+        [SerializeField] private float minBiomeDistance = 60f;
         
         [Header("City Biome (Safe Zone)")]
         [SerializeField] private Vector2 cityBiomePosition = new Vector2(250f, 250f);
         
         [Header("Biome Blending")]
-        [SerializeField] private float blendRadius = 100f; // Consider all biomes within this radius
-        [SerializeField] private float blendPower = 3f; // Higher = sharper but smooth transitions
+        [SerializeField] private float blendRadius = 100f;
+        [SerializeField] private float blendPower = 3f;
         
         [Header("Biome Definitions")]
         [SerializeField] private BiomeType[] biomes = new BiomeType[]
@@ -96,9 +98,8 @@ namespace Generation
         [SerializeField] private int seed = 0;
         [SerializeField] private Vector2 noiseOffset = Vector2.zero;
     
-        private Mesh _mesh;
-        private Vector3[] _vertices;
-        private int[] _triangles;
+        private Terrain _terrain;
+        private TerrainData _terrainData;
         private float[,] _heightMap;
         private Vector2[] _biomePositions;
         private int[] _biomeTypes;
@@ -107,16 +108,19 @@ namespace Generation
         {
             Random.InitState(seed);
             
-            _mesh = new Mesh { indexFormat = UnityEngine.Rendering.IndexFormat.UInt32 };
-            GetComponent<MeshFilter>().mesh = _mesh;
+            _terrain = GetComponent<Terrain>();
+            _terrainData = _terrain.terrainData;
+            
+            // Setup terrain dimensions
+            _terrainData.heightmapResolution = terrainResolution;
+            _terrainData.size = new Vector3(terrainWidth, terrainHeight, terrainLength);
             
             GenerateBiomeLayout();
             BuildHeightfield();
             
             if (enableErosion) SimulateErosion();
             
-            CreateMeshFromHeightMap();
-            UpdateMesh();
+            ApplyHeightsToTerrain();
         }
 
         private void GenerateBiomeLayout()
@@ -130,8 +134,8 @@ namespace Generation
             var attemptsRemaining = biomeCount * 25;
             while (positions.Count < biomeCount && attemptsRemaining > 0)
             {
-                var x = Random.Range(terrainSize * 0.1f, terrainSize * 0.9f);
-                var z = Random.Range(terrainSize * 0.1f, terrainSize * 0.9f);
+                var x = Random.Range(terrainWidth * 0.1f, terrainWidth * 0.9f);
+                var z = Random.Range(terrainLength * 0.1f, terrainLength * 0.9f);
                 var candidate = new Vector2(x, z);
                 
                 var validPosition = positions.All(pos => !(Vector2.Distance(candidate, pos) < minBiomeDistance));
@@ -151,21 +155,24 @@ namespace Generation
 
         private void BuildHeightfield()
         {
-            _heightMap = new float[terrainSize + 1, terrainSize + 1];
+            _heightMap = new float[terrainResolution, terrainResolution];
             
-            for (var z = 0; z <= terrainSize; z++)
+            for (var z = 0; z < terrainResolution; z++)
             {
-                for (var x = 0; x <= terrainSize; x++)
+                for (var x = 0; x < terrainResolution; x++)
                 {
-                    var pos = new Vector2(x, z);
-                    _heightMap[x, z] = CalculateHeightFromBiomes(x, z, pos);
+                    // Convert heightmap coordinates to world space
+                    var worldX = (x / (float)(terrainResolution - 1)) * terrainWidth;
+                    var worldZ = (z / (float)(terrainResolution - 1)) * terrainLength;
+                    var pos = new Vector2(worldX, worldZ);
+                    
+                    _heightMap[z, x] = CalculateHeightFromBiomes((int)worldX, (int)worldZ, pos);
                 }
             }
         }
 
         private float CalculateHeightFromBiomes(int x, int z, Vector2 pos)
         {
-            // Collect ALL biomes within blend radius
             var nearbyBiomes = new List<int>();
             var distances = new List<float>();
             
@@ -177,7 +184,6 @@ namespace Generation
                 distances.Add(dist);
             }
             
-            // If no biomes in range, use closest
             if (nearbyBiomes.Count == 0)
             {
                 var closestBiome = 0;
@@ -192,7 +198,6 @@ namespace Generation
                 return GenerateAdvancedBiomeHeight(x, z, _biomeTypes[closestBiome], closestBiome * 137f);
             }
             
-            // Calculate smooth blend weights using exponential falloff
             var totalWeight = 0f;
             var totalHeight = 0f;
             
@@ -201,11 +206,9 @@ namespace Generation
                 var biomeIdx = nearbyBiomes[i];
                 var dist = distances[i];
                 
-                // Exponential falloff for ultra-smooth blending
                 var normalizedDist = dist / blendRadius;
                 var weight = Mathf.Pow(1f - normalizedDist, blendPower);
                 
-                // Generate height for this biome
                 var height = GenerateAdvancedBiomeHeight(x, z, _biomeTypes[biomeIdx], biomeIdx * 137f);
                 
                 totalHeight += height * weight;
@@ -232,8 +235,8 @@ namespace Generation
                 
                 warpedPos.x += dependentSample * dependentNoiseStrength;
                 warpedPos.y += dependentSample * dependentNoiseStrength;
-                warpedPos.x = Mathf.Clamp(warpedPos.x, 0, terrainSize);
-                warpedPos.y = Mathf.Clamp(warpedPos.y, 0, terrainSize);
+                warpedPos.x = Mathf.Clamp(warpedPos.x, 0, terrainWidth);
+                warpedPos.y = Mathf.Clamp(warpedPos.y, 0, terrainLength);
             }
             
             height += GenerateAttenuatedNoise(
@@ -263,8 +266,8 @@ namespace Generation
             warpZ = (warpZ * 2f - 1f) * warpStrength;
             
             return new Vector2(
-                Mathf.Clamp(x + warpX, 0, terrainSize),
-                Mathf.Clamp(z + warpZ, 0, terrainSize)
+                Mathf.Clamp(x + warpX, 0, terrainWidth),
+                Mathf.Clamp(z + warpZ, 0, terrainLength)
             );
         }
 
@@ -312,17 +315,17 @@ namespace Generation
 
         private void SimulateErosion()
         {
-            var eroded = new float[terrainSize + 1, terrainSize + 1];
+            var eroded = new float[terrainResolution, terrainResolution];
             
             for (var iteration = 0; iteration < erosionIterations; iteration++)
             {
                 System.Array.Copy(_heightMap, eroded, _heightMap.Length);
                 
-                for (var z = 1; z < terrainSize; z++)
+                for (var z = 1; z < terrainResolution - 1; z++)
                 {
-                    for (var x = 1; x < terrainSize; x++)
+                    for (var x = 1; x < terrainResolution - 1; x++)
                     {
-                        var currentHeight = _heightMap[x, z];
+                        var currentHeight = _heightMap[z, x];
                         var maxHeightDiff = 0f;
                         int lowestX = x, lowestZ = z;
                         
@@ -335,9 +338,7 @@ namespace Generation
                                 var nx = x + dx;
                                 var nz = z + dz;
                                 
-                                if (nx < 0 || nx > terrainSize || nz < 0 || nz > terrainSize) continue;
-                                
-                                var heightDiff = currentHeight - _heightMap[nx, nz];
+                                var heightDiff = currentHeight - _heightMap[nz, nx];
                                 if (!(heightDiff > maxHeightDiff)) continue;
                                 maxHeightDiff = heightDiff;
                                 lowestX = nx;
@@ -347,8 +348,8 @@ namespace Generation
 
                         if (!(maxHeightDiff > slopeThreshold)) continue;
                         var erodeAmount = (maxHeightDiff - slopeThreshold) * erosionRate;
-                        eroded[x, z] -= erodeAmount;
-                        eroded[lowestX, lowestZ] += erodeAmount * 0.5f;
+                        eroded[z, x] -= erodeAmount;
+                        eroded[lowestZ, lowestX] += erodeAmount * 0.5f;
                     }
                 }
                 
@@ -356,50 +357,22 @@ namespace Generation
             }
         }
 
-        private void CreateMeshFromHeightMap()
+        private void ApplyHeightsToTerrain()
         {
-            var vertexCount = (terrainSize + 1) * (terrainSize + 1);
-            _vertices = new Vector3[vertexCount];
-        
-            var vertIndex = 0;
-            for (var z = 0; z <= terrainSize; z++)
+            // Normalize heights to 0-1 range
+            var normalizedHeights = new float[terrainResolution, terrainResolution];
+            
+            for (var z = 0; z < terrainResolution; z++)
             {
-                for (var x = 0; x <= terrainSize; x++)
+                for (var x = 0; x < terrainResolution; x++)
                 {
-                    _vertices[vertIndex] = new Vector3(x * cellSize, _heightMap[x, z], z * cellSize);
-                    vertIndex++;
+                    // Normalize height value (divide by terrain height)
+                    normalizedHeights[z, x] = _heightMap[z, x] / terrainHeight;
                 }
             }
-        
-            var quadCount = terrainSize * terrainSize;
-            _triangles = new int[quadCount * 6];
-        
-            var triIndex = 0;
-            for (var z = 0; z < terrainSize; z++)
-            {
-                for (var x = 0; x < terrainSize; x++)
-                {
-                    var bottomLeft = z * (terrainSize + 1) + x;
-                    var bottomRight = bottomLeft + 1;
-                    var topLeft = bottomLeft + (terrainSize + 1);
-                    var topRight = topLeft + 1;
-                
-                    _triangles[triIndex++] = bottomLeft;
-                    _triangles[triIndex++] = topLeft;
-                    _triangles[triIndex++] = bottomRight;
-                    _triangles[triIndex++] = bottomRight;
-                    _triangles[triIndex++] = topLeft;
-                    _triangles[triIndex++] = topRight;
-                }
-            }
-        }
-
-        private void UpdateMesh()
-        {
-            _mesh.Clear();
-            _mesh.vertices = _vertices;
-            _mesh.triangles = _triangles;
-            _mesh.RecalculateNormals();
+            
+            // Apply to terrain
+            _terrainData.SetHeights(0, 0, normalizedHeights);
         }
     }
 }
