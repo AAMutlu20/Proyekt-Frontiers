@@ -1,61 +1,98 @@
-using System.Linq;
 using UnityEngine;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Generation
 {
+    [System.Serializable]
+    public class BiomeType
+    {
+        public string name;
+        public float baseHeight;
+        public float noiseScale;
+        public float noiseHeight;
+        public int octaves;
+        public Color debugColor;
+    }
+
     [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
     public class TerrainGenerator : MonoBehaviour
     {
         [Header("Terrain Settings")]
         [SerializeField] private int terrainSize = 500;
         [SerializeField] private float cellSize = 1f;
-    
-        [Header("Base Heightfield")]
-        [SerializeField] private float baseScale = 120f;
-        [SerializeField] private float baseHeight = 20f;
-        [SerializeField] private int baseOctaves = 3;
         
-        [Header("Elevation Feature (Central Hill)")]
-        [SerializeField] private Vector2 elevationCenter = new Vector2(250f, 280f);
-        [SerializeField] private float elevationAmount = 18f;
-        [SerializeField] private float elevationRadius = 90f;
-        [SerializeField] private float elevationFalloff = 70f;
+        [Header("Chunk System")]
+        [SerializeField] private int biomeCount = 20; // More biomes
+        [SerializeField] private float minBiomeDistance = 60f; // Closer together
         
-        [Header("Domain Warping (Organic Shapes)")]
+        [Header("City Biome (Safe Zone)")]
+        [SerializeField] private Vector2 cityBiomePosition = new Vector2(250f, 250f);
+        
+        [Header("Biome Blending")]
+        [SerializeField] private float blendRadius = 100f; // Consider all biomes within this radius
+        [SerializeField] private float blendPower = 3f; // Higher = sharper but smooth transitions
+        
+        [Header("Biome Definitions")]
+        [SerializeField] private BiomeType[] biomes = new BiomeType[]
+        {
+            // Flat buildable biomes
+            new BiomeType { name = "City Plains", baseHeight = 20f, noiseScale = 160f, noiseHeight = 4f, octaves = 2, debugColor = Color.green },
+            new BiomeType { name = "Open Fields", baseHeight = 18f, noiseScale = 180f, noiseHeight = 3f, octaves = 2, debugColor = new Color(0.8f, 1f, 0.8f) },
+            new BiomeType { name = "Grasslands", baseHeight = 22f, noiseScale = 150f, noiseHeight = 5f, octaves = 2, debugColor = new Color(0.6f, 0.9f, 0.6f) },
+            
+            // Gentle hills
+            new BiomeType { name = "Rolling Hills", baseHeight = 25f, noiseScale = 100f, noiseHeight = 10f, octaves = 3, debugColor = Color.yellow },
+            new BiomeType { name = "Gentle Slopes", baseHeight = 23f, noiseScale = 110f, noiseHeight = 8f, octaves = 2, debugColor = new Color(0.9f, 0.9f, 0.6f) },
+            new BiomeType { name = "Hill Country", baseHeight = 27f, noiseScale = 95f, noiseHeight = 12f, octaves = 3, debugColor = new Color(0.8f, 0.8f, 0.4f) },
+            
+            // Medium elevation
+            new BiomeType { name = "Rocky Terrain", baseHeight = 35f, noiseScale = 85f, noiseHeight = 15f, octaves = 3, debugColor = new Color(0.7f, 0.7f, 0.7f) },
+            new BiomeType { name = "Highlands", baseHeight = 38f, noiseScale = 90f, noiseHeight = 18f, octaves = 3, debugColor = new Color(0.6f, 0.6f, 0.6f) },
+            new BiomeType { name = "Plateau Edge", baseHeight = 40f, noiseScale = 80f, noiseHeight = 16f, octaves = 3, debugColor = new Color(0.65f, 0.5f, 0.4f) },
+            
+            // Valleys and low areas
+            new BiomeType { name = "River Valley", baseHeight = 10f, noiseScale = 120f, noiseHeight = 8f, octaves = 2, debugColor = new Color(0.4f, 0.6f, 0.8f) },
+            new BiomeType { name = "Low Basin", baseHeight = 12f, noiseScale = 130f, noiseHeight = 10f, octaves = 2, debugColor = new Color(0.5f, 0.7f, 0.6f) },
+            new BiomeType { name = "Canyon Floor", baseHeight = 8f, noiseScale = 100f, noiseHeight = 12f, octaves = 3, debugColor = new Color(0.7f, 0.5f, 0.4f) },
+            
+            // Dramatic elevation
+            new BiomeType { name = "Mountain Base", baseHeight = 45f, noiseScale = 95f, noiseHeight = 20f, octaves = 3, debugColor = new Color(0.8f, 0.8f, 0.9f) },
+            new BiomeType { name = "Mountain Ridge", baseHeight = 55f, noiseScale = 90f, noiseHeight = 22f, octaves = 3, debugColor = Color.white },
+            new BiomeType { name = "Alpine Peaks", baseHeight = 60f, noiseScale = 85f, noiseHeight = 25f, octaves = 3, debugColor = new Color(0.9f, 0.9f, 1f) },
+            
+            // Rough terrain
+            new BiomeType { name = "Badlands", baseHeight = 30f, noiseScale = 70f, noiseHeight = 20f, octaves = 4, debugColor = new Color(0.8f, 0.4f, 0.3f) },
+            new BiomeType { name = "Broken Ground", baseHeight = 28f, noiseScale = 75f, noiseHeight = 18f, octaves = 4, debugColor = new Color(0.7f, 0.5f, 0.4f) },
+            new BiomeType { name = "Craggy Hills", baseHeight = 32f, noiseScale = 80f, noiseHeight = 16f, octaves = 3, debugColor = new Color(0.6f, 0.6f, 0.5f) },
+            
+            // Unique features
+            new BiomeType { name = "Mesa", baseHeight = 42f, noiseScale = 140f, noiseHeight = 8f, octaves = 2, debugColor = new Color(0.9f, 0.6f, 0.4f) },
+            new BiomeType { name = "Volcanic", baseHeight = 48f, noiseScale = 85f, noiseHeight = 24f, octaves = 3, debugColor = new Color(0.3f, 0.3f, 0.3f) }
+        };
+        
+        [Header("Advanced Noise")]
+        [SerializeField] private bool enableDependentNoise = true;
+        [SerializeField] private float dependentNoiseStrength = 12f;
+        [SerializeField] private float dependentNoiseScale = 130f;
+        
+        [Header("Octave Attenuation")]
+        [SerializeField] private bool enableOctaveAttenuation = true;
+        [SerializeField] private float attenuationStrength = 0.5f;
+        
+        [Header("Domain Warping")]
         [SerializeField] private float warpStrength = 25f;
-        [SerializeField] private float warpScale = 80f;
+        [SerializeField] private float warpScale = 110f;
         
-        [Header("Valley Flattening")]
-        [SerializeField] private bool enableValleyFlattening = true;
-        [SerializeField] private float valleyFloorHeight = 2f; // Height threshold for valleys
-        [SerializeField] private float valleyFlattenStrength = 0.8f; // How flat (0-1)
-        
-        [Header("Peak Flattening")]
-        [SerializeField] private bool enablePeakFlattening = true;
-        [SerializeField] private float peakFlattenThreshold = 30f; // Height above which to flatten
-        [SerializeField] private float peakFlattenStrength = 0.7f; // How flat (0-1)
-        
-        [Header("Erosion Simulation")]
+        [Header("Erosion")]
         [SerializeField] private bool enableErosion = true;
-        [SerializeField] private int erosionIterations = 5;
-        [SerializeField] private float erosionRate = 0.3f;
-        [SerializeField] private float slopeThreshold = 1.5f;
-        
-        [Header("Collapse (Scooping)")]
-        [SerializeField] private bool enableCollapse = true;
-        [SerializeField] private int collapseCount = 8;
-        [SerializeField] private float collapseDepth = 8f;
-        [SerializeField] private float collapseRadius = 30f;
-        
-        [Header("Rock Features")]
-        [SerializeField] private bool enableRocks = true;
-        [SerializeField] private int rockCount = 12;
-        [SerializeField] private float rockHeight = 6f;
-        [SerializeField] private float rockRadius = 15f;
+        [SerializeField] private int erosionIterations = 3;
+        [SerializeField] private float erosionRate = 0.15f;
+        [SerializeField] private float slopeThreshold = 1.8f;
         
         [Header("General Settings")]
         [SerializeField] private float persistence = 0.5f;
-        [SerializeField] private float lacunarity = 2.0f;
+        [SerializeField] private float lacunarity = 2.2f;
         [SerializeField] private int seed = 0;
         [SerializeField] private Vector2 noiseOffset = Vector2.zero;
     
@@ -63,56 +100,53 @@ namespace Generation
         private Vector3[] _vertices;
         private int[] _triangles;
         private float[,] _heightMap;
-        private Vector2[] _collapsePositions;
-        private Vector2[] _rockPositions;
+        private Vector2[] _biomePositions;
+        private int[] _biomeTypes;
 
         public void GenerateTerrain()
         {
             Random.InitState(seed);
             
-            _mesh = new Mesh
-            {
-                indexFormat = UnityEngine.Rendering.IndexFormat.UInt32
-            };
+            _mesh = new Mesh { indexFormat = UnityEngine.Rendering.IndexFormat.UInt32 };
             GetComponent<MeshFilter>().mesh = _mesh;
             
-            GenerateFeaturePositions();
+            GenerateBiomeLayout();
             BuildHeightfield();
             
-            if (enableErosion)
-            {
-                SimulateErosion();
-            }
-            
-            ApplyFlattening();
+            if (enableErosion) SimulateErosion();
             
             CreateMeshFromHeightMap();
             UpdateMesh();
         }
 
-        private void GenerateFeaturePositions()
+        private void GenerateBiomeLayout()
         {
-            if (enableCollapse)
+            var positions = new List<Vector2>();
+            var types = new List<int>();
+            
+            positions.Add(cityBiomePosition);
+            types.Add(0); // City Plains
+            
+            var attemptsRemaining = biomeCount * 25;
+            while (positions.Count < biomeCount && attemptsRemaining > 0)
             {
-                _collapsePositions = new Vector2[collapseCount];
-                for (var i = 0; i < collapseCount; i++)
-                {
-                    var x = Random.Range(terrainSize * 0.2f, terrainSize * 0.8f);
-                    var z = Random.Range(terrainSize * 0.2f, terrainSize * 0.8f);
-                    _collapsePositions[i] = new Vector2(x, z);
-                }
-            }
+                var x = Random.Range(terrainSize * 0.1f, terrainSize * 0.9f);
+                var z = Random.Range(terrainSize * 0.1f, terrainSize * 0.9f);
+                var candidate = new Vector2(x, z);
+                
+                var validPosition = positions.All(pos => !(Vector2.Distance(candidate, pos) < minBiomeDistance));
 
-            if (!enableRocks) return;
-            {
-                _rockPositions = new Vector2[rockCount];
-                for (var i = 0; i < rockCount; i++)
+                if (validPosition)
                 {
-                    var x = Random.Range(terrainSize * 0.15f, terrainSize * 0.85f);
-                    var z = Random.Range(terrainSize * 0.15f, terrainSize * 0.85f);
-                    _rockPositions[i] = new Vector2(x, z);
+                    positions.Add(candidate);
+                    types.Add(Random.Range(1, biomes.Length));
                 }
+                
+                attemptsRemaining--;
             }
+            
+            _biomePositions = positions.ToArray();
+            _biomeTypes = types.ToArray();
         }
 
         private void BuildHeightfield()
@@ -123,50 +157,107 @@ namespace Generation
             {
                 for (var x = 0; x <= terrainSize; x++)
                 {
-                    var height = 0f;
-                    
-                    // Apply domain warping to position
-                    var warpedPos = ApplyDomainWarp(x, z);
-                    
-                    // Base heightfield (accumulated)
-                    height += GenerateNoise((int)warpedPos.x, (int)warpedPos.y, baseScale, baseHeight, baseOctaves);
-                    
-                    // Elevation feature (accumulated)
                     var pos = new Vector2(x, z);
-                    var distToElevation = Vector2.Distance(pos, elevationCenter);
-                    
-                    if (distToElevation < elevationRadius)
-                    {
-                        height += elevationAmount;
-                    }
-                    else if (distToElevation < elevationRadius + elevationFalloff)
-                    {
-                        var falloff = (distToElevation - elevationRadius) / elevationFalloff;
-                        falloff = Mathf.SmoothStep(0, 1, falloff);
-                        height += elevationAmount * (1f - falloff);
-                    }
-                    
-                    // Collapse features (subtract material)
-                    if (enableCollapse && _collapsePositions != null)
-                    {
-                        height = (from collapsePos in _collapsePositions select Vector2.Distance(pos, collapsePos) into distToCollapse where distToCollapse < collapseRadius select 1f - (distToCollapse / collapseRadius) into collapseInfluence select Mathf.Pow(collapseInfluence, 1.5f)).Aggregate(height, (current, collapseInfluence) => current - collapseDepth * collapseInfluence);
-                    }
-                    
-                    // Rock features (accumulated)
-                    if (enableRocks && _rockPositions != null)
-                    {
-                        height += (from rockPos in _rockPositions select Vector2.Distance(pos, rockPos) into distToRock where distToRock < rockRadius select 1f - (distToRock / rockRadius) into rockInfluence select Mathf.Pow(rockInfluence, 1.2f) into rockInfluence let rockAdd = rockHeight * rockInfluence let embedding = Mathf.Lerp(0.7f, 1f, rockInfluence) select rockAdd * embedding).Sum();
-                    }
-                    
-                    _heightMap[x, z] = height;
+                    _heightMap[x, z] = CalculateHeightFromBiomes(x, z, pos);
                 }
             }
         }
 
-        private Vector2 ApplyDomainWarp(int x, int z)
+        private float CalculateHeightFromBiomes(int x, int z, Vector2 pos)
         {
-            var warpX = Mathf.PerlinNoise((x + noiseOffset.x) / warpScale, (z + noiseOffset.y) / warpScale);
-            var warpZ = Mathf.PerlinNoise((x + noiseOffset.x + 1000f) / warpScale, (z + noiseOffset.y + 1000f) / warpScale);
+            // Collect ALL biomes within blend radius
+            var nearbyBiomes = new List<int>();
+            var distances = new List<float>();
+            
+            for (var i = 0; i < _biomePositions.Length; i++)
+            {
+                var dist = Vector2.Distance(pos, _biomePositions[i]);
+                if (!(dist < blendRadius)) continue;
+                nearbyBiomes.Add(i);
+                distances.Add(dist);
+            }
+            
+            // If no biomes in range, use closest
+            if (nearbyBiomes.Count == 0)
+            {
+                var closestBiome = 0;
+                var closestDist = float.MaxValue;
+                for (var i = 0; i < _biomePositions.Length; i++)
+                {
+                    var dist = Vector2.Distance(pos, _biomePositions[i]);
+                    if (!(dist < closestDist)) continue;
+                    closestDist = dist;
+                    closestBiome = i;
+                }
+                return GenerateAdvancedBiomeHeight(x, z, _biomeTypes[closestBiome], closestBiome * 137f);
+            }
+            
+            // Calculate smooth blend weights using exponential falloff
+            var totalWeight = 0f;
+            var totalHeight = 0f;
+            
+            for (var i = 0; i < nearbyBiomes.Count; i++)
+            {
+                var biomeIdx = nearbyBiomes[i];
+                var dist = distances[i];
+                
+                // Exponential falloff for ultra-smooth blending
+                var normalizedDist = dist / blendRadius;
+                var weight = Mathf.Pow(1f - normalizedDist, blendPower);
+                
+                // Generate height for this biome
+                var height = GenerateAdvancedBiomeHeight(x, z, _biomeTypes[biomeIdx], biomeIdx * 137f);
+                
+                totalHeight += height * weight;
+                totalWeight += weight;
+            }
+            
+            return totalHeight / totalWeight;
+        }
+
+        private float GenerateAdvancedBiomeHeight(int x, int z, int biomeTypeIndex, float offsetSeed)
+        {
+            var biome = biomes[biomeTypeIndex];
+            
+            var warpedPos = ApplyProgressiveDomainWarp(x, z, offsetSeed);
+            
+            var height = biome.baseHeight;
+            
+            if (enableDependentNoise)
+            {
+                var dependentSample = Mathf.PerlinNoise(
+                    (warpedPos.x + offsetSeed) / dependentNoiseScale,
+                    (warpedPos.y + offsetSeed) / dependentNoiseScale
+                );
+                
+                warpedPos.x += dependentSample * dependentNoiseStrength;
+                warpedPos.y += dependentSample * dependentNoiseStrength;
+                warpedPos.x = Mathf.Clamp(warpedPos.x, 0, terrainSize);
+                warpedPos.y = Mathf.Clamp(warpedPos.y, 0, terrainSize);
+            }
+            
+            height += GenerateAttenuatedNoise(
+                (int)warpedPos.x, 
+                (int)warpedPos.y, 
+                biome.noiseScale, 
+                biome.noiseHeight, 
+                biome.octaves,
+                offsetSeed
+            );
+            
+            return height;
+        }
+
+        private Vector2 ApplyProgressiveDomainWarp(int x, int z, float offsetSeed)
+        {
+            var warpX = Mathf.PerlinNoise(
+                (x + noiseOffset.x + offsetSeed) / warpScale, 
+                (z + noiseOffset.y + offsetSeed) / warpScale
+            );
+            var warpZ = Mathf.PerlinNoise(
+                (x + noiseOffset.x + offsetSeed + 1000f) / warpScale, 
+                (z + noiseOffset.y + offsetSeed + 1000f) / warpScale
+            );
             
             warpX = (warpX * 2f - 1f) * warpStrength;
             warpZ = (warpZ * 2f - 1f) * warpStrength;
@@ -175,6 +266,48 @@ namespace Generation
                 Mathf.Clamp(x + warpX, 0, terrainSize),
                 Mathf.Clamp(z + warpZ, 0, terrainSize)
             );
+        }
+
+        private float GenerateAttenuatedNoise(int x, int z, float scale, float heightMultiplier, int octaveCount, float offsetSeed)
+        {
+            if (scale <= 0.001f) return 0;
+            
+            var octaveValues = new float[octaveCount];
+            var amplitude = 1f;
+            var frequency = 1f;
+            
+            for (var i = 0; i < octaveCount; i++)
+            {
+                var sampleX = (x + noiseOffset.x + offsetSeed) / scale * frequency;
+                var sampleZ = (z + noiseOffset.y + offsetSeed) / scale * frequency;
+                
+                var perlinValue = Mathf.PerlinNoise(sampleX, sampleZ);
+                perlinValue = perlinValue * 2f - 1f;
+                
+                octaveValues[i] = perlinValue * amplitude;
+                
+                amplitude *= persistence;
+                frequency *= lacunarity;
+            }
+            
+            if (enableOctaveAttenuation && octaveCount > 2)
+            {
+                var lowFreqValue = octaveValues[0];
+                
+                for (var i = 2; i < octaveCount; i++)
+                {
+                    var attenuationFactor = Mathf.Lerp(
+                        1f - attenuationStrength, 
+                        1f, 
+                        (lowFreqValue + 1f) * 0.5f
+                    );
+                    octaveValues[i] *= attenuationFactor;
+                }
+            }
+            
+            var finalHeight = octaveValues.Sum();
+
+            return finalHeight * heightMultiplier;
         }
 
         private void SimulateErosion()
@@ -190,10 +323,8 @@ namespace Generation
                     for (var x = 1; x < terrainSize; x++)
                     {
                         var currentHeight = _heightMap[x, z];
-                        
                         var maxHeightDiff = 0f;
-                        var lowestX = x;
-                        var lowestZ = z;
+                        int lowestX = x, lowestZ = z;
                         
                         for (var dz = -1; dz <= 1; dz++)
                         {
@@ -203,8 +334,9 @@ namespace Generation
                                 
                                 var nx = x + dx;
                                 var nz = z + dz;
-
+                                
                                 if (nx < 0 || nx > terrainSize || nz < 0 || nz > terrainSize) continue;
+                                
                                 var heightDiff = currentHeight - _heightMap[nx, nz];
                                 if (!(heightDiff > maxHeightDiff)) continue;
                                 maxHeightDiff = heightDiff;
@@ -224,75 +356,6 @@ namespace Generation
             }
         }
 
-        private void ApplyFlattening()
-        {
-            var flattened = new float[terrainSize + 1, terrainSize + 1];
-            System.Array.Copy(_heightMap, flattened, _heightMap.Length);
-            
-            for (var z = 1; z < terrainSize; z++)
-            {
-                for (var x = 1; x < terrainSize; x++)
-                {
-                    var height = _heightMap[x, z];
-                    
-                    // Flatten valley floors
-                    if (enableValleyFlattening && height < valleyFloorHeight)
-                    {
-                        // Average with neighbors to create flat valley floor
-                        var sum = _heightMap[x, z];
-                        var count = 1;
-                        
-                        for (var dz = -1; dz <= 1; dz++)
-                        {
-                            for (var dx = -1; dx <= 1; dx++)
-                            {
-                                if (dx == 0 && dz == 0) continue;
-                                
-                                var nx = x + dx;
-                                var nz = z + dz;
-
-                                if (nx < 0 || nx > terrainSize || nz < 0 || nz > terrainSize) continue;
-                                if (!(_heightMap[nx, nz] < valleyFloorHeight)) continue;
-                                sum += _heightMap[nx, nz];
-                                count++;
-                            }
-                        }
-                        
-                        var avgHeight = sum / count;
-                        flattened[x, z] = Mathf.Lerp(height, avgHeight, valleyFlattenStrength);
-                    }
-                    
-                    // Flatten mountain peaks
-                    if (!enablePeakFlattening || !(height > peakFlattenThreshold)) continue;
-                    {
-                        var sum = _heightMap[x, z];
-                        var count = 1;
-                        
-                        for (var dz = -1; dz <= 1; dz++)
-                        {
-                            for (var dx = -1; dx <= 1; dx++)
-                            {
-                                if (dx == 0 && dz == 0) continue;
-                                
-                                var nx = x + dx;
-                                var nz = z + dz;
-
-                                if (nx < 0 || nx > terrainSize || nz < 0 || nz > terrainSize) continue;
-                                if (!(_heightMap[nx, nz] > peakFlattenThreshold)) continue;
-                                sum += _heightMap[nx, nz];
-                                count++;
-                            }
-                        }
-                        
-                        var avgHeight = sum / count;
-                        flattened[x, z] = Mathf.Lerp(height, avgHeight, peakFlattenStrength);
-                    }
-                }
-            }
-            
-            System.Array.Copy(flattened, _heightMap, _heightMap.Length);
-        }
-
         private void CreateMeshFromHeightMap()
         {
             var vertexCount = (terrainSize + 1) * (terrainSize + 1);
@@ -303,11 +366,7 @@ namespace Generation
             {
                 for (var x = 0; x <= terrainSize; x++)
                 {
-                    var xPos = x * cellSize;
-                    var zPos = z * cellSize;
-                    var height = _heightMap[x, z];
-                
-                    _vertices[vertIndex] = new Vector3(xPos, height, zPos);
+                    _vertices[vertIndex] = new Vector3(x * cellSize, _heightMap[x, z], z * cellSize);
                     vertIndex++;
                 }
             }
@@ -325,42 +384,14 @@ namespace Generation
                     var topLeft = bottomLeft + (terrainSize + 1);
                     var topRight = topLeft + 1;
                 
-                    _triangles[triIndex] = bottomLeft;
-                    _triangles[triIndex + 1] = topLeft;
-                    _triangles[triIndex + 2] = bottomRight;
-                
-                    _triangles[triIndex + 3] = bottomRight;
-                    _triangles[triIndex + 4] = topLeft;
-                    _triangles[triIndex + 5] = topRight;
-                
-                    triIndex += 6;
+                    _triangles[triIndex++] = bottomLeft;
+                    _triangles[triIndex++] = topLeft;
+                    _triangles[triIndex++] = bottomRight;
+                    _triangles[triIndex++] = bottomRight;
+                    _triangles[triIndex++] = topLeft;
+                    _triangles[triIndex++] = topRight;
                 }
             }
-        }
-        
-        private float GenerateNoise(int x, int z, float scale, float heightMultiplier, int octaveCount)
-        {
-            if (scale <= 0.001f) return 0;
-            
-            float height = 0;
-            float amplitude = 1;
-            float frequency = 1;
-        
-            for (var i = 0; i < octaveCount; i++)
-            {
-                var sampleX = (x + noiseOffset.x) / scale * frequency;
-                var sampleZ = (z + noiseOffset.y) / scale * frequency;
-            
-                var perlinValue = Mathf.PerlinNoise(sampleX, sampleZ);
-                perlinValue = perlinValue * 2 - 1;
-            
-                height += perlinValue * amplitude;
-            
-                amplitude *= persistence;
-                frequency *= lacunarity;
-            }
-        
-            return height * heightMultiplier;
         }
 
         private void UpdateMesh()
