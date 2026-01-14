@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.AI;
 
-public class AgentMover : MonoBehaviour {
+public class RelocateTroops : MonoBehaviour {
 
 	private NavMeshAgent agent;
 
