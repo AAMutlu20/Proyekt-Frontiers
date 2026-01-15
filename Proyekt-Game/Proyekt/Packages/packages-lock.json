@@ -1,5 +1,26 @@
 {
   "dependencies": {
+    "com.irminverhoeff.irminnavmeshaiunitypackage": {
+      "version": "https://github.com/IrminV/irmin-navmesh-enemy-ai-unity-package.git",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "57c73034d3e911ec4da7a954d51a5e1cc538a5bd"
+    },
+    "com.irminverhoeff.irmintimer": {
+      "version": "https://github.com/IrminV/irmintimer-unity-package.git",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "f2f8a2577d13aa85074a22f01e12c98a5bb794ec"
+    },
+    "com.irminverhoeff.staticutilities": {
+      "version": "https://github.com/IrminV/irmin-static-utilities-unity-package.git",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "3549d51b30944e4f65f59b367c2681d1dfb9cbe8"
+    },
     "com.seaeees.simple-folder-icon": {
       "version": "file:com.seaeees.simple-folder-icon",
       "depth": 0,

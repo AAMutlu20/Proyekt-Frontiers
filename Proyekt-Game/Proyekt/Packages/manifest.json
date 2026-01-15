@@ -1,5 +1,8 @@
 {
   "dependencies": {
+    "com.irminverhoeff.irminnavmeshaiunitypackage": "https://github.com/IrminV/irmin-navmesh-enemy-ai-unity-package.git",
+    "com.irminverhoeff.irmintimer": "https://github.com/IrminV/irmintimer-unity-package.git",
+    "com.irminverhoeff.staticutilities": "https://github.com/IrminV/irmin-static-utilities-unity-package.git",
     "com.unity.ai.navigation": "2.0.9",
     "com.unity.collab-proxy": "2.10.2",
     "com.unity.ide.rider": "3.0.38",
