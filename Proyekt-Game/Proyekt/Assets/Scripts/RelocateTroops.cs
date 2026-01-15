@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.InputSystem;
 
 public class RelocateTroops : MonoBehaviour {
 
@@ -10,8 +11,9 @@ public class RelocateTroops : MonoBehaviour {
 	}
 
 	void Update() {
-		if (Input.GetKey(KeyCode.Mouse0)) {
-			Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+		if (Mouse.current.leftButton.isPressed) {
+			Vector2 mousePos = Mouse.current.position.ReadValue();
+			Ray ray = Camera.main.ScreenPointToRay(mousePos);
 			RaycastHit hit;
 
 			if (Physics.Raycast(ray, out hit)) {
