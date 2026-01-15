@@ -2477,10 +2477,14 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 <<<<<<< HEAD
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 --- !u!1 &1873711878
 =======
 --- !u!1 &1806114077
 >>>>>>> b8692cd5c03c5dcf0a15bf6ae1aa95eef4d29fa0
+=======
+--- !u!1 &1694855007
+>>>>>>> Stashed changes
 =======
 --- !u!1 &1694855007
 >>>>>>> Stashed changes
@@ -2492,7 +2496,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
   - component: {fileID: 1694855008}
   - component: {fileID: 1694855009}
   m_Layer: 0
@@ -2560,6 +2567,9 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
   - component: {fileID: 1873711883}
