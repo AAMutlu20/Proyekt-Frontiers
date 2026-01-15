@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class ArcherTower : MonoBehaviour {
 	// Commented out because it is redundant if the arc is computed using arrowSpeed.
-	// public float range = 20f;
+	public float range = 20f;
 	public LayerMask enemyLayer;
 	public Transform firePoint;
 	public float arrowSpeed;
@@ -23,7 +23,7 @@ public class ArcherTower : MonoBehaviour {
 	void DetectEnemies() {
 		Collider[] hits = Physics.OverlapSphere(
 			transform.position,
-		//	range,
+			range,
 			enemyLayer
 		);
 
