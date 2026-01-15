@@ -59,7 +59,8 @@ public class CameraControls : MonoBehaviour {
 		velocity.z = Mathf.Clamp(velocity.z, -cameraSpeedLimit, cameraSpeedLimit);
 
 		// Apply
-		transform.position = transform.position + velocity;
+		//transform.localPosition = transform.localPosition + velocity;		
+		transform.Translate(velocity, Space.Self);
 
 		//   _______ _ _ _   
 		//  |__   __(_) | |  
