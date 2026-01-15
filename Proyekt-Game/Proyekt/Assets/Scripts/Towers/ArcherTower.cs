@@ -2,13 +2,18 @@ using UnityEngine;
 
 
 public class ArcherTower : MonoBehaviour {
-	public Transform origin;
-
 	public float range = 20f;
 	public LayerMask enemyLayer;
 	public Transform firePoint;
 	public float arrowSpeed;
 	public GameObject arrowPrefab;
+	public float fireRate = 60; // In RPM
+
+	private float lastFiredShot;
+
+	void Awake() {
+		lastFiredShot = Time.time;
+	}
 
 	void Update() {
 		DetectEnemies();
@@ -35,23 +40,29 @@ public class ArcherTower : MonoBehaviour {
 		}
 
 		if (closestEnemy != null) {
-			Shoot(closestEnemy);
+			tryShoot(closestEnemy);
 		}
 
 	}
 
-	void Shoot(Transform target) {
-		if (Tools.SolveBallisticArc(
-			firePoint.position,
-			target.position,
-			arrowSpeed,
-			Mathf.Abs(Physics.gravity.y),
-			out Vector3 dir
-    	))
-		{
-			GameObject arrow = Instantiate(arrowPrefab, firePoint.position, Quaternion.LookRotation(dir));
-			Rigidbody rb = arrow.GetComponent<Rigidbody>();
-			rb.linearVelocity = dir * arrowSpeed;
-    	}
+	void tryShoot(Transform target) {
+		if (Time.time - lastFiredShot > (60 / fireRate)) {
+			if (Tools.SolveBallisticArc(
+				firePoint.position,
+				target.position,
+				arrowSpeed,
+				Mathf.Abs(Physics.gravity.y),
+				out Vector3 dir
+			))
+			{
+				GameObject arrow = Instantiate(arrowPrefab, firePoint.position, Quaternion.LookRotation(dir));
+				Rigidbody rb = arrow.GetComponent<Rigidbody>();
+				rb.linearVelocity = dir * arrowSpeed;
+				lastFiredShot = Time.time;
+			}
+		} else {
+			Debug.Log("INFO: tried to shoot, but shooting is on cooldown! (");
+			Debug.Log(Time.time);
+		}
 	}
 }
