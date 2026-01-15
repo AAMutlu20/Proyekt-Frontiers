@@ -107,6 +107,37 @@ MonoBehaviour:
   clamp:
     m_OverrideState: 1
     m_Value: 0.05
+--- !u!114 &-7369914537545222291
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 96406cb189ce4154d912ff69763f99b1, type: 3}
+  m_Name: LowPolyVolumeComponent
+  m_EditorClassIdentifier: Assembly-CSharp::ShaderCode.LowPolyVolumeComponent
+  active: 1
+  enabled:
+    m_OverrideState: 1
+    m_Value: 0
+  colorSteps:
+    m_OverrideState: 1
+    m_Value: 12
+  pixelation:
+    m_OverrideState: 1
+    m_Value: 1
+  edgeIntensity:
+    m_OverrideState: 1
+    m_Value: 0
+  edgeThickness:
+    m_OverrideState: 1
+    m_Value: 1
+  edgeColor:
+    m_OverrideState: 1
+    m_Value: {r: 0, g: 0, b: 0, a: 1}
 --- !u!114 &-7274224791359825572
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -342,6 +373,9 @@ MonoBehaviour:
   skyOcclusionIntensityMultiplier:
     m_OverrideState: 1
     m_Value: 1
+  worldOffset:
+    m_OverrideState: 1
+    m_Value: {x: 0, y: 0, z: 0}
 --- !u!114 &-1216621516061285780
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -374,6 +408,9 @@ MonoBehaviour:
     m_OverrideState: 1
     m_Value: {r: 1, g: 1, b: 1, a: 1}
   highQualityFiltering:
+    m_OverrideState: 1
+    m_Value: 0
+  filter:
     m_OverrideState: 1
     m_Value: 0
   downscale:
@@ -462,8 +499,7 @@ MonoBehaviour:
   - {fileID: -6288072647309666549}
   - {fileID: 7518938298396184218}
   - {fileID: -1410297666881709256}
-  - {fileID: -7750755424749557576}
-  - {fileID: -5139089513906902183}
+  - {fileID: -7369914537545222291}
 --- !u!114 &853819529557874667
 MonoBehaviour:
   m_ObjectHideFlags: 3
