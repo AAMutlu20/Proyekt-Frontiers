@@ -19,6 +19,11 @@ namespace irminNavmeshEnemyAiUnityPackage
         public IrminCombatAISystem CombatAISystem { get { return _combatAISystem; } }
         public FactionMemberComponent FactionMemberComponent { get { return _factionMemberComponent; } }
 
+        private void Start()
+        {
+            _healthSystem.OnMinHealthReached += Defeat;
+        }
+
         public void Defeat()
         {
             if (_navMeshModifierPrefabToSpawnOnDefeat != null) Instantiate(_navMeshModifierPrefabToSpawnOnDefeat, transform.position, Quaternion.identity);
@@ -41,9 +46,9 @@ namespace irminNavmeshEnemyAiUnityPackage
             return _factionMemberComponent.FactionID;
         }
 
-        public bool Damage(float pDamage)
+        public bool Damage(float pDamage, IDamagable _attackingIDamagable)
         {
-            return _healthSystem.Damage(pDamage);
+            return _healthSystem.Damage(pDamage, _attackingIDamagable);
         }
 
         public bool IsDestroyed()

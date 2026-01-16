@@ -33,13 +33,23 @@ namespace irminNavmeshEnemyAiUnityPackage
 
         [SerializeField] PathType _pathType;
 
+        [SerializeField] private float _explosionRadius = 10f;
+
+        [SerializeField] private LayerMask _enemyLayerMask;
+
+        [SerializeField] private float _damage = 2f;
+
         //[SerializeField] private int _halfArcResolution = 3;
 
         private void Start()
         {
             _catapultTargetDetectionSystem.OnDetectedNewGameObjectObject.AddListener(DetectedNewPossibleTarget);
+            _catapultTargetDetectionSystem.OnNoLongerDetectedGameObject.AddListener(NoLongerDetectionPossibleTarget);
             _shootCooldownTimer.OnTimeElapsed += ShootCatapultWithCooldown;
+            
         }
+
+        
 
         private void Update()
         {
@@ -58,8 +68,23 @@ namespace irminNavmeshEnemyAiUnityPackage
             }
         }
 
+        private void NoLongerDetectionPossibleTarget(GameObject pPossibleTarget)
+        {
+            if (_targetTransform == pPossibleTarget.transform)
+            {
+                GameObject foundNewTarget = GetFirstTargetFromDetector();
+                if (foundNewTarget == null) { _targetTransform = null; _shootCooldownTimer.PauseTimer(); }
+                else
+                {
+                    _targetTransform = foundNewTarget.transform;
+                }
+                    
+            }
+        }
+
         public void ShootCatapultWithCooldown()
         {
+            if (_targetTransform == null) { _shootCooldownTimer.ResetCurrentTime(); _shootCooldownTimer.PauseTimer(); return; }
             _currentlySpawnedShootObject = Instantiate(_objectToShootPrefab);
             _currentlySpawnedShootObject.transform.parent = _slingObjectParent;
             _currentlySpawnedShootObject.transform.localPosition = Vector3.zero;
@@ -74,8 +99,15 @@ namespace irminNavmeshEnemyAiUnityPackage
         // When the animation completes it will call the event to shoot.
         public void Shoot()
         {
+            if (_targetTransform == null) return;
             _currentlySpawnedShootObject.transform.SetParent(null);
             MoveShootingObjectAlongDoTweenArc();
+        }
+
+        private GameObject GetFirstTargetFromDetector()
+        {
+            if (_catapultTargetDetectionSystem.GameObjectsInRange.Count <= 0) return null;
+            return _catapultTargetDetectionSystem.GameObjectsInRange[0];
         }
 
         public void MoveShootingObjectAlongDoTweenArc()
@@ -100,8 +132,21 @@ namespace irminNavmeshEnemyAiUnityPackage
             GameObject shootObject = _currentlySpawnedShootObject;
             _currentlySpawnedShootObject.transform.DOPath(path, _animationDuration, _pathType).SetEase(_doTweenEase).SetLookAt(0.01f).OnComplete(() =>
             {
-                ITriggerable foundITriggerable = shootObject.GetComponent<ITriggerable>();
-                if (foundITriggerable != null) { foundITriggerable.Trigger(gameObject); }
+                //ITriggerable foundITriggerable = shootObject.GetComponent<ITriggerable>();
+                //if (foundITriggerable != null) { foundITriggerable.Trigger(gameObject); }
+                // Replaced by:
+                Vector3 origin = shootObject.transform.position;
+                Collider[] hits = Physics.OverlapSphere(origin, _explosionRadius, _enemyLayerMask);
+                foreach (Collider collider in hits)
+                {
+                    IDamagable foundIDamagable = collider.GetComponent<IDamagable>();
+                    if(foundIDamagable != null)
+                    {
+                        Debug.Log($"Catapult damaging {foundIDamagable.GetAttackTargetTransform().name} for {_damage}");
+                        foundIDamagable.Damage(_damage, null);
+                    }
+                }
+
             });
         }
     }

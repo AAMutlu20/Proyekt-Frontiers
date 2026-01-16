@@ -124,7 +124,7 @@ namespace irminNavmeshEnemyAiUnityPackage
         /// </summary>
         /// <param name="pDamageValue">The damage value to inflict. (can be altered by processes on the target)</param>
         /// <returns>If the target was defeated by the damage.</returns>
-        public bool Damage(float pDamageValue)
+        public bool Damage(float pDamageValue, IDamagable _attackingIDamagable)
         {
             if (_invulnerable) return false;
             // Later we could use armor values or other alterations to this value.

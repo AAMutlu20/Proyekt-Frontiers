@@ -27,6 +27,7 @@ namespace irminNavmeshEnemyAiUnityPackage
 
         [SerializeField] DetectionSystem _damagablesInWeaponRangeDetectionSystem;
         [SerializeField] FactionMemberComponent _factionMemberComponent;
+        [SerializeField] IrminBaseHealthSystem _healthSystem;
 
         [SerializeField] protected bool _canLeadOtherCharacters;
         [SerializeField] protected List<IrminCombatAISystem> _combatAisUnderCommand = new();
@@ -91,7 +92,6 @@ namespace irminNavmeshEnemyAiUnityPackage
             //_attackPathCheckTimer = reservedIrminTimer;
             _attackPathCheckTimer.OnTimeElapsed += RestartAttackPathCheckTimer;
             _attackCooldownTimer.OnTimeElapsed += Attack;
-
             if(_chargeWall && _wallToCharge != null)
             {
                 AttackDamagable(_wallToCharge.GetRandomConnectedAttackableWallPiece());
@@ -170,7 +170,7 @@ namespace irminNavmeshEnemyAiUnityPackage
                 {
                     // We are still in range, attack again.
                     _combatAttackAnimator.SetTrigger(_triggerToCallOnAttack);
-                    bool _defeated = foundAttackable.Damage(_damage);
+                    bool _defeated = foundAttackable.Damage(_damage, _attackingDamagable);
                     _attackCooldownTimer.ResetCurrentTime();
                     _attackCooldownTimer.StartTimer();
 

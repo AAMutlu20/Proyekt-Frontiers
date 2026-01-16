@@ -8,7 +8,7 @@ namespace irminNavmeshEnemyAiUnityPackage
         public float GetAttackRadius();
 
         public int GetFactionID();
-        public bool Damage(float pDamage);
+        public bool Damage(float pDamage, IDamagable _attackingDamagable);
         public bool IsDestroyed();
     }
 }

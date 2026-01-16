@@ -12,7 +12,7 @@ public class DetectionSystem : MonoBehaviour
 
     public UnityEvent<GameObject> OnDetectedNewGameObjectObject;
     public UnityEvent<GameObject> OnNoLongerDetectedGameObject;
-    [SerializeField] SphereCollider _sphereCollider;
+    [SerializeField] Collider _collider;
 
     public List<GameObject> GameObjectsInRange {  get { List<GameObject> gameObjectsInRangeCopy = new(_gameObjectsInRange); return gameObjectsInRangeCopy; } }
 
@@ -39,6 +39,16 @@ public class DetectionSystem : MonoBehaviour
 
     public float GetRadius()
     {
-        return _sphereCollider.radius;
+        SphereCollider foundSphereCollider = _collider.GetComponent<SphereCollider>();
+        if(foundSphereCollider != null)
+        {
+            return foundSphereCollider.radius;
+        }
+        else
+        {
+            Debug.LogWarning("Tried to get radius of collider that isn't a sphere collider.");
+            return 0;
+        }
+        
     }
 }
