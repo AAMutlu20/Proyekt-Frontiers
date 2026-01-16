@@ -196,6 +196,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1 &5908219426308038872
 GameObject:
@@ -212,7 +213,7 @@ GameObject:
   - component: {fileID: 9045860261281522067}
   - component: {fileID: 7661730762635146937}
   - component: {fileID: 8978699671590154852}
-  m_Layer: 6
+  m_Layer: 15
   m_Name: TestingWallPiece
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -249,7 +250,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0b9c31d87e535b64fb10bd20af50aa12, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TestingWallPiece
-  _attackRadius: 2
+  _attackRadius: 2.5
   _factionMemberComponent: {fileID: 8269132401974714343}
   _healthSystem: {fileID: 9143258856291487778}
   _visualParent: {fileID: 5699898835319575313}
