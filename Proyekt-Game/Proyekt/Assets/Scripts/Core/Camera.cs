@@ -5,8 +5,13 @@ public class CameraControls : MonoBehaviour {
 	public float cameraSpeedIncrement = 0.5f;
 	public float cameraSpeedLimit = 3f;
 	public float cameraDrag = 0.0001f;
+<<<<<<< HEAD
 	public int tiltAmount = 1;
 	public int tiltMax = 10;
+=======
+	public float tiltAmount = 1f;
+	public float tiltMax = 10;
+>>>>>>> 9099fdaa1e43f06964496fcbdb1a3d0ea9657584
 
 	// public for testing purposes
 	public Vector3 velocity;
@@ -30,32 +35,39 @@ public class CameraControls : MonoBehaviour {
 		// Left and right, respectively
 
 		if (Keyboard.current.aKey.isPressed) {
+<<<<<<< HEAD
 			velocity -= transform.right * cameraSpeedIncrement; // (cameraSpeedIncrement, 0, 0);
 		}
 		if (Keyboard.current.dKey.isPressed) {
 			velocity += transform.right * cameraSpeedIncrement; //(cameraSpeedIncrement, 0, 0);
+=======
+			velocity -= transform.right * cameraSpeedIncrement;
+		}
+		if (Keyboard.current.dKey.isPressed) {
+			velocity += transform.right * cameraSpeedIncrement;
+>>>>>>> 9099fdaa1e43f06964496fcbdb1a3d0ea9657584
 		}
 		
 		// Forwards and backwards, respectively
 		
 		if (Keyboard.current.wKey.isPressed) {
 			velocity += transform.forward * cameraSpeedIncrement;
+<<<<<<< HEAD
 			//velocity += new Vector3(0, 0, cameraSpeedIncrement);
 		}
 		if (Keyboard.current.sKey.isPressed) {
 			velocity -= transform.forward * cameraSpeedIncrement;
 			//velocity -= new Vector3(0, 0, cameraSpeedIncrement);
+=======
+		}
+		if (Keyboard.current.sKey.isPressed) {
+			velocity -= transform.forward * cameraSpeedIncrement;
+>>>>>>> 9099fdaa1e43f06964496fcbdb1a3d0ea9657584
 		}
 
 	
 		// Slow down
 		velocity = Vector3.Scale(velocity, new Vector3(0.95f,0.95f,0.95f));
-
-		// Older, technically better system, but it had a bug where the
-		// camera would only be able to move in one direction, x or z
-		
-		//Vector3 positiveVelocity = new Vector3(Mathf.Abs(velocity.x), Mathf.Abs(velocity.y), Mathf.Abs(velocity.z));
-		//velocity = Vector3.Scale(positiveVelocity - new Vector3(cameraDrag, 0, cameraDrag),velocity.normalized);
 
 		// Clamp
 		velocity.x = Mathf.Clamp(velocity.x, -cameraSpeedLimit, cameraSpeedLimit);
