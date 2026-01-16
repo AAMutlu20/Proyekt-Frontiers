@@ -18,33 +18,45 @@ namespace Generation
     {
         [Header("Terrain Dimensions")]
         [SerializeField] private int terrainResolution = 513;
-        [SerializeField] private float terrainWidth = 100f;
-        [SerializeField] private float terrainLength = 300f;
+        [SerializeField] private float terrainWidth = 400f;
+        [SerializeField] private float terrainLength = 1000f;
         [SerializeField] private float terrainHeight = 150f;
         
         [Header("Canyon Configuration")]
-        [SerializeField] private float canyonDepth = 120f;
-        [SerializeField] private float canyonWidth = 35f;
-        [SerializeField] private float canyonFloorWidth = 8f;
-        [SerializeField] private float riverWidth = 3f;
-        [SerializeField] private float riverDepth = 5f;
+        [SerializeField] private float canyonDepth = 90f;
+        [SerializeField] private float canyonWidth = 150f;
+        [SerializeField] private float canyonFloorWidth = 80f;
+        [SerializeField] private float riverWidth = 10f;
+        [SerializeField] private float riverDepth = 3f;
         
         [Header("Canyon Path")]
-        [SerializeField] private float canyonMeander = 8f;
-        [SerializeField] private float meanderFrequency = 0.015f;
+        [SerializeField] private float canyonMeander = 20f;
+        [SerializeField] private float meanderFrequency = 0.008f;
         [SerializeField] private Vector2 canyonStartOffset = new Vector2(0f, 0f);
         
         [Header("Plateau")]
         [SerializeField] private float plateauHeight = 130f;
-        [SerializeField] private float plateauNoiseScale = 200f;
-        [SerializeField] private float plateauNoiseHeight = 8f;
+        [SerializeField] private float plateauNoiseScale = 250f;
+        [SerializeField] private float plateauNoiseHeight = 10f;
         [SerializeField] private int plateauOctaves = 3;
         
+        [Header("Interior Plateaus (for Castles/Structures)")]
+        [SerializeField] private int interiorPlateauCount = 3;
+        [SerializeField] private float interiorPlateauMinSize = 30f;
+        [SerializeField] private float interiorPlateauMaxSize = 60f;
+        [SerializeField] private float interiorPlateauHeight = 40f;
+        [SerializeField] private float interiorPlateauHeightVariation = 15f;
+        
+        [Header("Canyon Floor Terraces")]
+        [SerializeField] private int floorTerraceCount = 2;
+        [SerializeField] private float terraceHeight = 8f;
+        [SerializeField] private float terraceWidth = 15f;
+        
         [Header("Side Canyons")]
-        [SerializeField] private int sideCanyonCount = 8;
-        [SerializeField] private float sideCanyonLength = 25f;
-        [SerializeField] private float sideCanyonWidth = 12f;
-        [SerializeField] private float sideCanyonDepth = 40f;
+        [SerializeField] private int sideCanyonCount = 12;
+        [SerializeField] private float sideCanyonLength = 40f;
+        [SerializeField] private float sideCanyonWidth = 25f;
+        [SerializeField] private float sideCanyonDepth = 30f;
         [SerializeField] private float sideCanyonBranchChance = 0.3f;
         
         [Header("Rock Layers (Stratification)")]
@@ -69,9 +81,9 @@ namespace Generation
         
         [Header("Wall Erosion")]
         [SerializeField] private float wallRoughness = 6f;
-        [SerializeField] private float wallDetailScale = 25f;
+        [SerializeField] private float wallDetailScale = 35f;
         [SerializeField] private int wallOctaves = 4;
-        [SerializeField] private float talusslopeAngle = 35f;
+        [SerializeField] private float wallSlopeReduction = 0.6f; // Makes walls more traversible
         
         [Header("Advanced Features")]
         [SerializeField] private bool enableTerracing = true;
@@ -91,6 +103,7 @@ namespace Generation
         private float[,] _heightMap;
         private List<Vector2> _canyonPath;
         private List<SideCanyon> _sideCanyons;
+        private List<InteriorPlateau> _interiorPlateaus;
 
         private class SideCanyon
         {
@@ -100,6 +113,13 @@ namespace Generation
             public float Width;
             public float Depth;
             public bool LeftSide;
+        }
+
+        private class InteriorPlateau
+        {
+            public Vector2 Position;
+            public float Radius;
+            public float Height;
         }
 
         public void GenerateTerrain()
@@ -114,6 +134,7 @@ namespace Generation
             
             GenerateCanyonPath();
             GenerateSideCanyons();
+            GenerateInteriorPlateaus();
             BuildCanyonHeightfield();
             ApplyHeightsToTerrain();
         }
@@ -122,7 +143,7 @@ namespace Generation
         {
             _canyonPath = new List<Vector2>();
             
-            var steps = Mathf.CeilToInt(terrainLength / 2f);
+            var steps = Mathf.CeilToInt(terrainLength / 3f);
             
             for (var i = 0; i <= steps; i++)
             {
@@ -173,6 +194,38 @@ namespace Generation
             }
         }
 
+        private void GenerateInteriorPlateaus()
+        {
+            _interiorPlateaus = new List<InteriorPlateau>();
+            
+            var pathSegments = _canyonPath.Count - 1;
+            var spacing = pathSegments / (interiorPlateauCount + 1);
+            
+            for (var i = 0; i < interiorPlateauCount; i++)
+            {
+                var segmentIndex = spacing * (i + 1) + Random.Range(-1, 2);
+                segmentIndex = Mathf.Clamp(segmentIndex, 0, _canyonPath.Count - 1);
+                
+                var centerPos = _canyonPath[segmentIndex];
+                
+                // Offset slightly from center for variety
+                var offset = new Vector2(
+                    Random.Range(-canyonFloorWidth * 0.2f, canyonFloorWidth * 0.2f),
+                    Random.Range(-20f, 20f)
+                );
+                
+                var radius = Random.Range(interiorPlateauMinSize, interiorPlateauMaxSize);
+                var height = interiorPlateauHeight + Random.Range(-interiorPlateauHeightVariation, interiorPlateauHeightVariation);
+                
+                _interiorPlateaus.Add(new InteriorPlateau
+                {
+                    Position = centerPos + offset,
+                    Radius = radius,
+                    Height = height
+                });
+            }
+        }
+
         private void BuildCanyonHeightfield()
         {
             _heightMap = new float[terrainResolution, terrainResolution];
@@ -199,7 +252,7 @@ namespace Generation
             // Determine if we're on inside or outside a meander bend
             var toPos = (pos - closestPoint).normalized;
             var perpDir = new Vector2(-pathDirection.y, pathDirection.x);
-            var bendSide = Vector2.Dot(toPos, perpDir); // Positive = right side, negative = left side
+            var bendSide = Vector2.Dot(toPos, perpDir);
             
             // Check side canyons
             var minSideCanyonDist = float.MaxValue;
@@ -217,6 +270,9 @@ namespace Generation
                 isLeftSide = sideCanyon.LeftSide;
             }
             
+            // Check interior plateaus
+            var plateauEffect = CalculateInteriorPlateauEffect(pos, distToCanyon);
+            
             // Start with plateau height
             var baseHeight = GeneratePlateauHeight(worldX, worldZ);
             
@@ -224,13 +280,19 @@ namespace Generation
             var mainCanyonEffect = CalculateMainCanyonEffect(distToCanyon, worldX, worldZ, bendSide);
             var height = baseHeight - mainCanyonEffect;
             
+            // Apply floor terraces for roads/paths
+            if (distToCanyon < canyonFloorWidth * 0.5f)
+            {
+                height = ApplyFloorTerraces(height, distToCanyon);
+            }
+            
+            // Apply interior plateau
+            height += plateauEffect;
+            
             // Apply side canyon carving
             if (minSideCanyonDist < width * 2f)
             {
-                // Create asymmetric erosion - one wall steeper than the other
                 var normalizedDist = minSideCanyonDist / (width * 2f);
-                
-                // Determine which side of the side canyon we're on
                 var asymmetryFactor = isLeftSide ? 0.7f : 1.3f;
                 var adjustedDist = Mathf.Pow(normalizedDist, asymmetryFactor);
                 
@@ -239,7 +301,7 @@ namespace Generation
             }
             
             // Apply stratification
-            if (enableTerracing)
+            if (enableTerracing && distToCanyon > canyonFloorWidth * 0.5f)
             {
                 height = ApplyStratification(height, worldX, worldZ);
             }
@@ -254,6 +316,61 @@ namespace Generation
             }
             
             return Mathf.Clamp(height, 0f, terrainHeight);
+        }
+
+        private float CalculateInteriorPlateauEffect(Vector2 pos, float distToCanyon)
+        {
+            // Only apply inside the canyon floor
+            if (distToCanyon > canyonFloorWidth * 0.5f) return 0f;
+            
+            var maxEffect = 0f;
+            
+            foreach (var plateau in _interiorPlateaus)
+            {
+                var distToPlateau = Vector2.Distance(pos, plateau.Position);
+                
+                if (distToPlateau > plateau.Radius * 1.5f) continue;
+                
+                // Create a smooth mesa-like plateau
+                float effect;
+                if (distToPlateau < plateau.Radius * 0.7f)
+                {
+                    // Flat top
+                    effect = plateau.Height;
+                }
+                else
+                {
+                    // Smooth falloff at edges
+                    var edgeDist = (distToPlateau - plateau.Radius * 0.7f) / (plateau.Radius * 0.8f);
+                    effect = plateau.Height * Mathf.SmoothStep(1f, 0f, edgeDist);
+                }
+                
+                maxEffect = Mathf.Max(maxEffect, effect);
+            }
+            
+            return maxEffect;
+        }
+
+        private float ApplyFloorTerraces(float height, float distToCanyon)
+        {
+            // Create stepped terraces on the canyon floor for roads/paths
+            for (var i = 1; i <= floorTerraceCount; i++)
+            {
+                var terraceStart = (canyonFloorWidth * 0.5f) * (i / (float)(floorTerraceCount + 1));
+                var terraceEnd = terraceStart + terraceWidth;
+                
+                if (distToCanyon >= terraceStart && distToCanyon < terraceEnd)
+                {
+                    var terraceT = (distToCanyon - terraceStart) / terraceWidth;
+                    var smoothT = Mathf.SmoothStep(0f, 1f, terraceT);
+                    
+                    var targetHeight = plateauHeight - canyonDepth + (i * terraceHeight);
+                    height = Mathf.Lerp(height, targetHeight, 1f - smoothT);
+                    break;
+                }
+            }
+            
+            return height;
         }
 
         private float GetDistanceToCanyonPath(Vector2 pos, out Vector2 closestPoint, out Vector2 direction)
@@ -334,22 +451,23 @@ namespace Generation
             
             // Add positional variation along the canyon length
             var lengthVariation = Mathf.PerlinNoise(
-                (z + seed) / 80f,
-                (x + seed) / 80f
-            ) * 0.15f + 0.925f; // 0.925 to 1.075 multiplier
+                (z + seed) / 120f,
+                (x + seed) / 120f
+            ) * 0.15f + 0.925f;
             
             // River channel at the bottom
             if (distToCanyon < riverWidth * 0.5f)
             {
                 carvingDepth = (canyonDepth + riverDepth) * lengthVariation;
             }
-            // Flat canyon floor
+            // Wide flat canyon floor
             else if (distToCanyon < canyonFloorWidth * 0.5f)
             {
                 var t = (distToCanyon - riverWidth * 0.5f) / (canyonFloorWidth * 0.5f - riverWidth * 0.5f);
-                carvingDepth = Mathf.Lerp(canyonDepth + riverDepth, canyonDepth, t) * lengthVariation;
+                // Keep floor mostly flat with subtle variation
+                carvingDepth = Mathf.Lerp(canyonDepth + riverDepth, canyonDepth, Mathf.Pow(t, 0.5f)) * lengthVariation;
             }
-            // Canyon walls with talus slope consideration
+            // Canyon walls - gentler slopes for traversibility
             else
             {
                 var wallStart = canyonFloorWidth * 0.5f;
@@ -363,11 +481,12 @@ namespace Generation
                 // Harder layers erode less, creating shelves
                 var erosionFactor = 1f - (layer.hardness * 0.3f);
                 
-                // Meander effect - inside bends erode more (cut bank), outside bends less (point bar)
-                var meanderEffect = 1f - (bendSide * 0.15f); // -0.15 to +0.15 adjustment
+                // Meander effect
+                var meanderEffect = 1f - (bendSide * 0.15f);
                 
-                // Smooth falloff
-                carvingDepth = canyonDepth * Mathf.Pow(1f - t, 1.5f) * erosionFactor * lengthVariation * meanderEffect;
+                // Gentler slope for traversibility
+                var slopePower = 1.2f + (wallSlopeReduction * 0.8f);
+                carvingDepth = canyonDepth * Mathf.Pow(1f - t, slopePower) * erosionFactor * lengthVariation * meanderEffect;
                 
                 if (carvingDepth < 0f) carvingDepth = 0f;
             }
@@ -493,6 +612,7 @@ namespace Generation
         {
             if (_canyonPath == null || _canyonPath.Count == 0) return;
             
+            // Main canyon path
             Gizmos.color = Color.red;
             for (var i = 0; i < _canyonPath.Count - 1; i++)
             {
@@ -501,14 +621,37 @@ namespace Generation
                 Gizmos.DrawLine(start, end);
             }
             
-            if (_sideCanyons == null) return;
-            
-            Gizmos.color = Color.yellow;
-            foreach (var sideCanyon in _sideCanyons)
+            // Side canyons
+            if (_sideCanyons != null)
             {
-                var start = new Vector3(sideCanyon.StartPoint.x, 50f, sideCanyon.StartPoint.y);
-                var end = start + new Vector3(sideCanyon.Direction.x, 0f, sideCanyon.Direction.y) * sideCanyon.Length;
-                Gizmos.DrawLine(start, end);
+                Gizmos.color = Color.yellow;
+                foreach (var sideCanyon in _sideCanyons)
+                {
+                    var start = new Vector3(sideCanyon.StartPoint.x, 50f, sideCanyon.StartPoint.y);
+                    var end = start + new Vector3(sideCanyon.Direction.x, 0f, sideCanyon.Direction.y) * sideCanyon.Length;
+                    Gizmos.DrawLine(start, end);
+                }
+            }
+            
+            // Interior plateaus
+            if (_interiorPlateaus == null) return;
+            {
+                Gizmos.color = Color.cyan;
+                foreach (var plateau in _interiorPlateaus)
+                {
+                    var center = new Vector3(plateau.Position.x, 50f, plateau.Position.y);
+                    // Draw a circle to show plateau location
+                    for (var i = 0; i < 16; i++)
+                    {
+                        var angle1 = i * 22.5f * Mathf.Deg2Rad;
+                        var angle2 = (i + 1) * 22.5f * Mathf.Deg2Rad;
+                        
+                        var p1 = center + new Vector3(Mathf.Cos(angle1), 0f, Mathf.Sin(angle1)) * plateau.Radius;
+                        var p2 = center + new Vector3(Mathf.Cos(angle2), 0f, Mathf.Sin(angle2)) * plateau.Radius;
+                        
+                        Gizmos.DrawLine(p1, p2);
+                    }
+                }
             }
         }
     }
