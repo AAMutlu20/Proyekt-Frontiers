@@ -1,5 +1,9 @@
 ﻿<Solution>
   <Project Path="Assembly-CSharp.csproj" />
   <Project Path="SimpleFolderIcon.csproj" />
+  <Project Path="Assembly-CSharp-firstpass.csproj" />
+  <Project Path="irminNavmeshEnemyAiUnityPackage.csproj" />
+  <Project Path="IrminTimerPackage.Tools.csproj" />
+  <Project Path="IrminStaticUtilities.Tools.csproj" />
   <Project Path="Assembly-CSharp-Editor.csproj" />
 </Solution>

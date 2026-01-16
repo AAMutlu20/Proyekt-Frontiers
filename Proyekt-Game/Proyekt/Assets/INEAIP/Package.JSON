@@ -1,0 +1,12 @@
+{
+  "name": "com.irminverhoeff.irminnavmeshaiunitypackage",
+  "version": "1.0.0",
+  "displayName": "Irmin Navmesh Enemy Ai Unity Package",
+  "description": "Enemy Ai I originally made to solve the case of navmesh running into killboxes",
+  "unity": "6000.0",
+  "author": {
+    "name": "IrminVerhoeff",
+    "email": "irminverhoeff@gmail.com",
+    "url": "https://itch.io/profile/irmindev"
+  }
+}
