@@ -1,12 +1,5 @@
 {
   "dependencies": {
-    "com.irminverhoeff.irminnavmeshaiunitypackage": {
-      "version": "https://github.com/IrminV/irmin-navmesh-enemy-ai-unity-package.git",
-      "depth": 0,
-      "source": "git",
-      "dependencies": {},
-      "hash": "57c73034d3e911ec4da7a954d51a5e1cc538a5bd"
-    },
     "com.irminverhoeff.irmintimer": {
       "version": "https://github.com/IrminV/irmintimer-unity-package.git",
       "depth": 0,
