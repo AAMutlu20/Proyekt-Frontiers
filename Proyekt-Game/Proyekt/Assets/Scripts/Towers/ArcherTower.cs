@@ -50,12 +50,12 @@ public class ArcherTower : MonoBehaviour {
 		if (Time.time - lastFiredShot > (60 / fireRate)) {
 			if (Tools.SolveBallisticArc(
 				firePoint.position,
-				target.position,
+				//Tools.PredictTargetPosition(transform.position),
+				transform.position,
 				arrowSpeed,
 				Mathf.Abs(Physics.gravity.y),
 				out Vector3 dir
-			))
-			{
+			)) {
 				GameObject arrow = Instantiate(arrowPrefab, firePoint.position, Quaternion.LookRotation(dir));
 				Rigidbody rb = arrow.GetComponent<Rigidbody>();
 				rb.linearVelocity = dir * arrowSpeed;
