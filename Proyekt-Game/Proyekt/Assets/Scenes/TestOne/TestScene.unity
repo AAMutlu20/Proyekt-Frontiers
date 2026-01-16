@@ -247,6 +247,7 @@ GameObject:
   - component: {fileID: 330585545}
   - component: {fileID: 330585544}
   - component: {fileID: 330585547}
+  - component: {fileID: 330585548}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -321,13 +322,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.045611236, y: -0.8964709, z: 0.09502426, w: -0.4303834}
-  m_LocalPosition: {x: 1463.9187, y: 27.020315, z: 278.1383}
+  m_LocalRotation: {x: 0.26583424, y: 0.6645833, z: -0.2752794, w: 0.6417807}
+  m_LocalPosition: {x: 1463.9187, y: 89.7, z: 278.1383}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1636127316}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 45, y: 92, z: 0}
 --- !u!114 &330585547
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -372,6 +373,24 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
+--- !u!114 &330585548
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 330585543}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: faebb56c8dba3ffdb91d7fb7efe14745, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CameraControls
+  cameraSpeedIncrement: 0.5
+  cameraSpeedLimit: 3
+  cameraDrag: 0.0001
+  tiltAmount: 100
+  tiltMax: 10
+  velocity: {x: 0, y: 0, z: 0}
 --- !u!1 &367851470
 GameObject:
   m_ObjectHideFlags: 0

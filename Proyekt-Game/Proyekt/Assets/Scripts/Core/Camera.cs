@@ -2,10 +2,10 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class CameraControls : MonoBehaviour {
-	public float cameraSpeedIncrement = 0.01f;
-	public float cameraSpeedLimit = 0.08f;
+	public float cameraSpeedIncrement = 0.5f;
+	public float cameraSpeedLimit = 3f;
 	public float cameraDrag = 0.0001f;
-	public int tiltAmount = 100;
+	public int tiltAmount = 1;
 	public int tiltMax = 10;
 
 	// public for testing purposes
@@ -15,6 +15,7 @@ public class CameraControls : MonoBehaviour {
 
 	void Awake() {
 		originalRotation = transform.rotation;
+		//velocity = transform.forward;
 	}
 
 	void Update() {
@@ -29,19 +30,21 @@ public class CameraControls : MonoBehaviour {
 		// Left and right, respectively
 
 		if (Keyboard.current.aKey.isPressed) {
-			velocity -= new Vector3(cameraSpeedIncrement, 0, 0);
+			velocity -= transform.right * cameraSpeedIncrement; // (cameraSpeedIncrement, 0, 0);
 		}
 		if (Keyboard.current.dKey.isPressed) {
-			velocity += new Vector3(cameraSpeedIncrement, 0, 0);
+			velocity += transform.right * cameraSpeedIncrement; //(cameraSpeedIncrement, 0, 0);
 		}
 		
 		// Forwards and backwards, respectively
 		
 		if (Keyboard.current.wKey.isPressed) {
-			velocity += new Vector3(0, 0, cameraSpeedIncrement);
+			velocity += transform.forward * cameraSpeedIncrement;
+			//velocity += new Vector3(0, 0, cameraSpeedIncrement);
 		}
 		if (Keyboard.current.sKey.isPressed) {
-			velocity -= new Vector3(0, 0, cameraSpeedIncrement);
+			velocity -= transform.forward * cameraSpeedIncrement;
+			//velocity -= new Vector3(0, 0, cameraSpeedIncrement);
 		}
 
 	
@@ -57,10 +60,10 @@ public class CameraControls : MonoBehaviour {
 		// Clamp
 		velocity.x = Mathf.Clamp(velocity.x, -cameraSpeedLimit, cameraSpeedLimit);
 		velocity.z = Mathf.Clamp(velocity.z, -cameraSpeedLimit, cameraSpeedLimit);
-
+		
 		// Apply
-		//transform.localPosition = transform.localPosition + velocity;		
-		transform.Translate(velocity, Space.Self);
+		velocity = new Vector3(velocity.x, 0, velocity.z);
+		transform.position = transform.position + velocity;
 
 		//   _______ _ _ _   
 		//  |__   __(_) | |  
@@ -70,8 +73,8 @@ public class CameraControls : MonoBehaviour {
 		//     |_|  |_|_|\__|
 		
 		Vector3 myRotation = new Vector3(0, 0, 0);
-		myRotation.z = -Mathf.Clamp(velocity.x * tiltAmount, -tiltMax, tiltMax);
-		myRotation.x = -Mathf.Clamp(velocity.z * tiltAmount, -tiltMax, tiltMax);
+		myRotation.x = Mathf.Clamp(velocity.x * tiltAmount, -tiltMax, tiltMax);
+		myRotation.z = Mathf.Clamp(velocity.z * tiltAmount, -tiltMax, tiltMax);
 
 		transform.rotation = originalRotation * Quaternion.Euler(myRotation);
 

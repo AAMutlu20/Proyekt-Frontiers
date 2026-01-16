@@ -36,4 +36,8 @@ public class Tools : MonoBehaviour {
 
 	    return true;
 	}
+	public Vector3 PredictTargetPosition(Transform target, float time) {
+		Rigidbody rb = target.GetComponent<Rigidbody>();
+		return target.position + rb.linearVelocity * time;
+	}
 }

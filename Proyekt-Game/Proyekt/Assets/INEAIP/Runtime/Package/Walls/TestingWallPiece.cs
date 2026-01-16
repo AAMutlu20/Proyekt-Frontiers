@@ -47,9 +47,9 @@ namespace irminNavmeshEnemyAiUnityPackage
         {
             _destroyed = true;
             Debug.Log($"Wall: {name} destroyed");
-            Vector3 worldCenter = _wallCheckDifficultMovementVolume.transform.TransformPoint(_wallCheckDifficultMovementVolume.center);
-            Vector3 worldSize = Vector3.Scale(_wallCheckDifficultMovementVolume.size, _wallCheckDifficultMovementVolume.transform.lossyScale);
-            Bounds createdBounds = new(worldCenter, new Vector3(4000, 4000, 4000));
+            //Vector3 worldCenter = _wallCheckDifficultMovementVolume.transform.TransformPoint(_wallCheckDifficultMovementVolume.center);
+            //Vector3 worldSize = Vector3.Scale(_wallCheckDifficultMovementVolume.size, _wallCheckDifficultMovementVolume.transform.lossyScale);
+            //Bounds createdBounds = new(worldCenter, new Vector3(4000, 4000, 4000));
             _wallCheckDifficultMovementVolume.enabled = false;
             _visualParent.SetActive(false);
             _boxCollider.enabled = false;
@@ -59,10 +59,10 @@ namespace irminNavmeshEnemyAiUnityPackage
             //NavMeshSurfaceSystem.Singleton.Rebake(createdBounds);
         }
 
-        public bool Damage(float pDamage)
+        public bool Damage(float pDamage, IDamagable _attackingIDamagable)
         {
             Debug.Log($"Wall: {name} being damaged for {pDamage}");
-            return _healthSystem.Damage(pDamage);
+            return _healthSystem.Damage(pDamage, _attackingIDamagable);
         }
 
         public float GetAttackRadius()
