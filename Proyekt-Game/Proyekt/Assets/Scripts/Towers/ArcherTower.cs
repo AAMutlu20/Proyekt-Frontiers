@@ -1,6 +1,5 @@
 using UnityEngine;
 
-
 public class ArcherTower : MonoBehaviour {
 	// Commented out because it is redundant if the arc is computed using arrowSpeed.
 	public float range = 20f;
@@ -28,7 +27,7 @@ public class ArcherTower : MonoBehaviour {
 		);
 
 		if (hits.Length == 0) { return; }
-
+//transform.RotateAround
 		Transform closestEnemy = null;
 		float closestDistance = Mathf.Infinity;
 
@@ -48,22 +47,37 @@ public class ArcherTower : MonoBehaviour {
 
 	void tryShoot(Transform target) {
 		if (Time.time - lastFiredShot > (60 / fireRate)) {
-			if (Tools.SolveBallisticArc(
+			Shoot(firePoint, target, arrowPrefab.GetComponent<Rigidbody>(), arrowSpeed);
+		}
+	}
+
+	public void Shoot(
+		Transform firePoint,
+		Transform target,
+		Rigidbody targetRb,
+		float speed
+	) {
+		float gravity = Mathf.Abs(Physics.gravity.y);
+
+		if (Tools.SolveMovingTargetBallisticArc(
+			firePoint.position,
+			target.position,
+			targetRb.linearVelocity,
+			speed,
+			gravity,
+			10,
+			out Vector3 dir))
+		{
+			Debug.Log(dir);
+			GameObject arrow = Instantiate(
+				arrowPrefab,
 				firePoint.position,
-				//Tools.PredictTargetPosition(transform.position),
-				transform.position,
-				arrowSpeed,
-				Mathf.Abs(Physics.gravity.y),
-				out Vector3 dir
-			)) {
-				GameObject arrow = Instantiate(arrowPrefab, firePoint.position, Quaternion.LookRotation(dir));
-				Rigidbody rb = arrow.GetComponent<Rigidbody>();
-				rb.linearVelocity = dir * arrowSpeed;
-				lastFiredShot = Time.time;
-			}
-		} else {
-			Debug.Log("INFO: tried to shoot, but shooting is on cooldown! (");
-			Debug.Log(Time.time);
+				Quaternion.LookRotation(dir)
+			);
+
+			Rigidbody rb = arrow.GetComponent<Rigidbody>();
+			rb.linearVelocity = dir * speed;
+			lastFiredShot = Time.time;
 		}
 	}
 }
