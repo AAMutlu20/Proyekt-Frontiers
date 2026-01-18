@@ -26,7 +26,11 @@ namespace SimpleFolderIcon.Editor
         {
             foreach (string str in assets)
             {
-                if (ReplaceSeparatorChar(Path.GetDirectoryName(str)) == "Packages/" + AssetsPath)
+                string directory = str.Contains("/")
+                    ? str.Substring(0, str.LastIndexOf('/'))
+                    : string.Empty;
+
+                if (directory == $"Packages/{AssetsPath}")
                 {
                     return true;
                 }
