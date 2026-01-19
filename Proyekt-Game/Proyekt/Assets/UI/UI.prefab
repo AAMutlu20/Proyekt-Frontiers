@@ -367,7 +367,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &5581153835865821374
 RectTransform:
   m_ObjectHideFlags: 0
@@ -576,18 +576,6 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 8975863341846851164}
         m_TargetAssemblyTypeName: UIOpenClose, Assembly-CSharp
-        m_MethodName: OpenUI
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 8975863341846851164}
-        m_TargetAssemblyTypeName: UIOpenClose, Assembly-CSharp
         m_MethodName: CloseUI
         m_Mode: 1
         m_Arguments:
@@ -607,12 +595,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 1089477030469921099}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9a1a756c8a3c1664c9c71090585cd3b8, type: 3}
+  m_Script: {fileID: 11500000, guid: a13778c46fc075f449f42bafc015ce9f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UIOpenClose
-  UIToOpen: {fileID: 6184370663638881792}
-  UIToClose: {fileID: 824838182068051160}
-  UIToClose2: {fileID: 0}
+  UIToOpen: {fileID: 0}
+  UIToClose: {fileID: 6184370663638881792}
+  UIToClose2: {fileID: 824838182068051160}
 --- !u!1 &1121127537470127747
 GameObject:
   m_ObjectHideFlags: 0
@@ -757,12 +745,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 1121127537470127747}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9a1a756c8a3c1664c9c71090585cd3b8, type: 3}
+  m_Script: {fileID: 11500000, guid: a13778c46fc075f449f42bafc015ce9f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UIOpenClose
   UIToOpen: {fileID: 0}
   UIToClose: {fileID: 8161615100986546200}
-  UIToClose2: {fileID: 0}
+  UIToClose2: {fileID: 8494959061522831935}
 --- !u!1 &1225378363167798657
 GameObject:
   m_ObjectHideFlags: 0
@@ -1656,7 +1644,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1638709913193484406}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9a1a756c8a3c1664c9c71090585cd3b8, type: 3}
+  m_Script: {fileID: 11500000, guid: a13778c46fc075f449f42bafc015ce9f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UIOpenClose
   UIToOpen: {fileID: 6184370663638881792}
@@ -1843,7 +1831,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1686969320661323881}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9a1a756c8a3c1664c9c71090585cd3b8, type: 3}
+  m_Script: {fileID: 11500000, guid: a13778c46fc075f449f42bafc015ce9f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UIOpenClose
   UIToOpen: {fileID: 824838182068051160}
@@ -3773,12 +3761,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 3971469857966468809}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9a1a756c8a3c1664c9c71090585cd3b8, type: 3}
+  m_Script: {fileID: 11500000, guid: a13778c46fc075f449f42bafc015ce9f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UIOpenClose
   UIToOpen: {fileID: 8161615100986546200}
   UIToClose: {fileID: 6184370663638881792}
-  UIToClose2: {fileID: 824838182068051160}
+  UIToClose2: {fileID: 1686969320661323881}
 --- !u!1 &4015548453914686456
 GameObject:
   m_ObjectHideFlags: 0
@@ -6298,11 +6286,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 6737197899214155344}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9a1a756c8a3c1664c9c71090585cd3b8, type: 3}
+  m_Script: {fileID: 11500000, guid: a13778c46fc075f449f42bafc015ce9f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UIOpenClose
   UIToOpen: {fileID: 8494959061522831935}
-  UIToClose: {fileID: 8494959061522831935}
+  UIToClose: {fileID: 0}
   UIToClose2: {fileID: 0}
 --- !u!1 &6780983990088854140
 GameObject:
