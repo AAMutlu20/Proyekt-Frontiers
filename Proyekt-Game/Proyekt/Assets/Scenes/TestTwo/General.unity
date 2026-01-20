@@ -420,7 +420,14 @@ MonoBehaviour:
   pathDepth: 0.3
   pathRandomness: 0.2
   addPathSides: 1
+  propDefinitions:
+  - {fileID: 11400000, guid: ceb569d25a5f0884f8cc0792b0756563, type: 2}
+  - {fileID: 11400000, guid: 0c7d1f12ef82fbd4bb89d364e348ea06, type: 2}
+  - {fileID: 11400000, guid: 9a8d750c521aca24e8b023399b4a7e54, type: 2}
+  generateProps: 1
+  randomBlockerChance: 0.05
   terrainMaterial: {fileID: 2100000, guid: f9fd900b7dd8d954280967857bf1d3be, type: 2}
+  gridOverlayMaterial: {fileID: 2100000, guid: 3d021334f28de954b8c0338be62e6fb8, type: 2}
   enemyPrefab: {fileID: 2617255769880434715, guid: 475ee09d2b6b94d4d8e6f299ba6a456d, type: 3}
   testBuildingPrefab: {fileID: 6085295438925424134, guid: 34a1d86b56bffe8489cade204bfd96cb, type: 3}
 --- !u!4 &2040218745

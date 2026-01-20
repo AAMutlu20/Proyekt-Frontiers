@@ -11,12 +11,24 @@ namespace Generation.TrueGen.Systems
         [SerializeField] private Camera mainCamera;
         
         [Header("Settings")]
-        [SerializeField] private LayerMask terrainLayer;
+        [SerializeField] private LayerMask terrainLayer = -1; // Default to everything
+        
+        /// <summary>
+        /// Initialize with chunk grid (for runtime setup)
+        /// </summary>
+        public void Initialize(ChunkGrid grid)
+        {
+            chunkGrid = grid;
+        }
         
         private void Start()
         {
             if (!mainCamera)
                 mainCamera = Camera.main;
+            
+            // Auto-find ChunkGrid if not set
+            if (!chunkGrid)
+                chunkGrid = GetComponent<ChunkGrid>();
         }
         
         /// <summary>
@@ -77,6 +89,12 @@ namespace Generation.TrueGen.Systems
         /// </summary>
         public ChunkNode GetChunkUnderMouse()
         {
+            if (!chunkGrid)
+            {
+                Debug.LogWarning("BuildingPlacement: ChunkGrid is null!");
+                return null;
+            }
+            
             var mousePos = Mouse.current.position.ReadValue();
             var ray = mainCamera.ScreenPointToRay(mousePos);
             

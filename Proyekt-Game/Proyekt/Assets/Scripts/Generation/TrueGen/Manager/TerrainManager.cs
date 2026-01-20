@@ -1,6 +1,7 @@
 using Generation.TrueGen.Core;
 using Generation.TrueGen.Generation;
 using Generation.TrueGen.Systems;
+using Generation.TrueGen.Visuals;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -20,8 +21,14 @@ namespace Generation.TrueGen.Manager
         [SerializeField] private float pathRandomness = 0.2f;
         [SerializeField] private bool addPathSides = true;
         
+        [Header("Props")]
+        [SerializeField] private PropDefinition[] propDefinitions;
+        [SerializeField] private bool generateProps = true;
+        [SerializeField] private float randomBlockerChance = 0.05f;
+        
         [Header("Materials")]
         [SerializeField] private Material terrainMaterial;
+        [SerializeField] private Material gridOverlayMaterial;
         
         [Header("Test Prefabs")]
         [SerializeField] private GameObject enemyPrefab;
@@ -62,6 +69,12 @@ namespace Generation.TrueGen.Manager
             var pathChunks = pathGen.GeneratePath(entryChunk, exitChunk, pathRandomness);
             PathGenerator.ApplyPathToChunks(pathChunks, pathDepth);
             
+            // Step 3.5: Add random blockers
+            if (randomBlockerChance > 0)
+            {
+                PropGenerator.AddRandomBlockers(_chunks, pathChunks, seed + 2, randomBlockerChance);
+            }
+            
             // Step 4: Build mesh
             var meshBuilder = new TerrainMeshBuilder();
             var terrainMesh = meshBuilder.BuildCombinedMesh(_chunks, addPathSides);
@@ -84,8 +97,28 @@ namespace Generation.TrueGen.Manager
             _chunkGrid = _terrainObject.AddComponent<ChunkGrid>();
             _chunkGrid.Initialize(_chunks, pathChunks);
             
-            // Step 7: Add BuildingPlacement component
-            _terrainObject.AddComponent<BuildingPlacement>();
+            // Step 7: Add BuildingPlacement component and INITIALIZE IT
+            var buildingPlacement = _terrainObject.AddComponent<BuildingPlacement>();
+            buildingPlacement.Initialize(_chunkGrid); // Pass the ChunkGrid reference
+            
+            // Step 8: Add grid overlay and configure it
+            if (gridOverlayMaterial)
+            {
+                var gridOverlay = _terrainObject.AddComponent<GridOverlayController>();
+                gridOverlay.Initialize(gridOverlayMaterial);
+            }
+            
+            // Step 9: Generate props
+            if (generateProps && propDefinitions is { Length: > 0 })
+            {
+                var propGen = new PropGenerator(seed + 3, _terrainObject.transform);
+                propGen.GenerateProps(_chunks, pathChunks, propDefinitions);
+                
+                // Rebuild mesh to reflect blocked chunks' colors
+                terrainMesh = meshBuilder.BuildCombinedMesh(_chunks, addPathSides);
+                mf.mesh = terrainMesh;
+                mc.sharedMesh = terrainMesh;
+            }
             
             Debug.Log($"✓ Generated terrain: {gridWidth}x{gridHeight} chunks, {pathChunks.Count} path chunks");
         }
