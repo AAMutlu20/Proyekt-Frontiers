@@ -893,7 +893,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6ebffc5af5c12b3478b6c60dd36ac929, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyTracker
-  _economy: {fileID: 0}
+  _economy: {fileID: 227813987}
   _terrainManager: {fileID: 2040218744}
   _healthSystem: {fileID: 790022235}
   _trackedEnemies: []

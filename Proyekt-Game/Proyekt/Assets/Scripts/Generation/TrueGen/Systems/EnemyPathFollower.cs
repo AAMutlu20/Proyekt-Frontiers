@@ -23,15 +23,14 @@ namespace Generation.TrueGen.Systems
         public float DamageAtEndOfPath { get { return damageAtEndOfPath; } }
         public int CoinsGainAtDefeat { get { return coinsGainedAtDefeat; } }
 
-        public UnityEvent<EnemyPathFollower> OnPathCompleteEvent;
-        public UnityEvent<int> OnEnemyDestroyed;
+        public UnityEvent<EnemyPathFollower> OnPathCompleteEvent = new();
+        public UnityEvent<int> OnEnemyDestroyed = new();
         
         /// <summary>
         /// Initialize enemy with path chunks
         /// </summary>
         public void Initialize(List<ChunkNode> pathChunks)
         {
-            OnPathCompleteEvent = new UnityEvent<EnemyPathFollower>();
 
             _waypoints = new List<Vector3>();
             
