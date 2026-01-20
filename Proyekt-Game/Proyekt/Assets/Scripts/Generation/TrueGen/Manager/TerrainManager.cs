@@ -2,7 +2,10 @@ using Generation.TrueGen.Core;
 using Generation.TrueGen.Generation;
 using Generation.TrueGen.Systems;
 using Generation.TrueGen.Visuals;
+using irminNavmeshEnemyAiUnityPackage;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.InputSystem;
 
 namespace Generation.TrueGen.Manager
@@ -33,10 +36,17 @@ namespace Generation.TrueGen.Manager
         [Header("Test Prefabs")]
         [SerializeField] private GameObject enemyPrefab;
         [SerializeField] private GameObject testBuildingPrefab;
+
+        [Header("Building Spawning")]
+        [SerializeField] private SOS_BuildingDatabase buildingDatabase;
+        [SerializeField] private int selectedBuildIndex = 0;
+        [SerializeField] private int enemyLayer = 20;
         
         private ChunkNode[,] _chunks;
         private GameObject _terrainObject;
         private ChunkGrid _chunkGrid;
+
+        public UnityEvent<EnemyPathFollower> OnEnemySpawned;
 
         private void Update()
         {
@@ -45,7 +55,7 @@ namespace Generation.TrueGen.Manager
             var placer = GetComponentInChildren<BuildingPlacement>();
             if (placer)
             {
-                placer.TryPlaceBuildingAtMouse(testBuildingPrefab);
+                placer.TryPlaceBuildingAtMouse(buildingDatabase.GetTower(selectedBuildIndex));
             }
         }
         
@@ -143,9 +153,13 @@ namespace Generation.TrueGen.Manager
             
             if (!follower)
                 follower = enemy.AddComponent<EnemyPathFollower>();
+            IrminBaseHealthSystem followerHealthSystem = enemy.AddComponent<IrminBaseHealthSystem>();
+            followerHealthSystem.DestroyAtMinHealth = true;
+            followerHealthSystem.Faction = 1;
             
             follower.Initialize(_chunkGrid.PathChunks);
-            
+            follower.gameObject.layer = enemyLayer;
+            OnEnemySpawned?.Invoke(follower);
             Debug.Log("✓ Enemy spawned");
         }
         

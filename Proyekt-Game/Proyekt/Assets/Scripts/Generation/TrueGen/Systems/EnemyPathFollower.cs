@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Generation.TrueGen.Core;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace Generation.TrueGen.Systems
 {
@@ -9,18 +10,26 @@ namespace Generation.TrueGen.Systems
         [Header("Settings")]
         [SerializeField] private float moveSpeed = 5f;
         [SerializeField] private float waypointReachedDistance = 0.2f;
-        
+        [SerializeField] private float damageAtEndOfPath = 1;
+
+
         [Header("Debug")]
         [SerializeField] private bool showDebugInfo = true;
         
         private List<Vector3> _waypoints;
         private int _currentWaypointIndex;
+
+        public float DamageAtEndOfPath { get { return damageAtEndOfPath; } }
+
+        public UnityEvent<EnemyPathFollower> _onPathCompleteEvent;
         
         /// <summary>
         /// Initialize enemy with path chunks
         /// </summary>
         public void Initialize(List<ChunkNode> pathChunks)
         {
+            _onPathCompleteEvent = new UnityEvent<EnemyPathFollower>();
+
             _waypoints = new List<Vector3>();
             
             if (pathChunks == null || pathChunks.Count == 0)
@@ -101,6 +110,7 @@ namespace Generation.TrueGen.Systems
         {
             Debug.Log("✓ Enemy reached end of path!");
             // Destroy the enemy or handle completion
+            _onPathCompleteEvent?.Invoke(this);
             Destroy(gameObject);
         }
         
