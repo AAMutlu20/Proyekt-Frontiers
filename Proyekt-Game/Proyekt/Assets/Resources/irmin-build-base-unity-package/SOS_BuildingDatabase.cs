@@ -5,9 +5,9 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "SO_TowerDefenceTowersDatabase", menuName = "Scriptable Objects/SOS_TowerDefenceTowersDatabase")]
 public class SOS_BuildingDatabase : ScriptableObject
 {
-    [SerializeField] List<GameObject> _buildings = new();
+    [SerializeField] List<SOS_Building> _buildings = new();
 
-    public GameObject GetTower(int pIndex)
+    public SOS_Building GetTower(int pIndex)
     {
         return _buildings[pIndex];
     }

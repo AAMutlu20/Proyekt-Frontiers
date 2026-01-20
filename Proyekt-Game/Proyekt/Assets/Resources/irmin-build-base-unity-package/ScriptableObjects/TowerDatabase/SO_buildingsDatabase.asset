@@ -13,4 +13,5 @@ MonoBehaviour:
   m_Name: SO_buildingsDatabase
   m_EditorClassIdentifier: Assembly-CSharp::SOS_TowerDefenceTowersDatabase
   _buildings:
-  - {fileID: 125224942810221662, guid: 42ccedf63e40db945979cad2da1be646, type: 3}
+  - {fileID: 11400000, guid: 4341673c9118de84fbbfc2774aff7ab2, type: 2}
+  - {fileID: 11400000, guid: 258e871730172f747bce987bfeff65d6, type: 2}

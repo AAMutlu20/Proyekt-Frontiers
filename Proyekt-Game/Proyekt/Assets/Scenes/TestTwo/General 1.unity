@@ -148,6 +148,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 72927a59fd73e9207ace5a36b70f4073, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Economy
+  OnCoinAmountChanged:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!4 &227813988
 Transform:
   m_ObjectHideFlags: 0
@@ -290,6 +293,36 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
+--- !u!1 &451819373 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3725122022057859509, guid: 27ae1ad6d66222d48ae72939be8a91e9, type: 3}
+  m_PrefabInstance: {fileID: 796339338}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &451819375
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 451819373}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1899668a874f11b46ba2cd91d6fb3eb2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MoneyTextUpdater
+  _economyRef: {fileID: 227813987}
+  _coinAmountTextField: {fileID: 544736175}
+--- !u!114 &544736175 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5578746285999794223, guid: 27ae1ad6d66222d48ae72939be8a91e9, type: 3}
+  m_PrefabInstance: {fileID: 796339338}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
 --- !u!1 &640686462
 GameObject:
   m_ObjectHideFlags: 0
@@ -440,6 +473,26 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 553626428014535068, guid: 27ae1ad6d66222d48ae72939be8a91e9, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1809019949650900477, guid: 27ae1ad6d66222d48ae72939be8a91e9, type: 3}
+      propertyPath: m_text
+      value: 15 Gold
+      objectReference: {fileID: 0}
+    - target: {fileID: 1809019949650900477, guid: 27ae1ad6d66222d48ae72939be8a91e9, type: 3}
+      propertyPath: m_fontSize
+      value: 200
+      objectReference: {fileID: 0}
+    - target: {fileID: 2586895180740734434, guid: 27ae1ad6d66222d48ae72939be8a91e9, type: 3}
+      propertyPath: m_Type
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 2586895180740734434, guid: 27ae1ad6d66222d48ae72939be8a91e9, type: 3}
+      propertyPath: m_FillMethod
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3725122022057859509, guid: 27ae1ad6d66222d48ae72939be8a91e9, type: 3}
       propertyPath: m_Name
       value: UI
@@ -471,6 +524,14 @@ PrefabInstance:
     - target: {fileID: 6194346199432528916, guid: 27ae1ad6d66222d48ae72939be8a91e9, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Arguments.m_ObjectArgumentAssemblyTypeName
       value: UnityEngine.Object, UnityEngine
+      objectReference: {fileID: 0}
+    - target: {fileID: 6313484049889524910, guid: 27ae1ad6d66222d48ae72939be8a91e9, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6472910599328423930, guid: 27ae1ad6d66222d48ae72939be8a91e9, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8039674744462607478, guid: 27ae1ad6d66222d48ae72939be8a91e9, type: 3}
       propertyPath: m_LocalPosition.x
@@ -512,10 +573,21 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8146180945797435613, guid: 27ae1ad6d66222d48ae72939be8a91e9, type: 3}
+      propertyPath: m_text
+      value: 30 Gold
+      objectReference: {fileID: 0}
+    - target: {fileID: 8146180945797435613, guid: 27ae1ad6d66222d48ae72939be8a91e9, type: 3}
+      propertyPath: m_fontSize
+      value: 200
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3725122022057859509, guid: 27ae1ad6d66222d48ae72939be8a91e9, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 451819375}
   m_SourcePrefab: {fileID: 100100000, guid: 27ae1ad6d66222d48ae72939be8a91e9, type: 3}
 --- !u!1 &1577237569
 GameObject:
@@ -699,7 +771,7 @@ Canvas:
   m_AdditionalShaderChannelsFlag: 0
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
-  m_SortingOrder: 0
+  m_SortingOrder: -1
   m_TargetDisplay: 0
 --- !u!224 &1644721854
 RectTransform:
@@ -821,6 +893,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6ebffc5af5c12b3478b6c60dd36ac929, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyTracker
+  _economy: {fileID: 227813987}
   _terrainManager: {fileID: 2040218744}
   _healthSystem: {fileID: 790022235}
   _trackedEnemies: []
@@ -1011,6 +1084,7 @@ MonoBehaviour:
   buildingDatabase: {fileID: 11400000, guid: 206f84bd001051e4cbf8104f2f6e0ba6, type: 2}
   selectedBuildIndex: 0
   enemyLayer: 20
+  _economyRef: {fileID: 227813987}
   OnEnemySpawned:
     m_PersistentCalls:
       m_Calls: []
@@ -1039,6 +1113,6 @@ SceneRoots:
   - {fileID: 227813988}
   - {fileID: 790022236}
   - {fileID: 1838731774}
-  - {fileID: 1644721854}
   - {fileID: 640686465}
   - {fileID: 796339338}
+  - {fileID: 1644721854}
