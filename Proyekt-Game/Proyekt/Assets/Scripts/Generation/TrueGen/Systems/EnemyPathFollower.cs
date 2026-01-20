@@ -20,8 +20,12 @@ namespace Generation.TrueGen.Systems
         private List<Vector3> _waypoints;
         private int _currentWaypointIndex;
 
+<<<<<<< Updated upstream
         public float DamageAtEndOfPath { get { return damageAtEndOfPath; } }
         public int CoinsGainAtDefeat { get { return coinsGainedAtDefeat; } }
+=======
+        public float DamageAtEndOfPath => damageAtEndOfPath;
+>>>>>>> Stashed changes
 
         public UnityEvent<EnemyPathFollower> OnPathCompleteEvent = new();
         public UnityEvent<int> OnEnemyDestroyed = new();
@@ -79,7 +83,7 @@ namespace Generation.TrueGen.Systems
         private void MoveTowardsCurrentWaypoint()
         {
             var targetWaypoint = _waypoints[_currentWaypointIndex];
-            var previousPos = transform.position; // TODO May be useful later :D
+            var previousPos = transform.position; // TODO Check for previous position
             
             transform.position = Vector3.MoveTowards(
                 transform.position,
