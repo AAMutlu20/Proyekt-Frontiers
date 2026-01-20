@@ -155,7 +155,12 @@ namespace Generation.TrueGen.Manager
                 follower = enemy.AddComponent<EnemyPathFollower>();
             IrminBaseHealthSystem followerHealthSystem = enemy.AddComponent<IrminBaseHealthSystem>();
             followerHealthSystem.DestroyAtMinHealth = true;
+            FactionMemberComponent enemyFactionMemberComponet = enemy.AddComponent<FactionMemberComponent>();
+            followerHealthSystem.FactionMemberComponent = enemyFactionMemberComponet;
             followerHealthSystem.Faction = 1;
+
+            // Temporarily set hardcoded health
+            followerHealthSystem.ReAwaken(2);
             
             follower.Initialize(_chunkGrid.PathChunks);
             follower.gameObject.layer = enemyLayer;
