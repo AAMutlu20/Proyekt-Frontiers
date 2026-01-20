@@ -11,6 +11,7 @@ namespace Generation.TrueGen.Systems
         [SerializeField] private float moveSpeed = 5f;
         [SerializeField] private float waypointReachedDistance = 0.2f;
         [SerializeField] private float damageAtEndOfPath = 1;
+        [SerializeField] private int coinsGainedAtDefeat = 1;
 
 
         [Header("Debug")]
@@ -20,15 +21,17 @@ namespace Generation.TrueGen.Systems
         private int _currentWaypointIndex;
 
         public float DamageAtEndOfPath { get { return damageAtEndOfPath; } }
+        public int CoinsGainAtDefeat { get { return coinsGainedAtDefeat; } }
 
-        public UnityEvent<EnemyPathFollower> _onPathCompleteEvent;
+        public UnityEvent<EnemyPathFollower> OnPathCompleteEvent;
+        public UnityEvent<int> OnEnemyDestroyed;
         
         /// <summary>
         /// Initialize enemy with path chunks
         /// </summary>
         public void Initialize(List<ChunkNode> pathChunks)
         {
-            _onPathCompleteEvent = new UnityEvent<EnemyPathFollower>();
+            OnPathCompleteEvent = new UnityEvent<EnemyPathFollower>();
 
             _waypoints = new List<Vector3>();
             
@@ -110,7 +113,7 @@ namespace Generation.TrueGen.Systems
         {
             Debug.Log("✓ Enemy reached end of path!");
             // Destroy the enemy or handle completion
-            _onPathCompleteEvent?.Invoke(this);
+            OnPathCompleteEvent?.Invoke(this);
             Destroy(gameObject);
         }
         
@@ -150,5 +153,12 @@ namespace Generation.TrueGen.Systems
             Debug.Log($"Waypoint {_currentWaypointIndex}/{_waypoints?.Count ?? 0}");
             Debug.Log($"Speed: {moveSpeed}, Has waypoints: {_waypoints is { Count: > 0 }}");
         }
+
+        private void OnDestroy()
+        {
+            OnEnemyDestroyed?.Invoke(coinsGainedAtDefeat);
+        }
     }
+
+    
 }

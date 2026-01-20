@@ -8,6 +8,7 @@ using UnityEngine;
 
 public class EnemyTracker : MonoBehaviour
 {
+    [SerializeField] Economy _economy;
     [SerializeField] TerrainManager _terrainManager;
     [SerializeField] IrminBaseHealthSystem _healthSystem;
 
@@ -21,7 +22,13 @@ public class EnemyTracker : MonoBehaviour
     private void TrackEnemy(EnemyPathFollower enemy)
     {
         _trackedEnemies.Add(enemy);
-        enemy._onPathCompleteEvent.AddListener(EnemyCompletedPath);
+        enemy.OnPathCompleteEvent.AddListener(EnemyCompletedPath);
+        enemy.OnEnemyDestroyed.AddListener(EnemyDestroyed);
+    }
+
+    private void EnemyDestroyed(int coinsToGain)
+    {
+        _economy.AwardCoins(coinsToGain);
     }
 
     private void EnemyCompletedPath(EnemyPathFollower enemy)

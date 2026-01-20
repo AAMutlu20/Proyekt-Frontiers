@@ -41,6 +41,7 @@ namespace Generation.TrueGen.Manager
         [SerializeField] private SOS_BuildingDatabase buildingDatabase;
         [SerializeField] private int selectedBuildIndex = 0;
         [SerializeField] private int enemyLayer = 20;
+        [SerializeField] private Economy _economyRef;
         
         private ChunkNode[,] _chunks;
         private GameObject _terrainObject;
@@ -54,8 +55,19 @@ namespace Generation.TrueGen.Manager
             
             var placer = GetComponentInChildren<BuildingPlacement>();
             if (placer)
-            {
-                placer.TryPlaceBuildingAtMouse(buildingDatabase.GetTower(selectedBuildIndex));
+            {   
+                // If you can afford the building, place it
+                if(_economyRef.CanAfford(buildingDatabase.GetTower(selectedBuildIndex).BuildingCost))
+                {
+                    _economyRef.withDrag(buildingDatabase.GetTower(selectedBuildIndex).BuildingCost);
+                    placer.TryPlaceBuildingAtMouse(buildingDatabase.GetTower(selectedBuildIndex).Building);
+                }
+                else
+                {
+                    // We cannot afford the building
+                    Debug.Log("Cannot afford building");
+                }
+                
             }
         }
         
