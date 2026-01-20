@@ -153,15 +153,28 @@ namespace irminNavmeshEnemyAiUnityPackage
                 // Replaced by:
                 Vector3 origin = shootObject.transform.position;
                 Collider[] hits = Physics.OverlapSphere(origin, _explosionRadius, _enemyLayerMask);
+                Debug.Log($"Catapult shot. Found Damagables amount {hits.Length}");
                 Instantiate(_shotHitEffectPrefab, origin, Quaternion.identity);
                 foreach (Collider collider in hits)
                 {
-                    IDamagable foundIDamagable = collider.GetComponent<IDamagable>();
+                    var foundIDamagable = collider.gameObject.GetComponentsInChildren<IDamagable>();
+                    Debug.Log($"Founds {foundIDamagable.Length} in {collider.gameObject.name} [{foundIDamagable[0]}]");
                     if (foundIDamagable != null)
                     {
-                        Debug.Log($"Catapult damaging {foundIDamagable.GetAttackTargetTransform().name} for {_damage}");
-                        foundIDamagable.Damage(_damage, null);
-
+                        try
+                        {
+                            Debug.Log($"Catapult damaging for {_damage}");
+                            foundIDamagable[0].Damage(_damage, null);
+                            //var n = foundIDamagable[0].GetAttackTargetTransform().name;
+                            //Debug.Log(n);
+                        }catch (Exception e)
+                        {
+                            Debug.LogError(e);
+                        }
+                    }
+                    else
+                    {
+                        Debug.Log("couldn't find IDamagable");
                     }
                 }
                 Destroy(shootObject);

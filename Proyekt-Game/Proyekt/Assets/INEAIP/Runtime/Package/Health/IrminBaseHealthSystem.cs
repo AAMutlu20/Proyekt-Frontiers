@@ -31,7 +31,7 @@ namespace irminNavmeshEnemyAiUnityPackage
         [SerializeField] GameObjectPool _gameObjectPool;
 
 
-
+        public FactionMemberComponent FactionMemberComponent { get { return _factionMemberComponent; } set { _factionMemberComponent = value; } }
         public int Faction { get { return _factionMemberComponent.FactionID; } set { _factionMemberComponent.FactionID = value; } }
         public bool DestroyOnMinHealthReached { get { return _destroyOnMinHealthReached; } set { _destroyOnMinHealthReached = value; } }
 
@@ -78,6 +78,7 @@ namespace irminNavmeshEnemyAiUnityPackage
 
         public void ReAwaken(int pMaxHealth)
         {
+            _maxHealth = pMaxHealth;
             Awake();
         }
 
