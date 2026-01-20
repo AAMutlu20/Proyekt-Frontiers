@@ -58,7 +58,8 @@ namespace irminNavmeshEnemyAiUnityPackage
         /// When the health reaches the maximum health.
         /// </summary>
         public UnityAction OnMaxHealthReached;
-
+         
+        public bool DestroyAtMinHealth { get { return _destroyOnMinHealthReached; } set { _destroyOnMinHealthReached = value; } }
         public bool Invulnerable { get { return _invulnerable; } set { _invulnerable = value; } }
 
         protected virtual void Awake()
@@ -73,6 +74,11 @@ namespace irminNavmeshEnemyAiUnityPackage
                 _invulnerable = true;
                 _temporaryInvulnerablityTimer.StartTimer();
             }
+        }
+
+        public void ReAwaken(int pMaxHealth)
+        {
+            Awake();
         }
 
         protected virtual void Update()

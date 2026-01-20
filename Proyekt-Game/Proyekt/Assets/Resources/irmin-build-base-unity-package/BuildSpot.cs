@@ -7,8 +7,8 @@ public class BuildSpot : MonoBehaviour, IHoverable
     [SerializeField] private GameObject _hoveredVisual;
     [SerializeField] private GameObject _noTowerBuildVisual;
 
-    [SerializeField] private SOS_TowerDefenceTowersDatabase _towerDefenceDatabase;
-    [SerializeField] private SOS_Tower _selectedTower;
+    [SerializeField] private SOS_BuildingDatabase _towerDefenceDatabase;
+    [SerializeField] private SOS_Building _selectedTower;
 
     private void Start()
     {
@@ -37,8 +37,9 @@ public class BuildSpot : MonoBehaviour, IHoverable
     public void BuildTower(int pDatabaseIndex)
     {
         _noTowerBuildVisual.SetActive(false);
-        _selectedTower = _towerDefenceDatabase.GetTower(pDatabaseIndex);
-        Instantiate(_selectedTower.TowerPrefab, transform);
+        // Disabled because of the database rework.
+        //_selectedTower = _towerDefenceDatabase.GetTower(pDatabaseIndex);
+        //Instantiate(_selectedTower.TowerPrefab, transform);
 
     }
 }

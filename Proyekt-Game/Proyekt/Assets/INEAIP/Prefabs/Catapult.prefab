@@ -191,7 +191,7 @@ MonoBehaviour:
   OnNoLongerDetectedGameObject:
     m_PersistentCalls:
       m_Calls: []
-  _sphereCollider: {fileID: 4026227970230912324}
+  _collider: {fileID: 0}
 --- !u!135 &4026227970230912324
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -347,11 +347,17 @@ MonoBehaviour:
     _time: 5
     _timerActive: 0
     _reverse: 0
+  _shootTimer:
+    _currentTime: 0
+    _time: 0
+    _timerActive: 0
+    _reverse: 0
   _targetTransform: {fileID: 0}
   _height: 5
   _animationDuration: 2
   _doTweenEase: 1
   _objectToShootPrefab: {fileID: 3903611909489795968, guid: 42f9dbb87f79bff43bd9401a23ff1283, type: 3}
+  _shotHitEffectPrefab: {fileID: 3352353319357137977, guid: 670491c8c5b787445afa2c189361f155, type: 3}
   _catapultAnimator: {fileID: 8891787928721767779}
   _catapultSlingAnimationtriggerName: StartSling
   _currentlySpawnedShootObject: {fileID: 0}

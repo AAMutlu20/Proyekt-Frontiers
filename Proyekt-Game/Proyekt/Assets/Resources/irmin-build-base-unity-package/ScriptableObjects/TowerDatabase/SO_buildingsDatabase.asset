@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b57e76a0a8a6ae34faf82aa4273463f6, type: 3}
-  m_Name: SO_TowerDefenceTowersDatabase
+  m_Name: SO_buildingsDatabase
   m_EditorClassIdentifier: Assembly-CSharp::SOS_TowerDefenceTowersDatabase
-  _towers:
-  - {fileID: 11400000, guid: 4341673c9118de84fbbfc2774aff7ab2, type: 2}
+  _buildings:
+  - {fileID: 125224942810221662, guid: 42ccedf63e40db945979cad2da1be646, type: 3}

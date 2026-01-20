@@ -14,6 +14,7 @@ namespace irminNavmeshEnemyAiUnityPackage
         // [SerializeField] private FactionMemberComponent _factionMemberComponent; 
 
         [SerializeField] IrminTimer _shootCooldownTimer = new();
+        [SerializeField] IrminTimer _shootTimer = new();
 
         [SerializeField] private Transform _targetTransform;
         [SerializeField] private float _height;
@@ -24,6 +25,7 @@ namespace irminNavmeshEnemyAiUnityPackage
         //[SerializeField] private float _heightPerDistance;
 
         [SerializeField] private GameObject _objectToShootPrefab;
+        [SerializeField] private GameObject _shotHitEffectPrefab;
 
         [SerializeField] private Animator _catapultAnimator;
         [SerializeField] private string _catapultSlingAnimationtriggerName;
@@ -46,25 +48,37 @@ namespace irminNavmeshEnemyAiUnityPackage
             _catapultTargetDetectionSystem.OnDetectedNewGameObjectObject.AddListener(DetectedNewPossibleTarget);
             _catapultTargetDetectionSystem.OnNoLongerDetectedGameObject.AddListener(NoLongerDetectionPossibleTarget);
             _shootCooldownTimer.OnTimeElapsed += ShootCatapultWithCooldown;
-            
+            _shootTimer.OnTimeElapsed += Shoot;
+
         }
 
-        
+
 
         private void Update()
         {
             _shootCooldownTimer.UpdateTimer(Time.deltaTime);
+            _shootTimer.UpdateTimer(Time.deltaTime);
         }
 
         private void DetectedNewPossibleTarget(GameObject detectedGameObject)
         {
             if (_targetTransform == null)
             {
+                bool targetWasNullBeforeThis = false;
+                if (_targetTransform == null) { targetWasNullBeforeThis = true; }
                 _targetTransform = detectedGameObject.transform;
                 _catapultYRotationSystem.Target = detectedGameObject.transform;
                 // If the timer is paused
-                _shootCooldownTimer.ResetCurrentTime();
-                _shootCooldownTimer.StartTimer();
+                if (targetWasNullBeforeThis && _shootCooldownTimer.TimerActive == false)
+                {
+                    ShootCatapultWithCooldown();
+                }
+                else
+                {
+                    _shootCooldownTimer.ResetCurrentTime();
+                    _shootCooldownTimer.StartTimer();
+                }
+
             }
         }
 
@@ -78,7 +92,7 @@ namespace irminNavmeshEnemyAiUnityPackage
                 {
                     _targetTransform = foundNewTarget.transform;
                 }
-                    
+
             }
         }
 
@@ -90,6 +104,8 @@ namespace irminNavmeshEnemyAiUnityPackage
             _currentlySpawnedShootObject.transform.localPosition = Vector3.zero;
             _currentlySpawnedShootObject.transform.rotation = _slingObjectParent.rotation;
             _catapultAnimator.SetTrigger(_catapultSlingAnimationtriggerName);
+            _shootTimer.ResetCurrentTime();
+            _shootTimer.StartTimer();
             //Shoot();
 
             _shootCooldownTimer.ResetCurrentTime();
@@ -137,16 +153,18 @@ namespace irminNavmeshEnemyAiUnityPackage
                 // Replaced by:
                 Vector3 origin = shootObject.transform.position;
                 Collider[] hits = Physics.OverlapSphere(origin, _explosionRadius, _enemyLayerMask);
+                Instantiate(_shotHitEffectPrefab, origin, Quaternion.identity);
                 foreach (Collider collider in hits)
                 {
                     IDamagable foundIDamagable = collider.GetComponent<IDamagable>();
-                    if(foundIDamagable != null)
+                    if (foundIDamagable != null)
                     {
                         Debug.Log($"Catapult damaging {foundIDamagable.GetAttackTargetTransform().name} for {_damage}");
                         foundIDamagable.Damage(_damage, null);
+
                     }
                 }
-
+                Destroy(shootObject);
             });
         }
     }
