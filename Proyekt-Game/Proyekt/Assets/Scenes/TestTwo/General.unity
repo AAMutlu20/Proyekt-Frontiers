@@ -119,313 +119,6 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &204853129
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 204853132}
-  - component: {fileID: 204853131}
-  - component: {fileID: 204853130}
-  m_Layer: 0
-  m_Name: Generated
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 2147483647
-  m_IsActive: 1
---- !u!154 &204853130
-TerrainCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 204853129}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_TerrainData: {fileID: 15600000, guid: 9f50c51d6b15ea44290ffff028d455aa, type: 2}
-  m_EnableTreeColliders: 1
---- !u!218 &204853131
-Terrain:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 204853129}
-  m_Enabled: 1
-  serializedVersion: 6
-  m_TerrainData: {fileID: 15600000, guid: 9f50c51d6b15ea44290ffff028d455aa, type: 2}
-  m_TreeDistance: 5000
-  m_TreeBillboardDistance: 50
-  m_TreeCrossFadeLength: 5
-  m_TreeMaximumFullLODCount: 50
-  m_DetailObjectDistance: 80
-  m_DetailObjectDensity: 1
-  m_HeightmapPixelError: 5
-  m_SplatMapDistance: 1000
-  m_HeightmapMinimumLODSimplification: 0
-  m_HeightmapMaximumLOD: 0
-  m_ShadowCastingMode: 2
-  m_DrawHeightmap: 1
-  m_DrawInstanced: 0
-  m_DrawTreesAndFoliage: 1
-  m_StaticShadowCaster: 0
-  m_IgnoreQualitySettings: 0
-  m_ReflectionProbeUsage: 1
-  m_MaterialTemplate: {fileID: 2100000, guid: 594ea882c5a793440b60ff72d896021e, type: 2}
-  m_BakeLightProbesForTrees: 1
-  m_PreserveTreePrototypeLayers: 0
-  m_DeringLightProbesForTrees: 1
-  m_ReceiveGI: 1
-  m_ScaleInLightmap: 0.0256
-  m_LightmapParameters: {fileID: 15203, guid: 0000000000000000f000000000000000, type: 0}
-  m_GroupingID: 0
-  m_RenderingLayerMask: 1
-  m_AllowAutoConnect: 1
-  m_EnableHeightmapRayTracing: 1
-  m_EnableTreesAndDetailsRayTracing: 0
-  m_TreeMotionVectorModeOverride: 3
---- !u!4 &204853132
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 204853129}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &248687394
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 248687397}
-  - component: {fileID: 248687396}
-  - component: {fileID: 248687399}
-  - component: {fileID: 248687398}
-  m_Layer: 0
-  m_Name: Test
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!218 &248687396
-Terrain:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 248687394}
-  m_Enabled: 1
-  serializedVersion: 6
-  m_TerrainData: {fileID: 15600000, guid: 9f50c51d6b15ea44290ffff028d455aa, type: 2}
-  m_TreeDistance: 5000
-  m_TreeBillboardDistance: 50
-  m_TreeCrossFadeLength: 5
-  m_TreeMaximumFullLODCount: 50
-  m_DetailObjectDistance: 80
-  m_DetailObjectDensity: 1
-  m_HeightmapPixelError: 5
-  m_SplatMapDistance: 1000
-  m_HeightmapMinimumLODSimplification: 0
-  m_HeightmapMaximumLOD: 0
-  m_ShadowCastingMode: 2
-  m_DrawHeightmap: 1
-  m_DrawInstanced: 0
-  m_DrawTreesAndFoliage: 1
-  m_StaticShadowCaster: 0
-  m_IgnoreQualitySettings: 0
-  m_ReflectionProbeUsage: 1
-  m_MaterialTemplate: {fileID: 0}
-  m_BakeLightProbesForTrees: 1
-  m_PreserveTreePrototypeLayers: 0
-  m_DeringLightProbesForTrees: 1
-  m_ReceiveGI: 1
-  m_ScaleInLightmap: 1
-  m_LightmapParameters: {fileID: 15203, guid: 0000000000000000f000000000000000, type: 0}
-  m_GroupingID: 0
-  m_RenderingLayerMask: 1
-  m_AllowAutoConnect: 0
-  m_EnableHeightmapRayTracing: 1
-  m_EnableTreesAndDetailsRayTracing: 0
-  m_TreeMotionVectorModeOverride: 3
---- !u!4 &248687397
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 248687394}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1532.6532, y: -0, z: 276.0753}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!154 &248687398
-TerrainCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 248687394}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_TerrainData: {fileID: 15600000, guid: 9f50c51d6b15ea44290ffff028d455aa, type: 2}
-  m_EnableTreeColliders: 1
---- !u!114 &248687399
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 248687394}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b8b31e76a1efac34598f4715db6c80d9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Generation.CanyonGenerator
-  terrainResolution: 513
-  terrainWidth: 400
-  terrainLength: 1000
-  terrainHeight: 250
-  canyonDepth: 125
-  canyonWidth: 150
-  canyonFloorWidth: 80
-  riverWidth: 10
-  riverDepth: 3
-  canyonMeander: 20
-  meanderFrequency: 0.008
-  canyonStartOffset: {x: 0, y: 0}
-  enableEndZone: 1
-  endZoneRadius: 120
-  endZoneWallThickness: 60
-  endZoneTransitionLength: 150
-  plateauHeight: 130
-  plateauNoiseScale: 300
-  plateauNoiseHeight: 6
-  plateauOctaves: 2
-  interiorPlateauCount: 0
-  interiorPlateauMinSize: 20
-  interiorPlateauMaxSize: 35
-  interiorPlateauHeight: 15
-  interiorPlateauHeightVariation: 5
-  floorTerraceCount: 0
-  terraceHeight: 8
-  terraceWidth: 15
-  sideCanyonCount: 12
-  sideCanyonLength: 40
-  sideCanyonWidth: 25
-  sideCanyonDepth: 30
-  sideCanyonBranchChance: 0.3
-  rockLayers:
-  - name: Kaibab Limestone
-    heightStart: 120
-    heightEnd: 150
-    hardness: 0.9
-    debugColor: {r: 0.9, g: 0.9, b: 0.85, a: 1}
-  - name: Toroweap Formation
-    heightStart: 110
-    heightEnd: 120
-    hardness: 0.6
-    debugColor: {r: 0.85, g: 0.8, b: 0.7, a: 1}
-  - name: Coconino Sandstone
-    heightStart: 95
-    heightEnd: 110
-    hardness: 0.95
-    debugColor: {r: 0.95, g: 0.92, b: 0.85, a: 1}
-  - name: Hermit Shale
-    heightStart: 85
-    heightEnd: 95
-    hardness: 0.4
-    debugColor: {r: 0.7, g: 0.4, b: 0.35, a: 1}
-  - name: Supai Group
-    heightStart: 60
-    heightEnd: 85
-    hardness: 0.7
-    debugColor: {r: 0.75, g: 0.45, b: 0.4, a: 1}
-  - name: Redwall Limestone
-    heightStart: 45
-    heightEnd: 60
-    hardness: 0.95
-    debugColor: {r: 0.65, g: 0.55, b: 0.5, a: 1}
-  - name: Muav Limestone
-    heightStart: 30
-    heightEnd: 45
-    hardness: 0.8
-    debugColor: {r: 0.6, g: 0.55, b: 0.5, a: 1}
-  - name: Bright Angel Shale
-    heightStart: 20
-    heightEnd: 30
-    hardness: 0.5
-    debugColor: {r: 0.5, g: 0.6, b: 0.55, a: 1}
-  - name: Tapeats Sandstone
-    heightStart: 10
-    heightEnd: 20
-    hardness: 0.85
-    debugColor: {r: 0.55, g: 0.5, b: 0.45, a: 1}
-  - name: Vishnu Schist
-    heightStart: 0
-    heightEnd: 10
-    hardness: 1
-    debugColor: {r: 0.3, g: 0.3, b: 0.35, a: 1}
-  layerSharpness: 0.8
-  layerNoiseScale: 100
-  layerNoiseStrength: 0.5
-  wallRoughness: 2
-  wallDetailScale: 80
-  wallOctaves: 3
-  wallSlopeReduction: 0.6
-  enableTerracing: 1
-  terraceInterval: 20
-  terraceSharpness: 0.3
-  enableSlumping: 1
-  slumpingStrength: 4
-  enableGameplayFlattening: 1
-  floorFlatness: 0.95
-  buildableZoneCount: 8
-  buildableZoneRadius: 25
-  buildableZoneHeight: 2
-  addAccessRamps: 0
-  rampWidth: 30
-  rampCount: 6
-  persistence: 0.5
-  lacunarity: 2
-  seed: 1145
-  noiseOffset: {x: 0, y: 0}
 --- !u!1 &399849821
 GameObject:
   m_ObjectHideFlags: 0
@@ -639,8 +332,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1906647873}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: -10}
+  m_LocalRotation: {x: 0.27824584, y: 0.014406919, z: -0.0041740304, w: 0.96039283}
+  m_LocalPosition: {x: 87.80225, y: 34.516243, z: 15.190695}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -690,11 +383,65 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
+--- !u!1 &2040218743
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2040218745}
+  - component: {fileID: 2040218744}
+  m_Layer: 0
+  m_Name: TerrainSystem
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2040218744
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2040218743}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 92740864c607ee34dbd22fa5be646cfc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Generation.TrueGen.Manager.TerrainManager
+  gridWidth: 20
+  gridHeight: 15
+  chunkSize: 10
+  distortionAmount: 2
+  seed: 12345
+  pathDepth: 0.3
+  pathRandomness: 0.2
+  addPathSides: 1
+  terrainMaterial: {fileID: 2100000, guid: f9fd900b7dd8d954280967857bf1d3be, type: 2}
+  enemyPrefab: {fileID: 2617255769880434715, guid: 475ee09d2b6b94d4d8e6f299ba6a456d, type: 3}
+  testBuildingPrefab: {fileID: 6085295438925424134, guid: 34a1d86b56bffe8489cade204bfd96cb, type: 3}
+--- !u!4 &2040218745
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2040218743}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: -0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 1906647876}
   - {fileID: 399849823}
-  - {fileID: 248687397}
-  - {fileID: 204853132}
+  - {fileID: 2040218745}
