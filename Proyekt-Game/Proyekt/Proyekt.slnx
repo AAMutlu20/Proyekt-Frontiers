@@ -5,5 +5,4 @@
   <Project Path="irminNavmeshEnemyAiUnityPackage.csproj" />
   <Project Path="IrminTimerPackage.Tools.csproj" />
   <Project Path="IrminStaticUtilities.Tools.csproj" />
-  <Project Path="Assembly-CSharp-Editor.csproj" />
 </Solution>
