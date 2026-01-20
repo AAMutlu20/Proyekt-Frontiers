@@ -158,6 +158,10 @@ namespace Generation.TrueGen.Manager
             FactionMemberComponent enemyFactionMemberComponet = enemy.AddComponent<FactionMemberComponent>();
             followerHealthSystem.FactionMemberComponent = enemyFactionMemberComponet;
             followerHealthSystem.Faction = 1;
+            Rigidbody enemyRigidBody = enemy.AddComponent<Rigidbody>();
+            enemyRigidBody.useGravity = false;
+            enemyRigidBody.isKinematic = true;
+
 
             // Temporarily set hardcoded health
             followerHealthSystem.ReAwaken(2);
