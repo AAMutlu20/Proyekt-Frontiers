@@ -1591,7 +1591,7 @@ MonoBehaviour:
   enemyPrefab: {fileID: 2617255769880434715, guid: 475ee09d2b6b94d4d8e6f299ba6a456d, type: 3}
   enemyLayer: 20
   buildingDatabase: {fileID: 11400000, guid: 206f84bd001051e4cbf8104f2f6e0ba6, type: 2}
-  selectedBuildIndex: 0
+  selectedBuildIndex: -1
   selectedBuildingPrefab: {fileID: 0}
   economyRef: {fileID: 227813987}
   OnEnemySpawned:

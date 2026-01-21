@@ -69,6 +69,8 @@ namespace Generation.TrueGen.Manager
             // Use building database if available
             if (buildingDatabase)
             {
+                // Cannot get tower if building index is invalid. Meaning no building is selected.
+                if (selectedBuildIndex < 0 || selectedBuildIndex! > buildingDatabase.GetBuildingCount() - 1) { Debug.Log("Cannot try to build tower because selected index is invalid. Usually means no building is selected"); return; }
                 buildingToPlace = buildingDatabase.GetTower(selectedBuildIndex).Building;
                 buildingCost = buildingDatabase.GetTower(selectedBuildIndex).BuildingCost;
             }
