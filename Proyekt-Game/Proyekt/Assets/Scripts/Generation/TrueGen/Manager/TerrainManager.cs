@@ -3,6 +3,7 @@ using Generation.TrueGen.Generation;
 using Generation.TrueGen.Systems;
 using Generation.TrueGen.Visuals;
 using irminNavmeshEnemyAiUnityPackage;
+using System;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
@@ -52,6 +53,7 @@ namespace Generation.TrueGen.Manager
         private WaveManager _waveManager;
 
         public UnityEvent<EnemyPathFollower> OnEnemySpawned;
+        public UnityEvent OnAllWavesCompleted;
 
         private void Update()
         {
@@ -156,6 +158,7 @@ namespace Generation.TrueGen.Manager
             if (enableWaveSystem)
             {
                 _waveManager = _terrainObject.AddComponent<WaveManager>();
+                _waveManager.OnAllWavesCompleted.AddListener(AllWavesCompleted);
                 _waveManager.Initialize(_chunkGrid, economyRef, enemyPrefab, enemyLayer);
     
                 // Forward wave manager's OnEnemySpawned to our own event
@@ -178,7 +181,13 @@ namespace Generation.TrueGen.Manager
             
             Debug.Log($"✓ Generated terrain: {gridWidth}x{gridHeight} chunks, {pathChunks.Count} path chunks");
         }
-        
+
+        // Bind All waves completed event so it can be assigned in the editor.
+        private void AllWavesCompleted()
+        {
+            OnAllWavesCompleted?.Invoke();
+        }
+
         [ContextMenu("Spawn Test Enemy")]
         public void SpawnTestEnemy()
         {

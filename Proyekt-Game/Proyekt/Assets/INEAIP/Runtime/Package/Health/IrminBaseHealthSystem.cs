@@ -54,6 +54,7 @@ namespace irminNavmeshEnemyAiUnityPackage
         /// When the health reaches the minimum health.
         /// </summary>
         public UnityAction OnMinHealthReached;
+        public UnityEvent OnMinHealthReachedUnityEvent;
         /// <summary>
         /// When the health reaches the maximum health.
         /// </summary>
@@ -74,6 +75,11 @@ namespace irminNavmeshEnemyAiUnityPackage
                 _invulnerable = true;
                 _temporaryInvulnerablityTimer.StartTimer();
             }
+        }
+
+        private void Start()
+        {
+            OnMinHealthReached += InvokeOnMinHealthReachedUnityEvent;
         }
 
         public void ReAwaken(float pMaxHealth)
@@ -281,6 +287,11 @@ namespace irminNavmeshEnemyAiUnityPackage
         public bool IsDestroyed()
         {
             throw new System.NotImplementedException();
+        }
+
+        private void InvokeOnMinHealthReachedUnityEvent()
+        {
+            OnMinHealthReachedUnityEvent?.Invoke();
         }
     }
 }
