@@ -5,6 +5,7 @@ using Generation.TrueGen.Visuals;
 using irminNavmeshEnemyAiUnityPackage;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 
 namespace Generation.TrueGen.Manager
@@ -40,7 +41,7 @@ namespace Generation.TrueGen.Manager
         [Header("Building System")]
         [SerializeField] private SOS_BuildingDatabase buildingDatabase;
         [SerializeField] private int selectedBuildIndex;
-        [SerializeField] private GameObject testBuildingPrefab;
+        [SerializeField] private GameObject selectedBuildingPrefab;
         
         [Header("Economy")]
         [SerializeField] private Economy economyRef;
@@ -54,12 +55,13 @@ namespace Generation.TrueGen.Manager
 
         private void Update()
         {
-            if (!Mouse.current.leftButton.wasPressedThisFrame) return;
+            // If the lefy mouse button wasn't pressed this frame or the mouse is over over a UI Game Object
+            if (!Mouse.current.leftButton.wasPressedThisFrame || EventSystem.current.IsPointerOverGameObject()) return;
             
             var placer = GetComponentInChildren<BuildingPlacement>();
             if (!placer) return;
             
-            GameObject buildingToPlace = testBuildingPrefab;
+            GameObject buildingToPlace = selectedBuildingPrefab;
             int buildingCost = 0;
             
             // Use building database if available
@@ -226,6 +228,14 @@ namespace Generation.TrueGen.Manager
                 color = Color.white
             };
             return mat;
+        }
+
+        public void SelectBuilding(int pIndex)
+        {
+            Debug.Log($"Selected building of index {pIndex} with name {buildingDatabase.GetTower(pIndex).Building.name}");
+            
+            selectedBuildingPrefab = buildingDatabase.GetTower(pIndex).Building;
+            selectedBuildIndex = pIndex;
         }
         
         public ChunkGrid GetChunkGrid() => _chunkGrid;
