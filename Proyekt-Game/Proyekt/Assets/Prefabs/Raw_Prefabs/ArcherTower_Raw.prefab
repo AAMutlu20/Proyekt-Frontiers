@@ -422,7 +422,7 @@ MonoBehaviour:
     m_Bits: 1048576
   firePoint: {fileID: 9179581834775248784}
   arrowSpeed: 10
-  arrowPrefab: {fileID: 845407463891757257, guid: 30cfecf731ea33243849b93b9bbb4869, type: 3}
+  arrowPrefab: {fileID: 6210907664736125676, guid: 244f036a2bd18fbd19323f932995b8aa, type: 3}
   fireRate: 60
 --- !u!1 &3678975974768374456
 GameObject:
