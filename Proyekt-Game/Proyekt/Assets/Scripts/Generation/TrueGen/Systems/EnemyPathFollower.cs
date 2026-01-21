@@ -13,17 +13,17 @@ namespace Generation.TrueGen.Systems
         [SerializeField] private float damageAtEndOfPath = 1;
         [SerializeField] private int coinsGainedAtDefeat = 1;
 
-
         [Header("Debug")]
-        [SerializeField] private bool showDebugInfo = true;
+        [SerializeField] private bool showDebugInfo = false;
         
         private List<Vector3> _waypoints;
         private int _currentWaypointIndex;
 
-        public float DamageAtEndOfPath { get { return damageAtEndOfPath; } }
-        public int CoinsGainAtDefeat { get { return coinsGainedAtDefeat; } }
+        public float DamageAtEndOfPath => damageAtEndOfPath;
+        public int CoinsGainAtDefeat => coinsGainedAtDefeat;
 
         public UnityEvent<EnemyPathFollower> OnPathCompleteEvent = new();
+        public UnityEvent<EnemyPathFollower> OnEnemyKilled = new(); // ADDED - passes self reference
         public UnityEvent<int> OnEnemyDestroyed = new();
         
         /// <summary>
@@ -31,7 +31,6 @@ namespace Generation.TrueGen.Systems
         /// </summary>
         public void Initialize(List<ChunkNode> pathChunks)
         {
-
             _waypoints = new List<Vector3>();
             
             if (pathChunks == null || pathChunks.Count == 0)
@@ -50,12 +49,37 @@ namespace Generation.TrueGen.Systems
             if (_waypoints.Count > 0)
             {
                 transform.position = _waypoints[0];
-                Debug.Log($"✓ Enemy initialized with {_waypoints.Count} waypoints at position {transform.position}");
+                if (showDebugInfo)
+                    Debug.Log($"✓ Enemy initialized with {_waypoints.Count} waypoints at position {transform.position}");
             }
             else
             {
                 Debug.LogError("EnemyPathFollower: Failed to create waypoints!");
             }
+        }
+        
+        /// <summary>
+        /// Set enemy movement speed (used by wave system)
+        /// </summary>
+        public void SetSpeed(float speed)
+        {
+            moveSpeed = speed;
+        }
+        
+        /// <summary>
+        /// Set damage dealt when reaching end
+        /// </summary>
+        public void SetDamage(float damage)
+        {
+            damageAtEndOfPath = damage;
+        }
+        
+        /// <summary>
+        /// Set coins gained on defeat
+        /// </summary>
+        public void SetCoinsReward(int coins)
+        {
+            coinsGainedAtDefeat = coins;
         }
         
         private void Update()
@@ -79,7 +103,6 @@ namespace Generation.TrueGen.Systems
         private void MoveTowardsCurrentWaypoint()
         {
             var targetWaypoint = _waypoints[_currentWaypointIndex];
-            var previousPos = transform.position; // TODO May be useful later :D
             
             transform.position = Vector3.MoveTowards(
                 transform.position,
@@ -94,12 +117,6 @@ namespace Generation.TrueGen.Systems
                 transform.rotation = Quaternion.LookRotation(direction);
             }
             
-            // Debug info
-            if (showDebugInfo && _currentWaypointIndex == 0)
-            {
-                Debug.Log($"Moving to waypoint {_currentWaypointIndex}/{_waypoints.Count - 1} at {targetWaypoint}");
-            }
-            
             // Check if reached waypoint
             var distanceToWaypoint = Vector3.Distance(transform.position, targetWaypoint);
             if (!(distanceToWaypoint < waypointReachedDistance)) return;
@@ -110,8 +127,10 @@ namespace Generation.TrueGen.Systems
         
         private void OnPathComplete()
         {
-            Debug.Log("✓ Enemy reached end of path!");
-            // Destroy the enemy or handle completion
+            if (showDebugInfo)
+                Debug.Log("✓ Enemy reached end of path!");
+            
+            // Invoke event before destroying
             OnPathCompleteEvent?.Invoke(this);
             Destroy(gameObject);
         }
@@ -155,9 +174,15 @@ namespace Generation.TrueGen.Systems
 
         private void OnDestroy()
         {
+            // Check if enemy was killed before reaching the end
+            if (_waypoints != null && _currentWaypointIndex < _waypoints.Count)
+            {
+                // Enemy was killed by towers - notify WaveManager to remove from list
+                OnEnemyKilled?.Invoke(this);
+            }
+            
+            // Always give coins when destroyed
             OnEnemyDestroyed?.Invoke(coinsGainedAtDefeat);
         }
     }
-
-    
 }

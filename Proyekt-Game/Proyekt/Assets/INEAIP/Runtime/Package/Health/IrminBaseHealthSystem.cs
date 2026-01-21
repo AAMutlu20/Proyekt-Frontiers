@@ -76,7 +76,7 @@ namespace irminNavmeshEnemyAiUnityPackage
             }
         }
 
-        public void ReAwaken(int pMaxHealth)
+        public void ReAwaken(float pMaxHealth)
         {
             _maxHealth = pMaxHealth;
             Awake();

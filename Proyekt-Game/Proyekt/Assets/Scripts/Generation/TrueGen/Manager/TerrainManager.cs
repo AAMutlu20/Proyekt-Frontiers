@@ -3,7 +3,6 @@ using Generation.TrueGen.Generation;
 using Generation.TrueGen.Systems;
 using Generation.TrueGen.Visuals;
 using irminNavmeshEnemyAiUnityPackage;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.InputSystem;
@@ -26,48 +25,69 @@ namespace Generation.TrueGen.Manager
         
         [Header("Props")]
         [SerializeField] private PropDefinition[] propDefinitions;
-        [SerializeField] private bool generateProps = true;
+        [SerializeField] private bool generateProps;
         [SerializeField] private float randomBlockerChance = 0.05f;
         
         [Header("Materials")]
         [SerializeField] private Material terrainMaterial;
         [SerializeField] private Material gridOverlayMaterial;
         
-        [Header("Test Prefabs")]
+        [Header("Wave System")]
+        [SerializeField] private bool enableWaveSystem = true;
         [SerializeField] private GameObject enemyPrefab;
-        [SerializeField] private GameObject testBuildingPrefab;
-
-        [Header("Building Spawning")]
-        [SerializeField] private SOS_BuildingDatabase buildingDatabase;
-        [SerializeField] private int selectedBuildIndex = 0;
         [SerializeField] private int enemyLayer = 20;
-        [SerializeField] private Economy _economyRef;
+        
+        [Header("Building System")]
+        [SerializeField] private SOS_BuildingDatabase buildingDatabase;
+        [SerializeField] private int selectedBuildIndex;
+        [SerializeField] private GameObject testBuildingPrefab;
+        
+        [Header("Economy")]
+        [SerializeField] private Economy economyRef;
         
         private ChunkNode[,] _chunks;
         private GameObject _terrainObject;
         private ChunkGrid _chunkGrid;
+        private WaveManager _waveManager;
 
         public UnityEvent<EnemyPathFollower> OnEnemySpawned;
 
         private void Update()
         {
-            if (!Mouse.current.leftButton.wasPressedThisFrame || !testBuildingPrefab) return;
+            if (!Mouse.current.leftButton.wasPressedThisFrame) return;
             
             var placer = GetComponentInChildren<BuildingPlacement>();
-            if (placer)
-            {   
-                // If you can afford the building, place it
-                if(_economyRef.CanAfford(buildingDatabase.GetTower(selectedBuildIndex).BuildingCost))
+            if (!placer) return;
+            
+            GameObject buildingToPlace = testBuildingPrefab;
+            int buildingCost = 0;
+            
+            // Use building database if available
+            if (buildingDatabase)
+            {
+                buildingToPlace = buildingDatabase.GetTower(selectedBuildIndex).Building;
+                buildingCost = buildingDatabase.GetTower(selectedBuildIndex).BuildingCost;
+            }
+            
+            if (buildingToPlace == null) return;
+            
+            // Check if can afford
+            if (economyRef != null && buildingCost > 0)
+            {
+                if (economyRef.CanAfford(buildingCost))
                 {
-                    _economyRef.withDrag(buildingDatabase.GetTower(selectedBuildIndex).BuildingCost);
-                    placer.TryPlaceBuildingAtMouse(buildingDatabase.GetTower(selectedBuildIndex).Building);
+                    economyRef.withDrag(buildingCost);
+                    placer.TryPlaceBuildingAtMouse(buildingToPlace);
                 }
                 else
                 {
-                    // We cannot afford the building
                     Debug.Log("Cannot afford building");
                 }
-                
+            }
+            else
+            {
+                // Free placement if no economy
+                placer.TryPlaceBuildingAtMouse(buildingToPlace);
             }
         }
         
@@ -119,18 +139,30 @@ namespace Generation.TrueGen.Manager
             _chunkGrid = _terrainObject.AddComponent<ChunkGrid>();
             _chunkGrid.Initialize(_chunks, pathChunks);
             
-            // Step 7: Add BuildingPlacement component and INITIALIZE IT
+            // Step 7: Add BuildingPlacement component
             var buildingPlacement = _terrainObject.AddComponent<BuildingPlacement>();
-            buildingPlacement.Initialize(_chunkGrid); // Pass the ChunkGrid reference
+            buildingPlacement.Initialize(_chunkGrid);
             
-            // Step 8: Add grid overlay and configure it
+            // Step 8: Add grid overlay
             if (gridOverlayMaterial)
             {
                 var gridOverlay = _terrainObject.AddComponent<GridOverlayController>();
                 gridOverlay.Initialize(gridOverlayMaterial);
             }
             
-            // Step 9: Generate props
+            // Step 9: Add Wave Manager
+            if (enableWaveSystem)
+            {
+                _waveManager = _terrainObject.AddComponent<WaveManager>();
+                _waveManager.Initialize(_chunkGrid, economyRef, enemyPrefab, enemyLayer);
+    
+                // Forward wave manager's OnEnemySpawned to our own event
+                _waveManager.OnEnemySpawned.AddListener((enemy) => OnEnemySpawned?.Invoke(enemy));
+    
+                Debug.Log("✓ Wave system initialized");
+            }
+            
+            // Step 10: Generate props
             if (generateProps && propDefinitions is { Length: > 0 })
             {
                 var propGen = new PropGenerator(seed + 3, _terrainObject.transform);
@@ -165,15 +197,17 @@ namespace Generation.TrueGen.Manager
             
             if (!follower)
                 follower = enemy.AddComponent<EnemyPathFollower>();
-            IrminBaseHealthSystem followerHealthSystem = enemy.AddComponent<IrminBaseHealthSystem>();
+            
+            var followerHealthSystem = enemy.AddComponent<IrminBaseHealthSystem>();
             followerHealthSystem.DestroyAtMinHealth = true;
-            FactionMemberComponent enemyFactionMemberComponet = enemy.AddComponent<FactionMemberComponent>();
-            followerHealthSystem.FactionMemberComponent = enemyFactionMemberComponet;
+            
+            var enemyFactionMemberComponent = enemy.AddComponent<FactionMemberComponent>();
+            followerHealthSystem.FactionMemberComponent = enemyFactionMemberComponent;
             followerHealthSystem.Faction = 1;
-            Rigidbody enemyRigidBody = enemy.AddComponent<Rigidbody>();
+            
+            var enemyRigidBody = enemy.AddComponent<Rigidbody>();
             enemyRigidBody.useGravity = false;
             enemyRigidBody.isKinematic = true;
-
 
             // Temporarily set hardcoded health
             followerHealthSystem.ReAwaken(2);
@@ -181,6 +215,7 @@ namespace Generation.TrueGen.Manager
             follower.Initialize(_chunkGrid.PathChunks);
             follower.gameObject.layer = enemyLayer;
             OnEnemySpawned?.Invoke(follower);
+            
             Debug.Log("✓ Enemy spawned");
         }
         
@@ -194,5 +229,6 @@ namespace Generation.TrueGen.Manager
         }
         
         public ChunkGrid GetChunkGrid() => _chunkGrid;
+        public WaveManager GetWaveManager() => _waveManager;
     }
 }

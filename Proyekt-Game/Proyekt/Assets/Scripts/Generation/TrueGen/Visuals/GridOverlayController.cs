@@ -96,30 +96,36 @@ namespace Generation.TrueGen.Visuals
         
         private void UpdateHoveredChunk()
         {
-            if (!_buildingPlacement)
+            if (!_buildingPlacement || !_chunkGrid || _chunkGrid.Chunks == null)
                 return;
-            
+    
             _hoveredChunk = _buildingPlacement.GetChunkUnderMouse();
-            
+    
             // Show/hide grid based on hover
             if (_gridOverlay)
             {
                 _gridOverlay.SetActive(_hoveredChunk != null || _isPlacementMode);
             }
         }
-        
+
         private void UpdateGridColor()
         {
-            if (!_gridRenderer || _hoveredChunk == null)
+            if (!_gridRenderer || !_chunkGrid || _chunkGrid.Chunks == null)
             {
                 SetGridColor(neutralColor);
                 return;
             }
-            
+    
+            if (_hoveredChunk == null)
+            {
+                SetGridColor(neutralColor);
+                return;
+            }
+    
             // Check if placement is valid
             var canBuild = _chunkGrid.CanBuildAt(_hoveredChunk.gridX, _hoveredChunk.gridY, 1, 1);
             var color = canBuild ? validPlacementColor : invalidPlacementColor;
-            
+    
             SetGridColor(color);
         }
         

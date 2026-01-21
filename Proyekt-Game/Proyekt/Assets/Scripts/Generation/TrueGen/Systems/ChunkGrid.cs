@@ -7,7 +7,7 @@ namespace Generation.TrueGen.Systems
 {
     public class ChunkGrid : MonoBehaviour
     {
-        public ChunkNode[,] Chunks { get; private set; }  // Made public so debugger can access
+        public ChunkNode[,] Chunks { get; private set; }
         public List<ChunkNode> PathChunks { get; private set; }
 
         private int Width { get; set; }
@@ -26,6 +26,12 @@ namespace Generation.TrueGen.Systems
         /// </summary>
         public ChunkNode GetChunkAtWorldPosition(Vector3 worldPos)
         {
+            // ADD NULL CHECK
+            if (Chunks == null)
+            {
+                return null;
+            }
+            
             return Chunks.Cast<ChunkNode>().FirstOrDefault(chunk => IsPointInQuad(worldPos, chunk.worldCorners));
         }
         
@@ -34,7 +40,8 @@ namespace Generation.TrueGen.Systems
         /// </summary>
         private ChunkNode GetChunk(int x, int y)
         {
-            if (x < 0 || x >= Width || y < 0 || y >= Height)
+            // ADD NULL CHECK
+            if (Chunks == null || x < 0 || x >= Width || y < 0 || y >= Height)
                 return null;
             
             return Chunks[x, y];
@@ -46,6 +53,10 @@ namespace Generation.TrueGen.Systems
         public List<ChunkNode> GetChunksInFootprint(int originX, int originY, int footprintWidth, int footprintHeight)
         {
             var result = new List<ChunkNode>();
+            
+            // ADD NULL CHECK
+            if (Chunks == null)
+                return result;
             
             for (var y = 0; y < footprintHeight; y++)
             {
@@ -65,6 +76,10 @@ namespace Generation.TrueGen.Systems
         /// </summary>
         public bool CanBuildAt(int originX, int originY, int footprintWidth, int footprintHeight)
         {
+            // ADD NULL CHECK
+            if (Chunks == null)
+                return false;
+            
             var chunksInFp = GetChunksInFootprint(originX, originY, footprintWidth, footprintHeight);
             
             return chunksInFp.Count == footprintWidth * footprintHeight &&
