@@ -1080,7 +1080,7 @@ MonoBehaviour:
   terrainMaterial: {fileID: 2100000, guid: f9fd900b7dd8d954280967857bf1d3be, type: 2}
   gridOverlayMaterial: {fileID: 2100000, guid: 3d021334f28de954b8c0338be62e6fb8, type: 2}
   enableWaveSystem: 1
-  enemyPrefab: {fileID: 2617255769880434715, guid: 475ee09d2b6b94d4d8e6f299ba6a456d, type: 3}
+  enemyPrefab: {fileID: 1511298724533590617, guid: 370cc26683f6c914994e6443c9893bce, type: 3}
   enemyLayer: 20
   buildingDatabase: {fileID: 11400000, guid: 206f84bd001051e4cbf8104f2f6e0ba6, type: 2}
   selectedBuildIndex: 0
