@@ -26,7 +26,7 @@ public class Economy : MonoBehaviour {
 
 	public bool CanAfford(int cost)
 	{
-		return coins - cost > 0;
+		return coins - cost >= 0;
 	}
 
 	void Update() {

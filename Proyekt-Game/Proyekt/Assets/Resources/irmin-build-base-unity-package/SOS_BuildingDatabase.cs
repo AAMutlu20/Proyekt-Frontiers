@@ -11,4 +11,9 @@ public class SOS_BuildingDatabase : ScriptableObject
     {
         return _buildings[pIndex];
     }
+
+    public int GetBuildingCount()
+    {
+        return _buildings.Count;
+    }
 }
