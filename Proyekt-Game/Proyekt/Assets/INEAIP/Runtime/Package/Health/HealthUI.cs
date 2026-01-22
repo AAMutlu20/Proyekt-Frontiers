@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -11,7 +12,12 @@ namespace irminNavmeshEnemyAiUnityPackage
         private int _currentHearts;
         private int _currentExtraHearts;
         private bool _wasFinalHit = false;
+
         [SerializeField] private List<RawImage> _spawnedHearts = new();
+
+        [SerializeField] private Image _currentHealthFillImage;
+        [SerializeField] private string _divider;
+        [SerializeField] private TextMeshProUGUI _currentHealthTextMP;
 
         public float Health { get { return _currentHearts; } set { SetCurrentHearts(Mathf.RoundToInt(value)); } }
         public bool WasFinalHit { get { return _wasFinalHit; } set { _wasFinalHit = value; } }
@@ -101,6 +107,15 @@ namespace irminNavmeshEnemyAiUnityPackage
                 {
                     _spawnedHearts[i].color = _heartColor;
                 }
+            }
+            if(_currentHealthFillImage != null)
+            {
+                Debug.Log($"Setting fillamount to {_currentHearts} / {_maxHearts} {_currentHearts / _maxHearts}");
+                _currentHealthFillImage.fillAmount = (float)_currentHearts / (float)_maxHearts;
+            }
+            if(_currentHealthTextMP != null)
+            {
+                _currentHealthTextMP.text = $"{_currentHearts}{_divider}{_maxHearts}";
             }
         }
 
