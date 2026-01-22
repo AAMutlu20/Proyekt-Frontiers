@@ -421,9 +421,9 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 1048576
   firePoint: {fileID: 9179581834775248784}
-  arrowSpeed: 50
+  arrowSpeed: 35
   arrowPrefab: {fileID: 6210907664736125676, guid: 244f036a2bd18fbd19323f932995b8aa, type: 3}
-  fireRate: 30
+  fireRate: 40
 --- !u!1 &3678975974768374456
 GameObject:
   m_ObjectHideFlags: 0
