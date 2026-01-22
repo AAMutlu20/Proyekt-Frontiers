@@ -16,14 +16,14 @@ public class EnemyTracker : MonoBehaviour
 
     private void Start()
     {
-        _terrainManager.OnEnemySpawned.AddListener(TrackEnemy);
+        _terrainManager.onEnemySpawned.AddListener(TrackEnemy);
     }
 
     private void TrackEnemy(EnemyPathFollower enemy)
     {
         _trackedEnemies.Add(enemy);
-        enemy.OnPathCompleteEvent.AddListener(EnemyCompletedPath);
-        enemy.OnEnemyDestroyed.AddListener(EnemyDestroyed);
+        enemy.onPathCompleteEvent.AddListener(EnemyCompletedPath);
+        enemy.onEnemyDestroyed.AddListener(EnemyDestroyed);
     }
 
     private void EnemyDestroyed(int coinsToGain)

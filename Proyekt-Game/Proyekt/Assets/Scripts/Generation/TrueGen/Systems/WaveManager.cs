@@ -24,21 +24,20 @@ namespace Generation.TrueGen.Systems
         [SerializeField] private Economy economyRef;
         
         private ChunkGrid _chunkGrid;
-        private List<EnemyPathFollower> _activeEnemies = new();
-        private int _currentWaveIndex = 0;
-        private bool _waveInProgress = false;
-        private int _totalEnemiesSpawned = 0;
+        private readonly List<EnemyPathFollower> _activeEnemies = new();
+        private int _currentWaveIndex;
+        private int _totalEnemiesSpawned;
         
         public int CurrentWave => _currentWaveIndex + 1;
         public int TotalWaves => waves.Length;
-        public bool IsWaveActive => _waveInProgress;
+        private bool IsWaveActive { get; set; }
         public int ActiveEnemyCount => _activeEnemies.Count;
         
         // Events
-        public UnityEvent<int> OnWaveStarted = new();
-        public UnityEvent<int> OnWaveCompleted = new();
-        public UnityEvent<EnemyPathFollower> OnEnemySpawned = new();
-        public UnityEvent OnAllWavesCompleted = new();
+        public UnityEvent<int> onWaveStarted = new();
+        public UnityEvent<int> onWaveCompleted = new();
+        public UnityEvent<EnemyPathFollower> onEnemySpawned = new();
+        public UnityEvent onAllWavesCompleted = new();
         
         public void Initialize(ChunkGrid chunkGrid, Economy economy, GameObject enemyPrefab, int layer)
         {
@@ -47,21 +46,21 @@ namespace Generation.TrueGen.Systems
             defaultEnemyPrefab = enemyPrefab;
             enemyLayer = layer;
             
-            if (_chunkGrid == null)
+            if (!_chunkGrid)
             {
                 Debug.LogError("WaveManager: ChunkGrid is required!");
                 enabled = false;
                 return;
             }
             
-            if (defaultEnemyPrefab == null)
+            if (!defaultEnemyPrefab)
             {
                 Debug.LogError("WaveManager: No enemy prefab assigned!");
                 enabled = false;
                 return;
             }
             
-            if (economyRef == null)
+            if (!economyRef)
             {
                 Debug.LogWarning("WaveManager: No economy assigned! Rewards won't work.");
             }
@@ -81,21 +80,19 @@ namespace Generation.TrueGen.Systems
         private void Update()
         {
             // DEBUG - Press K to see active enemy count
-            if (Keyboard.current != null && Keyboard.current.kKey.wasPressedThisFrame)
-            {
-                Debug.Log($"=== Wave Debug ===");
-                Debug.Log($"Current Wave: {_currentWaveIndex + 1}/{waves.Length}");
-                Debug.Log($"Active Enemies: {_activeEnemies.Count}");
-                Debug.Log($"Wave In Progress: {_waveInProgress}");
+            if (Keyboard.current == null || !Keyboard.current.kKey.wasPressedThisFrame) return;
+            Debug.Log($"=== Wave Debug ===");
+            Debug.Log($"Current Wave: {_currentWaveIndex + 1}/{waves.Length}");
+            Debug.Log($"Active Enemies: {_activeEnemies.Count}");
+            Debug.Log($"Wave In Progress: {IsWaveActive}");
                 
-                // Check for null enemies
-                int nullCount = _activeEnemies.Count(e => e == null);
-                if (nullCount > 0)
-                {
-                    Debug.LogWarning($"Found {nullCount} null enemies in list! Cleaning up...");
-                    _activeEnemies.RemoveAll(e => e == null);
-                    Debug.Log($"After cleanup: {_activeEnemies.Count} active enemies");
-                }
+            // Check for null enemies
+            var nullCount = _activeEnemies.Count(e => !e);
+            if (nullCount <= 0) return;
+            {
+                Debug.LogWarning($"Found {nullCount} null enemies in list! Cleaning up...");
+                _activeEnemies.RemoveAll(e => !e);
+                Debug.Log($"After cleanup: {_activeEnemies.Count} active enemies");
             }
         }
         
@@ -162,7 +159,7 @@ namespace Generation.TrueGen.Systems
                 yield return new WaitForSeconds(wave.delayBeforeWave);
                 
                 // Notify wave started
-                OnWaveStarted?.Invoke(wave.waveNumber);
+                onWaveStarted?.Invoke(wave.waveNumber);
                 
                 // Spawn wave
                 yield return StartCoroutine(SpawnWave(wave));
@@ -178,7 +175,7 @@ namespace Generation.TrueGen.Systems
                     Debug.Log($"✓ Wave {wave.waveNumber} completed! Reward: {wave.goldReward} gold");
                 }
                 
-                OnWaveCompleted?.Invoke(wave.waveNumber);
+                onWaveCompleted?.Invoke(wave.waveNumber);
                 
                 _currentWaveIndex++;
                 
@@ -190,36 +187,36 @@ namespace Generation.TrueGen.Systems
             }
             
             Debug.Log("=== All Waves Completed! Victory! ===");
-            OnAllWavesCompleted?.Invoke();
+            onAllWavesCompleted?.Invoke();
         }
         
         private IEnumerator SpawnWave(WaveDefinition wave)
         {
-            _waveInProgress = true;
+            IsWaveActive = true;
             
             Debug.Log($">>> Spawning Wave {wave.waveNumber}: {wave.enemyCount} enemies");
             
-            for (int i = 0; i < wave.enemyCount; i++)
+            for (var i = 0; i < wave.enemyCount; i++)
             {
                 SpawnEnemy(wave);
                 yield return new WaitForSeconds(wave.spawnInterval);
             }
             
-            _waveInProgress = false;
+            IsWaveActive = false;
         }
         
         private void SpawnEnemy(WaveDefinition wave)
         {
-            if (_chunkGrid == null || _chunkGrid.PathChunks == null || _chunkGrid.PathChunks.Count == 0)
+            if (!_chunkGrid || _chunkGrid.PathChunks == null || _chunkGrid.PathChunks.Count == 0)
             {
                 Debug.LogError("Cannot spawn enemy: No path available!");
                 return;
             }
             
             // Use wave's prefab, or fall back to default
-            var prefab = wave.enemyPrefab != null ? wave.enemyPrefab : defaultEnemyPrefab;
+            var prefab = wave.enemyPrefab ? wave.enemyPrefab : defaultEnemyPrefab;
             
-            if (prefab == null)
+            if (!prefab)
             {
                 Debug.LogError("No enemy prefab assigned!");
                 return;
@@ -235,14 +232,14 @@ namespace Generation.TrueGen.Systems
             
             // Setup path follower
             var follower = enemy.GetComponent<EnemyPathFollower>();
-            if (follower == null)
+            if (!follower)
             {
                 follower = enemy.AddComponent<EnemyPathFollower>();
             }
             
             // Setup health system
             var healthSystem = enemy.GetComponent<IrminBaseHealthSystem>();
-            if (healthSystem == null)
+            if (!healthSystem)
             {
                 healthSystem = enemy.AddComponent<IrminBaseHealthSystem>();
             }
@@ -250,7 +247,7 @@ namespace Generation.TrueGen.Systems
             
             // Setup faction
             var factionComponent = enemy.GetComponent<FactionMemberComponent>();
-            if (factionComponent == null)
+            if (factionComponent)
             {
                 factionComponent = enemy.AddComponent<FactionMemberComponent>();
             }
@@ -259,7 +256,7 @@ namespace Generation.TrueGen.Systems
             
             // Setup rigidbody
             var rb = enemy.GetComponent<Rigidbody>();
-            if (rb == null)
+            if (rb)
             {
                 rb = enemy.AddComponent<Rigidbody>();
             }
@@ -275,59 +272,51 @@ namespace Generation.TrueGen.Systems
             follower.gameObject.layer = enemyLayer;
             
             // Subscribe to events
-            follower.OnPathCompleteEvent.AddListener(OnEnemyReachedEnd);
-            follower.OnEnemyKilled.AddListener(OnEnemyKilledByTower); // HANDLES TOWER KILLS
-            follower.OnEnemyDestroyed.AddListener(OnEnemyDestroyedHandler); // HANDLES COINS
+            follower.onPathCompleteEvent.AddListener(OnEnemyReachedEnd);
+            follower.onEnemyKilled.AddListener(OnEnemyKilledByTower);
+            follower.onEnemyDestroyed.AddListener(OnEnemyDestroyedHandler);
             
             _activeEnemies.Add(follower);
             _totalEnemiesSpawned++;
             
             // Notify that enemy spawned
-            OnEnemySpawned?.Invoke(follower);
+            onEnemySpawned?.Invoke(follower);
             
             Debug.Log($"Spawned enemy {_totalEnemiesSpawned} from wave {wave.waveNumber}");
         }
         
         private void OnEnemyReachedEnd(EnemyPathFollower enemy)
         {
-            if (_activeEnemies.Contains(enemy))
-            {
-                _activeEnemies.Remove(enemy);
+            if (!_activeEnemies.Contains(enemy)) return;
+            _activeEnemies.Remove(enemy);
                 
-                // Deal damage to player
-                if (economyRef != null)
-                {
-                    economyRef.withDrag((int)enemy.DamageAtEndOfPath);
-                    Debug.Log($"Enemy reached end! Player health: -{enemy.DamageAtEndOfPath} ({_activeEnemies.Count} enemies remaining)");
-                }
-            }
+            // Deal damage to player
+            if (!economyRef) return;
+            economyRef.withDrag((int)enemy.DamageAtEndOfPath);
+            Debug.Log($"Enemy reached end! Player health: -{enemy.DamageAtEndOfPath} ({_activeEnemies.Count} enemies remaining)");
         }
         
         private void OnEnemyKilledByTower(EnemyPathFollower enemy)
         {
             // Remove from active list when killed by tower
-            if (_activeEnemies.Contains(enemy))
-            {
-                _activeEnemies.Remove(enemy);
-                Debug.Log($"Enemy killed by tower! ({_activeEnemies.Count} enemies remaining)");
-            }
+            if (!_activeEnemies.Contains(enemy)) return;
+            _activeEnemies.Remove(enemy);
+            Debug.Log($"Enemy killed by tower! ({_activeEnemies.Count} enemies remaining)");
         }
         
         private void OnEnemyDestroyedHandler(int coinsReward)
         {
             // Give coins when enemy is killed
-            if (economyRef != null)
-            {
-                economyRef.AwardCoins(coinsReward);
-                Debug.Log($"Enemy defeated! +{coinsReward} coins");
-            }
+            if (!economyRef) return;
+            economyRef.AwardCoins(coinsReward);
+            Debug.Log($"Enemy defeated! +{coinsReward} coins");
         }
         
         // Manual control methods
         [ContextMenu("Start Next Wave")]
         public void StartNextWave()
         {
-            if (_waveInProgress)
+            if (IsWaveActive)
             {
                 Debug.LogWarning("Wave already in progress!");
                 return;
@@ -347,17 +336,17 @@ namespace Generation.TrueGen.Systems
         public void SkipCurrentWave()
         {
             // Clear all active enemies
-            foreach (var enemy in new List<EnemyPathFollower>(_activeEnemies))
+            foreach (var enemy in new List<EnemyPathFollower>(_activeEnemies).Where(enemy => enemy))
             {
-                if (enemy != null)
-                    Destroy(enemy.gameObject);
+                Destroy(enemy.gameObject);
             }
+
             _activeEnemies.Clear();
         }
         
-        public void SetAutoStart(bool enabled)
+        public void SetAutoStart(bool isEnabled)
         {
-            autoStartWaves = enabled;
+            autoStartWaves = isEnabled;
         }
     }
 }

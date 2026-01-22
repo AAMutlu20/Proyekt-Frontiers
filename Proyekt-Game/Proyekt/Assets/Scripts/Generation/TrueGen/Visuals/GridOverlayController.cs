@@ -149,7 +149,7 @@ namespace Generation.TrueGen.Visuals
         private void CreateDefaultGridMaterial()
         {
             gridOverlayMaterial = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
-            gridOverlayMaterial.SetColor(BaseColor, new Color(1, 0, 0, 0.8f)); // BRIGHT RED, mostly opaque
+            gridOverlayMaterial.SetColor(BaseColor, new Color(1, 0, 0, 0.8f));
             gridOverlayMaterial.SetFloat(Surface, 1); // Transparent
             gridOverlayMaterial.SetFloat(Blend, 0); // Alpha blend
     
