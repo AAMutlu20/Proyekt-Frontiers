@@ -18,6 +18,7 @@ namespace Generation.TrueGen.Systems
         
         [Header("References")]
         [SerializeField] private GameObject defaultEnemyPrefab;
+        [SerializeField] private SOS_EnemyDatabase _enemyDatabase;
         [SerializeField] private int enemyLayer = 20;
         
         [Header("Economy")]
@@ -41,6 +42,8 @@ namespace Generation.TrueGen.Systems
         
         public void Initialize(ChunkGrid chunkGrid, Economy economy, GameObject enemyPrefab, int layer)
         {
+            if (DatabaseAccessor.Singleton != null) { _enemyDatabase = DatabaseAccessor.Singleton.GeneralEnemyDatabase; }
+
             _chunkGrid = chunkGrid;
             economyRef = economy;
             defaultEnemyPrefab = enemyPrefab;
@@ -107,7 +110,7 @@ namespace Generation.TrueGen.Systems
                 enemyCount = 3,
                 spawnInterval = 1f,
                 delayBeforeWave = 2f,
-                enemyPrefab = defaultEnemyPrefab,
+                enemyPrefab = _enemyDatabase.GetEnemy(1).EnemyPrefab,
                 enemySpeed = 5f,
                 enemyHealth = 2f,
                 damageToPlayer = 1f,
@@ -122,11 +125,11 @@ namespace Generation.TrueGen.Systems
                 enemyCount = 5,
                 spawnInterval = 0.8f,
                 delayBeforeWave = 3f,
-                enemyPrefab = defaultEnemyPrefab,
-                enemySpeed = 6f,
-                enemyHealth = 3f,
-                damageToPlayer = 1f,
-                coinsReward = 15,
+                enemyPrefab = _enemyDatabase.GetEnemy(0).EnemyPrefab,
+                enemySpeed = _enemyDatabase.GetEnemy(0).EnemySpeed,
+                enemyHealth = _enemyDatabase.GetEnemy(0).EnemyHealth,
+                damageToPlayer = _enemyDatabase.GetEnemy(0).DamageToPlayer,
+                coinsReward = _enemyDatabase.GetEnemy(0).CoinsReward,
                 goldReward = 150
             };
             
@@ -137,10 +140,10 @@ namespace Generation.TrueGen.Systems
                 enemyCount = 10,
                 spawnInterval = 0.5f,
                 delayBeforeWave = 3f,
-                enemyPrefab = defaultEnemyPrefab,
-                enemySpeed = 7f,
-                enemyHealth = 5f,
-                damageToPlayer = 2f,
+                enemyPrefab = _enemyDatabase.GetEnemy(2).EnemyPrefab,
+                enemySpeed = _enemyDatabase.GetEnemy(2).EnemySpeed,
+                enemyHealth = _enemyDatabase.GetEnemy(2).EnemyHealth,
+                damageToPlayer = _enemyDatabase.GetEnemy(2).DamageToPlayer,
                 coinsReward = 20,
                 goldReward = 200
             };
@@ -247,7 +250,7 @@ namespace Generation.TrueGen.Systems
             
             // Setup faction
             var factionComponent = enemy.GetComponent<FactionMemberComponent>();
-            if (factionComponent)
+            if (!factionComponent)
             {
                 factionComponent = enemy.AddComponent<FactionMemberComponent>();
             }
@@ -256,7 +259,7 @@ namespace Generation.TrueGen.Systems
             
             // Setup rigidbody
             var rb = enemy.GetComponent<Rigidbody>();
-            if (rb)
+            if (!rb)
             {
                 rb = enemy.AddComponent<Rigidbody>();
             }
