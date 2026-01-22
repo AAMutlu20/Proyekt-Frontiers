@@ -7,6 +7,7 @@ public class Economy : MonoBehaviour {
 	[SerializeField] private bool giveCoins = false;
 	[SerializeField] private float timer;
 	[SerializeField] private int coinsToGive = 5;
+	[SerializeField] private int startingCoins = 5;
 
 	// Property
 	public int Coins { get { return coins; } private set { coins = value; OnCoinAmountChanged?.Invoke(coins); } }
@@ -18,7 +19,7 @@ public class Economy : MonoBehaviour {
 	}
 
 	void Awake() {
-		Coins = 5;
+		Coins = startingCoins;
 	}
 
 	public void AwardCoins(int amount) {

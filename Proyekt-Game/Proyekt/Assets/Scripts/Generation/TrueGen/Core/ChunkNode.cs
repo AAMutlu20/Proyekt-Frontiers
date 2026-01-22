@@ -36,6 +36,12 @@ namespace Generation.TrueGen.Core
         [System.NonSerialized]
         public ChunkNode Parent;
         
+        // Texture data
+        [System.NonSerialized]
+        public int TextureIndex; // 0-3 for the 4 texture slots
+        [System.NonSerialized]
+        public float TextureRotation; // 0, 90, 180, or 270 degrees
+        
         public float FCost => GCost + HCost;
 
         // Helper method

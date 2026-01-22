@@ -3,7 +3,6 @@ using Generation.TrueGen.Generation;
 using Generation.TrueGen.Systems;
 using Generation.TrueGen.Visuals;
 using irminNavmeshEnemyAiUnityPackage;
-using System;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
@@ -52,33 +51,33 @@ namespace Generation.TrueGen.Manager
         private ChunkGrid _chunkGrid;
         private WaveManager _waveManager;
 
-        public UnityEvent<EnemyPathFollower> OnEnemySpawned;
-        public UnityEvent OnAllWavesCompleted;
+        public UnityEvent<EnemyPathFollower> onEnemySpawned;
+        public UnityEvent onAllWavesCompleted;
 
         private void Update()
         {
-            // If the lefy mouse button wasn't pressed this frame or the mouse is over over a UI Game Object
+            // If the lefy mouse button wasn't pressed this frame or the mouse is over a UI Game Object
             if (!Mouse.current.leftButton.wasPressedThisFrame || EventSystem.current.IsPointerOverGameObject()) return;
             
             var placer = GetComponentInChildren<BuildingPlacement>();
             if (!placer) return;
             
-            GameObject buildingToPlace = selectedBuildingPrefab;
-            int buildingCost = 0;
+            var buildingToPlace = selectedBuildingPrefab;
+            var buildingCost = 0;
             
             // Use building database if available
             if (buildingDatabase)
             {
                 // Cannot get tower if building index is invalid. Meaning no building is selected.
-                if (selectedBuildIndex < 0 || selectedBuildIndex! > buildingDatabase.GetBuildingCount() - 1) { Debug.Log("Cannot try to build tower because selected index is invalid. Usually means no building is selected"); return; }
+                if (selectedBuildIndex < 0 || selectedBuildIndex > buildingDatabase.GetBuildingCount() - 1) return;
                 buildingToPlace = buildingDatabase.GetBuilding(selectedBuildIndex).Building;
                 buildingCost = buildingDatabase.GetBuilding(selectedBuildIndex).BuildingCost;
             }
             
-            if (buildingToPlace == null) return;
+            if (!buildingToPlace) return;
             
-            // Check if can afford
-            if (economyRef != null && buildingCost > 0)
+            // Check if you can afford it
+            if (economyRef && buildingCost > 0)
             {
                 if (economyRef.CanAfford(buildingCost))
                 {
@@ -107,6 +106,21 @@ namespace Generation.TrueGen.Manager
             // Step 1: Generate chunk grid
             var chunkGen = new ChunkGenerator(seed);
             _chunks = chunkGen.GenerateDistortedGrid(gridWidth, gridHeight, chunkSize, distortionAmount);
+            
+            // Step 1.5: Assign texture indices based on chunk type
+            for (var y = 0; y < gridHeight; y++)
+            {
+                for (var x = 0; x < gridWidth; x++)
+                {
+                    var chunk = _chunks[x, y];
+        
+                    // Set texture index based on type (if not already set by path/props)
+                    if (chunk.chunkType == ChunkType.Buildable && chunk.TextureIndex == 0)
+                    {
+                        chunk.TextureIndex = 0; // Buildable uses texture slot 0
+                    }
+                }
+            }
             
             // Step 2: Select entry and exit points
             var entryChunk = _chunks[0, gridHeight / 2];
@@ -160,11 +174,11 @@ namespace Generation.TrueGen.Manager
             if (enableWaveSystem)
             {
                 _waveManager = _terrainObject.AddComponent<WaveManager>();
-                _waveManager.OnAllWavesCompleted.AddListener(AllWavesCompleted);
+                _waveManager.onAllWavesCompleted.AddListener(AllWavesCompleted);
                 _waveManager.Initialize(_chunkGrid, economyRef, enemyPrefab, enemyLayer);
     
                 // Forward wave manager's OnEnemySpawned to our own event
-                _waveManager.OnEnemySpawned.AddListener((enemy) => OnEnemySpawned?.Invoke(enemy));
+                _waveManager.onEnemySpawned.AddListener((enemy) => onEnemySpawned?.Invoke(enemy));
     
                 Debug.Log("✓ Wave system initialized");
             }
@@ -187,7 +201,7 @@ namespace Generation.TrueGen.Manager
         // Bind All waves completed event so it can be assigned in the editor.
         private void AllWavesCompleted()
         {
-            OnAllWavesCompleted?.Invoke();
+            onAllWavesCompleted?.Invoke();
         }
 
         [ContextMenu("Spawn Test Enemy")]
@@ -227,7 +241,7 @@ namespace Generation.TrueGen.Manager
             
             follower.Initialize(_chunkGrid.PathChunks);
             follower.gameObject.layer = enemyLayer;
-            OnEnemySpawned?.Invoke(follower);
+            onEnemySpawned?.Invoke(follower);
             
             Debug.Log("✓ Enemy spawned");
         }

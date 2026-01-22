@@ -81,7 +81,11 @@ namespace Generation.TrueGen.Generation
                     vertices[x + 1, y + 1], // 2: top-right
                     vertices[x, y + 1]      // 3: top-left
                 },
-                chunkType = ChunkType.Buildable
+                chunkType = ChunkType.Buildable,
+                
+                TextureRotation = Random.Range(0, 4) * 90f,
+                TextureIndex = 0
+                
             };
             
             // Calculate center
