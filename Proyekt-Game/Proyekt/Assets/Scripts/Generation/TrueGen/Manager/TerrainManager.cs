@@ -71,8 +71,8 @@ namespace Generation.TrueGen.Manager
             {
                 // Cannot get tower if building index is invalid. Meaning no building is selected.
                 if (selectedBuildIndex < 0 || selectedBuildIndex! > buildingDatabase.GetBuildingCount() - 1) { Debug.Log("Cannot try to build tower because selected index is invalid. Usually means no building is selected"); return; }
-                buildingToPlace = buildingDatabase.GetTower(selectedBuildIndex).Building;
-                buildingCost = buildingDatabase.GetTower(selectedBuildIndex).BuildingCost;
+                buildingToPlace = buildingDatabase.GetBuilding(selectedBuildIndex).Building;
+                buildingCost = buildingDatabase.GetBuilding(selectedBuildIndex).BuildingCost;
             }
             
             if (buildingToPlace == null) return;
@@ -243,9 +243,9 @@ namespace Generation.TrueGen.Manager
 
         public void SelectBuilding(int pIndex)
         {
-            Debug.Log($"Selected building of index {pIndex} with name {buildingDatabase.GetTower(pIndex).Building.name}");
+            Debug.Log($"Selected building of index {pIndex} with name {buildingDatabase.GetBuilding(pIndex).Building.name}");
             
-            selectedBuildingPrefab = buildingDatabase.GetTower(pIndex).Building;
+            selectedBuildingPrefab = buildingDatabase.GetBuilding(pIndex).Building;
             selectedBuildIndex = pIndex;
         }
         
