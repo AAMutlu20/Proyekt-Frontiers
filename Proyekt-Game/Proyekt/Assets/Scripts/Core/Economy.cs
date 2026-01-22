@@ -37,10 +37,10 @@ public class Economy : MonoBehaviour {
 	{
 		if (!giveCoins && timer < cooldown)
 		{
-			//Calculates the time passed since last respawn
+			
 			timer += Time.deltaTime;
 
-			//if timer calculated above is bigger or equal to cooldown another truck will spawn
+			
 			if (timer >= cooldown)
 			{
 				timer = 0.0f;
