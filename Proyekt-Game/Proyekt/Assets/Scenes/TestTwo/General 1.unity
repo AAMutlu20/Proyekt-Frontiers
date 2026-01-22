@@ -148,6 +148,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 72927a59fd73e9207ace5a36b70f4073, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Economy
+  coins: 10
+  cooldown: 8
+  giveCoins: 0
+  timer: 0
+  coinsToGive: 5
   OnCoinAmountChanged:
     m_PersistentCalls:
       m_Calls: []

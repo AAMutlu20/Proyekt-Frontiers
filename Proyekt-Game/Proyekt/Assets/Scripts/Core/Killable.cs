@@ -6,6 +6,6 @@ public class Killabale : MonoBehaviour {
 
 	void Die() {
 		Destroy(gameObject);
-		economy.AwardCoins(10);
+		economy.AwardCoins(5);
 	}
 }

@@ -416,14 +416,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 11782e541a031accb83ea6ca64601add, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ArcherTower
-  range: 50
+  range: 40
   enemyLayer:
     serializedVersion: 2
     m_Bits: 1048576
   firePoint: {fileID: 9179581834775248784}
-  arrowSpeed: 10
+  arrowSpeed: 50
   arrowPrefab: {fileID: 6210907664736125676, guid: 244f036a2bd18fbd19323f932995b8aa, type: 3}
-  fireRate: 60
+  fireRate: 30
 --- !u!1 &3678975974768374456
 GameObject:
   m_ObjectHideFlags: 0
