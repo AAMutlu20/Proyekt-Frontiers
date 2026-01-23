@@ -33,7 +33,7 @@ namespace irminNavmeshEnemyAiUnityPackage
 
         [SerializeField] private Transform _targetTransform;
         [SerializeField] private float _height;
-        [SerializeField] private float _animationDuration;
+        [SerializeField] private float _doTweenArcAnimationDuration;
 
         // Easing setting for DoTween
         [SerializeField] private Ease _doTweenEase;
@@ -45,6 +45,7 @@ namespace irminNavmeshEnemyAiUnityPackage
 
         [SerializeField] private Animator _catapultAnimator;
         [SerializeField] private string _catapultSlingAnimationtriggerName;
+        [SerializeField] private string _catapultRetractAnimationTriggerName;
         [SerializeField] private GameObject _currentlySpawnedShootObject;
 
         [SerializeField] private Transform _slingObjectParent;
@@ -56,6 +57,9 @@ namespace irminNavmeshEnemyAiUnityPackage
         [SerializeField] private LayerMask _enemyLayerMask;
 
         [SerializeField] private float _damage = 2f;
+
+        [SerializeField] private bool _useGameObjectPooling = false;
+        [SerializeField] private GameObjectPool _gameObjectPool;
 
         //[SerializeField] private int _halfArcResolution = 3;
 
@@ -123,7 +127,8 @@ namespace irminNavmeshEnemyAiUnityPackage
         public void ShootCatapultWithCooldown()
         {
             if (_targetTransform == null) { _shootCooldownTimer.ResetCurrentTime(); _shootCooldownTimer.PauseTimer(); return; }
-            _currentlySpawnedShootObject = Instantiate(_objectToShootPrefab);
+            if (_useGameObjectPooling) { _currentlySpawnedShootObject = _gameObjectPool.GetGameObjectFromPool(_slingObjectParent.transform, null); }
+            else { _currentlySpawnedShootObject = Instantiate(_objectToShootPrefab); }
             _currentlySpawnedShootObject.transform.parent = _slingObjectParent;
             _currentlySpawnedShootObject.transform.localPosition = Vector3.zero;
             _currentlySpawnedShootObject.transform.rotation = _slingObjectParent.rotation;
@@ -170,7 +175,7 @@ namespace irminNavmeshEnemyAiUnityPackage
             };
 
             GameObject shootObject = _currentlySpawnedShootObject;
-            _currentlySpawnedShootObject.transform.DOPath(path, _animationDuration, _pathType).SetEase(_doTweenEase).SetLookAt(0.01f).OnComplete(() =>
+            _currentlySpawnedShootObject.transform.DOPath(path, _doTweenArcAnimationDuration, _pathType).SetEase(_doTweenEase).SetLookAt(0.01f).OnComplete(() =>
             {
                 //ITriggerable foundITriggerable = shootObject.GetComponent<ITriggerable>();
                 //if (foundITriggerable != null) { foundITriggerable.Trigger(gameObject); }
@@ -201,7 +206,9 @@ namespace irminNavmeshEnemyAiUnityPackage
                         Debug.Log("couldn't find IDamagable");
                     }
                 }
-                Destroy(shootObject);
+                if (_catapultRetractAnimationTriggerName != "") { _catapultAnimator.SetTrigger(_catapultRetractAnimationTriggerName); }
+                if (_useGameObjectPooling) { _gameObjectPool.PoolGameObject(shootObject); }
+                else { Destroy(shootObject); }
             });
         }
     }
