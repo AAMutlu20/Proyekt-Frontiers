@@ -732,6 +732,10 @@ PrefabInstance:
       propertyPath: m_FillMethod
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3719493468797634619, guid: 27ae1ad6d66222d48ae72939be8a91e9, type: 3}
+      propertyPath: isOpen
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3725122022057859509, guid: 27ae1ad6d66222d48ae72939be8a91e9, type: 3}
       propertyPath: m_Name
       value: UI

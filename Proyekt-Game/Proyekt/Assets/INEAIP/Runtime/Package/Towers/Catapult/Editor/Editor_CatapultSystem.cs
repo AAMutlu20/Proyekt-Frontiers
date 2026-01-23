@@ -1,7 +1,7 @@
+#if UNITY_EDITOR
 using UnityEngine;
 using UnityEditor;
 using irminNavmeshEnemyAiUnityPackage;
-using UnityEngine.UIElements;
 
 [CustomEditor(typeof(CatapultSystem))]
 public class Editor_CatapultSystem : Editor
@@ -18,3 +18,4 @@ public class Editor_CatapultSystem : Editor
         }
     }
 }
+#endif

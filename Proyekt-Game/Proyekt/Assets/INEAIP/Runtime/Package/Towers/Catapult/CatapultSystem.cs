@@ -144,7 +144,14 @@ namespace irminNavmeshEnemyAiUnityPackage
         // When the animation completes it will call the event to shoot.
         public void Shoot()
         {
-            if (_targetTransform == null) return;
+            if (_targetTransform == null)
+            {
+                if (_useGameObjectPooling) { _gameObjectPool.PoolGameObject(_currentlySpawnedShootObject); }
+                else { Destroy(_currentlySpawnedShootObject); }
+                Debug.Log("Enemy left range, cancelling shot.");
+                return;
+            }
+
             _currentlySpawnedShootObject.transform.SetParent(null);
             MoveShootingObjectAlongDoTweenArc();
         }
@@ -203,7 +210,9 @@ namespace irminNavmeshEnemyAiUnityPackage
                     }
                     else
                     {
-                        Debug.Log("couldn't find IDamagable");
+                        Debug.Log("Enemy left range, cancelling shot.");
+                        if (_useGameObjectPooling) { _gameObjectPool.PoolGameObject(shootObject); }
+                        else { Destroy(shootObject); }
                     }
                 }
                 if (_catapultRetractAnimationTriggerName != "") { _catapultAnimator.SetTrigger(_catapultRetractAnimationTriggerName); }

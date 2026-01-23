@@ -1,4 +1,4 @@
-using System.ComponentModel;
+#if UNITY_EDITOR
 using UnityEditor;
 using UnityEngine;
 
@@ -20,3 +20,4 @@ namespace irminNavmeshEnemyAiUnityPackage
         }
     }
 }
+#endif
