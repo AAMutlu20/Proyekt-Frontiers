@@ -115,7 +115,7 @@ namespace irminNavmeshEnemyAiUnityPackage
             if (_targetTransform == pPossibleTarget.transform)
             {
                 GameObject foundNewTarget = GetFirstTargetFromDetector();
-                if (foundNewTarget == null) { _targetTransform = null; _shootCooldownTimer.PauseTimer(); }
+                if (foundNewTarget == null) { _targetTransform = null; _shootCooldownTimer.PauseTimer(); _catapultYRotationSystem.Target = null; }
                 else
                 {
                     _targetTransform = foundNewTarget.transform;
@@ -149,6 +149,7 @@ namespace irminNavmeshEnemyAiUnityPackage
                 if (_useGameObjectPooling) { _gameObjectPool.PoolGameObject(_currentlySpawnedShootObject); }
                 else { Destroy(_currentlySpawnedShootObject); }
                 Debug.Log("Enemy left range, cancelling shot.");
+                _catapultYRotationSystem.Target = null;
                 return;
             }
 
