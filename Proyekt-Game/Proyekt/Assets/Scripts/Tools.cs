@@ -76,4 +76,16 @@ public class Tools : MonoBehaviour {
 
 	return true;
 	}
+	public static (Vector3, Quaternion) OrbitCamera(
+			Vector3 position,
+			Vector3 pivot,
+			Vector3 axis,
+			float angle
+			)
+	{
+		Quaternion delta = Quaternion.AngleAxis(angle, axis);
+		Vector3 newPos = pivot + delta * (position - pivot);
+		Quaternion newRot = Quaternion.LookRotation(pivot - newPos, Vector3.up);
+		return (newPos, newRot);
+	}
 }
