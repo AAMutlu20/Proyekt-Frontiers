@@ -52,9 +52,6 @@ namespace Generation.TrueGen.Generation
                         if (!propDef)
                             continue;
                         
-                        if (isPath && !propDef.canSpawnOnPath)
-                            continue;
-                        
                         // Edge preference check
                         if (propDef.preferEdges && !IsEdgeChunk(x, y, width, height))
                         {
@@ -81,7 +78,7 @@ namespace Generation.TrueGen.Generation
         
         private void PlaceProp(ChunkNode chunk, PropDefinition propDef)
         {
-            if (propDef.prefab == null)
+            if (!propDef.prefab)
             {
                 Debug.LogWarning($"Prop {propDef.name} has no prefab assigned");
                 return;
@@ -116,11 +113,13 @@ namespace Generation.TrueGen.Generation
             {
                 chunk.chunkType = ChunkType.Blocked;
                 chunk.isBuildable = false;
-                chunk.vertexColor = new Color(0.4f, 0.4f, 0.35f); // Slightly different color
+                chunk.vertexColor = new Color(0.4f, 0.4f, 0.35f);
+                chunk.TextureIndex = 2;
             }
             else
             {
                 chunk.chunkType = ChunkType.Decorative;
+                chunk.TextureIndex = 3;
             }
         }
         

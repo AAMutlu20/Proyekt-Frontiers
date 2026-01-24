@@ -14,7 +14,7 @@ namespace Generation.TrueGen.Systems
         [SerializeField] private int coinsGainedAtDefeat = 1;
 
         [Header("Debug")]
-        [SerializeField] private bool showDebugInfo = false;
+        [SerializeField] private bool showDebugInfo;
         
         private List<Vector3> _waypoints;
         private int _currentWaypointIndex;
@@ -22,9 +22,9 @@ namespace Generation.TrueGen.Systems
         public float DamageAtEndOfPath => damageAtEndOfPath;
         public int CoinsGainAtDefeat => coinsGainedAtDefeat;
 
-        public UnityEvent<EnemyPathFollower> OnPathCompleteEvent = new();
-        public UnityEvent<EnemyPathFollower> OnEnemyKilled = new(); // ADDED - passes self reference
-        public UnityEvent<int> OnEnemyDestroyed = new();
+        public UnityEvent<EnemyPathFollower> onPathCompleteEvent = new();
+        public UnityEvent<EnemyPathFollower> onEnemyKilled = new();
+        public UnityEvent<int> onEnemyDestroyed = new();
         
         /// <summary>
         /// Initialize enemy with path chunks
@@ -131,7 +131,7 @@ namespace Generation.TrueGen.Systems
                 Debug.Log("✓ Enemy reached end of path!");
             
             // Invoke event before destroying
-            OnPathCompleteEvent?.Invoke(this);
+            onPathCompleteEvent?.Invoke(this);
             Destroy(gameObject);
         }
         
@@ -175,14 +175,10 @@ namespace Generation.TrueGen.Systems
         private void OnDestroy()
         {
             // Check if enemy was killed before reaching the end
-            if (_waypoints != null && _currentWaypointIndex < _waypoints.Count)
-            {
-                // Enemy was killed by towers - notify WaveManager to remove from list
-                OnEnemyKilled?.Invoke(this);
-            }
-            
-            // Always give coins when destroyed
-            OnEnemyDestroyed?.Invoke(coinsGainedAtDefeat);
+            if (_waypoints == null || _currentWaypointIndex >= _waypoints.Count) return;
+            // Enemy was killed by towers
+            onEnemyKilled?.Invoke(this);
+            onEnemyDestroyed?.Invoke(coinsGainedAtDefeat);  // Only give coins if killed
         }
     }
 }

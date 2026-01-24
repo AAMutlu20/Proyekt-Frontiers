@@ -38,7 +38,8 @@ namespace Generation.TrueGen.Generation
                 chunk.chunkType = ChunkType.Path;
                 chunk.isBuildable = false;
                 chunk.yOffset = -pathDepth;
-                chunk.vertexColor = new Color(0.4f, 0.3f, 0.2f); // Brown dirt color
+                chunk.vertexColor = new Color(0.4f, 0.3f, 0.2f);
+                chunk.TextureIndex = 1;
             }
         }
         

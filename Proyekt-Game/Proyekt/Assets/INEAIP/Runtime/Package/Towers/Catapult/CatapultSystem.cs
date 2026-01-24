@@ -1,25 +1,41 @@
+// Original Author: Irmin Verhoeff
+// Editors: -
+// Description: A "catapult"s system that uses a seperate detection system to detect targets, then rotates to face them and uses dotween to animate a projectile in an arc to the target. When the animation is complete a method can execute to check for and damage damagables within blast radius.
+
 using DG.Tweening;
 using IrminTimerPackage.Tools;
 using System;
 using UnityEngine;
-using static UnityEngine.GraphicsBuffer;
 
 namespace irminNavmeshEnemyAiUnityPackage
 {
     public class CatapultSystem : MonoBehaviour
     {
+        /// <summary>
+        /// Detection system. Basically a seperate.
+        /// </summary>
         [SerializeField] private DetectionSystem _catapultTargetDetectionSystem;
+        /// <summary>
+        /// Rotation system. Rotates the catapult towards a target on the y axis. This happens over time with a speed value.
+        /// </summary>
         [SerializeField] private YRotationSystem _catapultYRotationSystem;
-        // UNUSED ATM, but could be implemented
+        // UNUSED ATM, but could be implemented. Factionmember component to check faction of hit targets agains faction of this system.
         // [SerializeField] private FactionMemberComponent _factionMemberComponent; 
 
+        /// <summary>
+        /// Timer for cooldown between shooting.
+        /// </summary>
         [SerializeField] IrminTimer _shootCooldownTimer = new();
+        /// <summary>
+        /// Timer for shooting the projectile after the animation starts.
+        /// </summary>
         [SerializeField] IrminTimer _shootTimer = new();
 
         [SerializeField] private Transform _targetTransform;
         [SerializeField] private float _height;
-        [SerializeField] private float _animationDuration;
+        [SerializeField] private float _doTweenArcAnimationDuration;
 
+        // Easing setting for DoTween
         [SerializeField] private Ease _doTweenEase;
 
         //[SerializeField] private float _heightPerDistance;
@@ -29,6 +45,7 @@ namespace irminNavmeshEnemyAiUnityPackage
 
         [SerializeField] private Animator _catapultAnimator;
         [SerializeField] private string _catapultSlingAnimationtriggerName;
+        [SerializeField] private string _catapultRetractAnimationTriggerName;
         [SerializeField] private GameObject _currentlySpawnedShootObject;
 
         [SerializeField] private Transform _slingObjectParent;
@@ -41,10 +58,14 @@ namespace irminNavmeshEnemyAiUnityPackage
 
         [SerializeField] private float _damage = 2f;
 
+        [SerializeField] private bool _useGameObjectPooling = false;
+        [SerializeField] private GameObjectPool _gameObjectPool;
+
         //[SerializeField] private int _halfArcResolution = 3;
 
         private void Start()
         {
+            // Event binding
             _catapultTargetDetectionSystem.OnDetectedNewGameObjectObject.AddListener(DetectedNewPossibleTarget);
             _catapultTargetDetectionSystem.OnNoLongerDetectedGameObject.AddListener(NoLongerDetectionPossibleTarget);
             _shootCooldownTimer.OnTimeElapsed += ShootCatapultWithCooldown;
@@ -52,14 +73,17 @@ namespace irminNavmeshEnemyAiUnityPackage
 
         }
 
-
-
         private void Update()
         {
+            // Timer updates
             _shootCooldownTimer.UpdateTimer(Time.deltaTime);
             _shootTimer.UpdateTimer(Time.deltaTime);
         }
 
+        /// <summary>
+        /// Does some extra checks on a possibly detected target. Then decided to fire at it or not.
+        /// </summary>
+        /// <param name="detectedGameObject">The possible target detected.</param>
         private void DetectedNewPossibleTarget(GameObject detectedGameObject)
         {
             if (_targetTransform == null)
@@ -82,12 +106,16 @@ namespace irminNavmeshEnemyAiUnityPackage
             }
         }
 
+        /// <summary>
+        /// Checks if the target this is currently firing at left its detection collider. If so tries to get a new target from the detection system.
+        /// </summary>
+        /// <param name="pPossibleTarget">The possible target detected leaving the detection collider.</param>
         private void NoLongerDetectionPossibleTarget(GameObject pPossibleTarget)
         {
             if (_targetTransform == pPossibleTarget.transform)
             {
                 GameObject foundNewTarget = GetFirstTargetFromDetector();
-                if (foundNewTarget == null) { _targetTransform = null; _shootCooldownTimer.PauseTimer(); }
+                if (foundNewTarget == null) { _targetTransform = null; _shootCooldownTimer.PauseTimer(); _catapultYRotationSystem.Target = null; }
                 else
                 {
                     _targetTransform = foundNewTarget.transform;
@@ -99,7 +127,8 @@ namespace irminNavmeshEnemyAiUnityPackage
         public void ShootCatapultWithCooldown()
         {
             if (_targetTransform == null) { _shootCooldownTimer.ResetCurrentTime(); _shootCooldownTimer.PauseTimer(); return; }
-            _currentlySpawnedShootObject = Instantiate(_objectToShootPrefab);
+            if (_useGameObjectPooling) { _currentlySpawnedShootObject = _gameObjectPool.GetGameObjectFromPool(_slingObjectParent.transform, null); }
+            else { _currentlySpawnedShootObject = Instantiate(_objectToShootPrefab); }
             _currentlySpawnedShootObject.transform.parent = _slingObjectParent;
             _currentlySpawnedShootObject.transform.localPosition = Vector3.zero;
             _currentlySpawnedShootObject.transform.rotation = _slingObjectParent.rotation;
@@ -115,7 +144,15 @@ namespace irminNavmeshEnemyAiUnityPackage
         // When the animation completes it will call the event to shoot.
         public void Shoot()
         {
-            if (_targetTransform == null) return;
+            if (_targetTransform == null)
+            {
+                if (_useGameObjectPooling) { _gameObjectPool.PoolGameObject(_currentlySpawnedShootObject); }
+                else { Destroy(_currentlySpawnedShootObject); }
+                Debug.Log("Enemy left range, cancelling shot.");
+                _catapultYRotationSystem.Target = null;
+                return;
+            }
+
             _currentlySpawnedShootObject.transform.SetParent(null);
             MoveShootingObjectAlongDoTweenArc();
         }
@@ -146,7 +183,7 @@ namespace irminNavmeshEnemyAiUnityPackage
             };
 
             GameObject shootObject = _currentlySpawnedShootObject;
-            _currentlySpawnedShootObject.transform.DOPath(path, _animationDuration, _pathType).SetEase(_doTweenEase).SetLookAt(0.01f).OnComplete(() =>
+            _currentlySpawnedShootObject.transform.DOPath(path, _doTweenArcAnimationDuration, _pathType).SetEase(_doTweenEase).SetLookAt(0.01f).OnComplete(() =>
             {
                 //ITriggerable foundITriggerable = shootObject.GetComponent<ITriggerable>();
                 //if (foundITriggerable != null) { foundITriggerable.Trigger(gameObject); }
@@ -174,10 +211,14 @@ namespace irminNavmeshEnemyAiUnityPackage
                     }
                     else
                     {
-                        Debug.Log("couldn't find IDamagable");
+                        Debug.Log("Enemy left range, cancelling shot.");
+                        if (_useGameObjectPooling) { _gameObjectPool.PoolGameObject(shootObject); }
+                        else { Destroy(shootObject); }
                     }
                 }
-                Destroy(shootObject);
+                if (_catapultRetractAnimationTriggerName != "") { _catapultAnimator.SetTrigger(_catapultRetractAnimationTriggerName); }
+                if (_useGameObjectPooling) { _gameObjectPool.PoolGameObject(shootObject); }
+                else { Destroy(shootObject); }
             });
         }
     }

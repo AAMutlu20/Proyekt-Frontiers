@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using irminNavmeshEnemyAiUnityPackage;
 using System.ComponentModel;
 using UnityEditor;
@@ -17,3 +18,4 @@ public class Editor_Wave : Editor
         }
     }
 }
+#endif

@@ -11,9 +11,10 @@ namespace Generation.TrueGen.Generation
         private readonly List<int> _triangles = new();
         private readonly List<Vector2> _uvs = new();
         private readonly List<Color> _colors = new();
+        private readonly List<Vector4> _uv2 = new(); // NEW - for texture index and rotation
         
         /// <summary>
-        /// Builds a single mesh from all chunks
+        /// Builds a single mesh from all chunks with texture data
         /// </summary>
         public Mesh BuildCombinedMesh(ChunkNode[,] chunks, bool addPathSides = true)
         {
@@ -33,7 +34,7 @@ namespace Generation.TrueGen.Generation
                     // Add side faces for path edges
                     if (addPathSides && chunk.chunkType == ChunkType.Path)
                     {
-                        AddPathSideFaces(chunk);  // Removed unused 'chunks' parameter
+                        AddPathSideFaces(chunk);
                     }
                 }
             }
@@ -45,6 +46,19 @@ namespace Generation.TrueGen.Generation
         {
             var startIndex = _vertices.Count;
             
+            // Calculate rotation matrix for UVs
+            var rotationRadians = chunk.TextureIndex * Mathf.Deg2Rad;
+            var cosRot = Mathf.Cos(rotationRadians);
+            var sinRot = Mathf.Sin(rotationRadians);
+            
+            // Define base UVs for a quad (0,0) to (1,1)
+            Vector2[] baseUVs = {
+                new Vector2(0, 0),  // Bottom-left
+                new Vector2(1, 0),  // Bottom-right
+                new Vector2(1, 1),  // Top-right
+                new Vector2(0, 1)   // Top-left
+            };
+            
             // Add 4 corners with Y offset applied
             for (var i = 0; i < 4; i++)
             {
@@ -52,20 +66,34 @@ namespace Generation.TrueGen.Generation
                 pos.y += chunk.yOffset;
                 _vertices.Add(pos);
                 
-                // UVs for texture tiling (based on world position)
-                _uvs.Add(new Vector2(pos.x * 0.1f, pos.z * 0.1f));
+                // Rotate UVs around center (0.5, 0.5)
+                var uv = baseUVs[i];
+                var centered = uv - new Vector2(0.5f, 0.5f);
+                var rotated = new Vector2(
+                    centered.x * cosRot - centered.y * sinRot,
+                    centered.x * sinRot + centered.y * cosRot
+                );
+                var finalUV = rotated + new Vector2(0.5f, 0.5f);
                 
-                // Vertex color
+                _uvs.Add(finalUV);
+                
+                // Store texture index in UV2.x and extra data in other channels
+                _uv2.Add(new Vector4(
+                    chunk.TextureIndex,  // x: texture index (0-3)
+                    0,                   // y: unused
+                    0,                   // z: unused  
+                    0                 // w: unused
+                ));
+                
+                // Vertex color (can still be used for tinting)
                 _colors.Add(chunk.vertexColor);
             }
             
             // Two triangles forming the quad
-            // Triangle 1: 0, 2, 1
             _triangles.Add(startIndex + 0);
             _triangles.Add(startIndex + 2);
             _triangles.Add(startIndex + 1);
             
-            // Triangle 2: 0, 3, 2
             _triangles.Add(startIndex + 0);
             _triangles.Add(startIndex + 3);
             _triangles.Add(startIndex + 2);
@@ -73,8 +101,6 @@ namespace Generation.TrueGen.Generation
         
         private void AddPathSideFaces(ChunkNode pathChunk)
         {
-            // For each neighbor, check if it's NOT a path
-            // If so, add a vertical wall between them
             foreach (var sharedEdge in from neighbor in pathChunk.Neighbors 
                      where neighbor.chunkType != ChunkType.Path 
                      select FindSharedEdge(pathChunk, neighbor) into sharedEdge 
@@ -86,14 +112,14 @@ namespace Generation.TrueGen.Generation
                     sharedEdge[1], 
                     pathChunk.yOffset, 
                     0f, 
-                    new Color(0.3f, 0.25f, 0.2f) // Darker brown for walls
+                    new Color(0.3f, 0.25f, 0.2f),
+                    pathChunk.TextureIndex // Use path texture for walls
                 );
             }
         }
         
         private static Vector3[] FindSharedEdge(ChunkNode chunk1, ChunkNode chunk2)
         {
-            // Check all edges of chunk1 against edges of chunk2
             for (var i = 0; i < 4; i++)
             {
                 var c1A = chunk1.worldCorners[i];
@@ -104,7 +130,6 @@ namespace Generation.TrueGen.Generation
                     var c2A = chunk2.worldCorners[j];
                     var c2B = chunk2.worldCorners[(j + 1) % 4];
                     
-                    // Check if edges match (allowing for reversed direction)
                     if ((Vector3.Distance(c1A, c2A) < 0.01f && Vector3.Distance(c1B, c2B) < 0.01f) ||
                         (Vector3.Distance(c1A, c2B) < 0.01f && Vector3.Distance(c1B, c2A) < 0.01f))
                     {
@@ -116,7 +141,7 @@ namespace Generation.TrueGen.Generation
             return null;
         }
         
-        private void AddVerticalQuad(Vector3 bottom1, Vector3 bottom2, float yBottom, float yTop, Color color)
+        private void AddVerticalQuad(Vector3 bottom1, Vector3 bottom2, float yBottom, float yTop, Color color, int textureIndex)
         {
             var startIndex = _vertices.Count;
             
@@ -138,10 +163,13 @@ namespace Generation.TrueGen.Generation
             _uvs.Add(Vector2.one);
             _uvs.Add(Vector2.up);
             
+            // Add texture data for walls
             for (var i = 0; i < 4; i++)
+            {
                 _colors.Add(color);
+                _uv2.Add(new Vector4(textureIndex, 0, 0, 0));
+            }
             
-            // Two triangles
             _triangles.Add(startIndex + 0);
             _triangles.Add(startIndex + 2);
             _triangles.Add(startIndex + 1);
@@ -156,15 +184,17 @@ namespace Generation.TrueGen.Generation
             var mesh = new Mesh
             {
                 name = "ChunkTerrain",
-                indexFormat = UnityEngine.Rendering.IndexFormat.UInt32 // Support large meshes
+                indexFormat = UnityEngine.Rendering.IndexFormat.UInt32
             };
 
             mesh.SetVertices(_vertices);
             mesh.SetTriangles(_triangles, 0);
             mesh.SetUVs(0, _uvs);
+            mesh.SetUVs(1, _uv2);
             mesh.SetColors(_colors);
             
             mesh.RecalculateNormals();
+            mesh.RecalculateTangents();
             mesh.RecalculateBounds();
             
             return mesh;
@@ -176,6 +206,7 @@ namespace Generation.TrueGen.Generation
             _triangles.Clear();
             _uvs.Clear();
             _colors.Clear();
+            _uv2.Clear();
         }
     }
 }

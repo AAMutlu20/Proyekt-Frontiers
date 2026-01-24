@@ -26,13 +26,8 @@ namespace Generation.TrueGen.Systems
         /// </summary>
         public ChunkNode GetChunkAtWorldPosition(Vector3 worldPos)
         {
-            // ADD NULL CHECK
-            if (Chunks == null)
-            {
-                return null;
-            }
-            
-            return Chunks.Cast<ChunkNode>().FirstOrDefault(chunk => IsPointInQuad(worldPos, chunk.worldCorners));
+
+            return Chunks?.Cast<ChunkNode>().FirstOrDefault(chunk => IsPointInQuad(worldPos, chunk.worldCorners));
         }
         
         /// <summary>
@@ -40,7 +35,6 @@ namespace Generation.TrueGen.Systems
         /// </summary>
         private ChunkNode GetChunk(int x, int y)
         {
-            // ADD NULL CHECK
             if (Chunks == null || x < 0 || x >= Width || y < 0 || y >= Height)
                 return null;
             
@@ -54,7 +48,6 @@ namespace Generation.TrueGen.Systems
         {
             var result = new List<ChunkNode>();
             
-            // ADD NULL CHECK
             if (Chunks == null)
                 return result;
             
@@ -67,7 +60,6 @@ namespace Generation.TrueGen.Systems
                         result.Add(chunk);
                 }
             }
-            
             return result;
         }
         
@@ -76,7 +68,6 @@ namespace Generation.TrueGen.Systems
         /// </summary>
         public bool CanBuildAt(int originX, int originY, int footprintWidth, int footprintHeight)
         {
-            // ADD NULL CHECK
             if (Chunks == null)
                 return false;
             
@@ -107,7 +98,6 @@ namespace Generation.TrueGen.Systems
                 if (cross < 0)
                     return false;
             }
-            
             return true;
         }
     }
