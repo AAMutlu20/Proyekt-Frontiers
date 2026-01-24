@@ -300,12 +300,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: faebb56c8dba3ffdb91d7fb7efe14745, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CameraControls
-  cameraSpeedIncrement: 0.0005
-  cameraSpeedLimit: 0.02
-  cameraDrag: 0.0001
-  tiltAmount: 100
-  tiltMax: 30
-  velocity: {x: 0, y: 0, z: 0}
+  cameraSpeedIncrement: 0.01
+  cameraSpeedLimit: 0.1
+  damping: 0.95
+  rotationSpeed: 1
+  tiltAmount: 10
+  tiltMax: 100
 --- !u!1 &539627651
 GameObject:
   m_ObjectHideFlags: 0

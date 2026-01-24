@@ -3,16 +3,16 @@ using UnityEngine.InputSystem;
 
 public class CameraControls : MonoBehaviour {
 	[Header("Movement")]
-	[SerializeField] private float cameraSpeedIncrement = 0.5f;
-	[SerializeField] private float cameraSpeedLimit = 3f;
+	[SerializeField] private float cameraSpeedIncrement = 0.01f;
+	[SerializeField] private float cameraSpeedLimit = 0.1f;
 	[SerializeField] [Range(0f, 1f)] private float damping = 0.95f;
 
 	[Header("Rotation")]
 	[SerializeField] private float rotationSpeed = 1f;
 	
 	[Header("Tilt")]
-	[SerializeField] private float tiltAmount = 1f;
-	[SerializeField] private float tiltMax = 10;
+	[SerializeField] private float tiltAmount = 10f;
+	[SerializeField] private float tiltMax = 100f;
 
 
 	private Vector3 globalVel;
