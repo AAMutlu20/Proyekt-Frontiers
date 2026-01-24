@@ -2,35 +2,34 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class CameraControls : MonoBehaviour {
-	public float cameraSpeedIncrement = 0.5f;
-	public float cameraSpeedLimit = 3f;
-	public float cameraDrag = 0.0001f;
+	[Header("Movement")]
+	[SerializeField] private float cameraSpeedIncrement = 0.5f;
+	[SerializeField] private float cameraSpeedLimit = 3f;
+	[SerializeField] [Range(0f, 1f)] private float damping = 0.95f;
 
-	public float rotationSpeed = 1f;
+	[Header("Rotation")]
+	[SerializeField] private float rotationSpeed = 1f;
+	
+	[Header("Tilt")]
+	[SerializeField] private float tiltAmount = 1f;
+	[SerializeField] private float tiltMax = 10;
 
-	public float tiltAmount = 1f;
-	public float tiltMax = 10;
 
-	public Transform cube;
-
-	// public for testing purposes
-	public Vector3 velocity;
-	public Vector3 velocityHelp;
+	private Vector3 globalVel;
+	private Vector3 localVel;
 
 	private Quaternion originalRotation;
 	
-	public Quaternion baseRotation = Quaternion.Euler(new Vector3(0, 0, 0));
-	public Vector3 basePosition = new Vector3(0,0,0);
+	private Quaternion baseRotation = Quaternion.Euler(new Vector3(0, 0, 0));
+	private Vector3 basePosition = new Vector3(0,0,0);
 
-	public Vector3 hitPoint;
+	private Vector3 hitPoint;
 
-	[SerializeField] private bool panning = false;
+	private bool panning = false;
 
 	void Awake() {
-		//originalRotation = transform.rotation;
 		baseRotation = transform.rotation;
 		basePosition = transform.position;
-		//velocity = transform.forward;
 	}
 
 	void Update() {
@@ -42,46 +41,30 @@ public class CameraControls : MonoBehaviour {
 		//  |_|  |_|\___/ \_/ \___|_| |_| |_|\___|_| |_|\__|
                                                  
                                                  	
+		Vector3 input = Vector3.zero;
+
 		// Left and right, respectively
-
-		if (Keyboard.current.aKey.isPressed) {
-			velocity -= transform.right * cameraSpeedIncrement; // (cameraSpeedIncrement, 0, 0);
-			velocityHelp -= Vector3.right * cameraSpeedIncrement; // (cameraSpeedIncrement, 0, 0);
-		}
-		if (Keyboard.current.dKey.isPressed) {
-			velocity += transform.right * cameraSpeedIncrement; //(cameraSpeedIncrement, 0, 0);
-			velocityHelp += Vector3.right * cameraSpeedIncrement; // (cameraSpeedIncrement, 0, 0);
-
-		}
+		if (Keyboard.current.aKey.isPressed) input.x -= 1f;
+		if (Keyboard.current.dKey.isPressed) input.x += 1f;
 		
 		// Forwards and backwards, respectively
-		
-		if (Keyboard.current.wKey.isPressed) {
-			velocity += transform.forward * cameraSpeedIncrement;
-			velocityHelp += Vector3.forward * cameraSpeedIncrement;
-			//velocity += new Vector3(0, 0, cameraSpeedIncrement);
-		}
-		
-		if (Keyboard.current.sKey.isPressed) {
-			velocity -= transform.forward * cameraSpeedIncrement;
-			velocityHelp -= Vector3.forward * cameraSpeedIncrement;
-		}
+		if (Keyboard.current.wKey.isPressed) input.z += 1f;
+		if (Keyboard.current.sKey.isPressed) input.z -= 1f;
 
+		localVel += input * cameraSpeedIncrement;
 	
 		// Slow down
-		velocity = Vector3.Scale(velocity, new Vector3(0.95f,0.95f,0.95f));
-		velocityHelp = Vector3.Scale(velocity, new Vector3(0.95f,0.95f,0.95f));
+		localVel *= damping; //Vector3.Scale(localVel, new Vector3(0.95f,0.95f,0.95f));
 
 		// Clamp
-		velocity.x = Mathf.Clamp(velocity.x, -cameraSpeedLimit, cameraSpeedLimit);
-		velocity.z = Mathf.Clamp(velocity.z, -cameraSpeedLimit, cameraSpeedLimit);
-		velocityHelp.x = Mathf.Clamp(velocityHelp.x, -cameraSpeedLimit, cameraSpeedLimit);
-		velocityHelp.z = Mathf.Clamp(velocityHelp.z, -cameraSpeedLimit, cameraSpeedLimit);
+		localVel.x = Mathf.Clamp(localVel.x, -cameraSpeedLimit, cameraSpeedLimit);
+		localVel.z = Mathf.Clamp(localVel.z, -cameraSpeedLimit, cameraSpeedLimit);
 		
 		// Apply
-		velocity = new Vector3(velocity.x, 0, velocity.z);
-		velocityHelp = new Vector3(velocityHelp.x, 0, velocityHelp.z);
-		basePosition += velocity;
+		localVel.y = 0f;
+		globalVel = transform.TransformDirection(localVel);
+		globalVel.y = 0f;
+		basePosition += globalVel;
 
 		//   _______ _ _ _   
 		//  |__   __(_) | |  
@@ -93,13 +76,8 @@ public class CameraControls : MonoBehaviour {
 
 		Vector3 myRotation = new Vector3(0,0,0);
 
-		myRotation.x = Mathf.Clamp(velocityHelp.z * tiltAmount, -tiltMax, tiltMax);
-		myRotation.z = -Mathf.Clamp(velocityHelp.x * tiltAmount, -tiltMax, tiltMax);
-
-		//Vector3 facingDir = transform.forward;
-		//Vector3 facingEuler = Quaternion.LookRotation(facingDir).eulerAngles;
-		//myRotation += facingEuler;
-
+		myRotation.x = Mathf.Clamp(localVel.z * tiltAmount, -tiltMax, tiltMax);
+		myRotation.z = -Mathf.Clamp(localVel.x * tiltAmount, -tiltMax, tiltMax);
 
 		//  ____                   _             
 		// |  _ \ __ _ _ __  _ __ (_)_ __   __ _ 
@@ -116,7 +94,8 @@ public class CameraControls : MonoBehaviour {
 			Cursor.visible = false;
 
 			Vector2 mousePos = Mouse.current.position.ReadValue();
-			Ray ray = Camera.main.ScreenPointToRay(mousePos);
+			//Ray ray = Camera.main.ScreenPointToRay(mousePos);
+			Ray ray = Camera.main.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
 			RaycastHit hit;
 
 			// Made-up point for testing purposes
