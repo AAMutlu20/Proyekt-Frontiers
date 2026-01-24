@@ -124,6 +124,12 @@ public class CameraControls : MonoBehaviour {
 				);
 			Debug.DrawRay(hitPoint, Vector3.up * 0.05f, Color.red);
 		}
+
+		// Zooming
+		float scroll = Mouse.current.scroll.ReadValue().y;
+		Vector3 zoom = transform.forward * scroll;
+		basePosition += zoom;
+
 		transform.rotation = baseRotation * Quaternion.Euler(myRotation);
 		transform.position = basePosition;
 	}
