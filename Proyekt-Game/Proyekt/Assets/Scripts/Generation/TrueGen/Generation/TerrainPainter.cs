@@ -7,17 +7,15 @@ namespace Generation.TrueGen.Generation
 {
     public class TerrainPainter
     {
-        private static readonly int BaseMap = Shader.PropertyToID("_BaseMap");
-        private static readonly int BumpMap = Shader.PropertyToID("_BumpMap");
         private readonly TerrainData _terrainData;
         private readonly int _alphamapResolution;
-        private readonly float[,,] _alphaMaps;
+        private float[,,] _alphaMaps;
         
         public TerrainPainter(TerrainData terrainData)
         {
             _terrainData = terrainData;
             _alphamapResolution = terrainData.alphamapResolution;
-            _alphaMaps = _terrainData.GetAlphamaps(0, 0, _alphamapResolution, _alphamapResolution);
+            // DON'T get alphamaps here - wait until after layers are set!
         }
         
         /// <summary>
@@ -25,21 +23,74 @@ namespace Generation.TrueGen.Generation
         /// </summary>
         public void SetupTextureLayers(TerrainMaterialSet materialSet)
         {
+            Debug.Log("=== Setting up Terrain Layers ===");
+            
             var layers = new TerrainLayer[4];
             
             // Layer 0: Grass (buildable)
-            layers[0] = CreateTerrainLayer(materialSet.buildableMaterial, materialSet.buildableTiling);
+            Debug.Log("Creating Grass layer...");
+            layers[0] = CreateTerrainLayerFromMaterial(
+                "Grass", 
+                materialSet.buildableMaterial,
+                materialSet.buildableTiling,
+                new Color(0.5f, 0.7f, 0.3f) // Green fallback
+            );
             
             // Layer 1: Path (dirt/stone)
-            layers[1] = CreateTerrainLayer(materialSet.pathMaterial, materialSet.pathTiling);
+            Debug.Log("Creating Path layer...");
+            layers[1] = CreateTerrainLayerFromMaterial(
+                "Path",
+                materialSet.pathMaterial,
+                materialSet.pathTiling,
+                new Color(0.6f, 0.5f, 0.4f) // Brown fallback
+            );
             
             // Layer 2: Blocked (rock)
-            layers[2] = CreateTerrainLayer(materialSet.blockedMaterial, materialSet.blockedTiling);
+            Debug.Log("Creating Blocked layer...");
+            layers[2] = CreateTerrainLayerFromMaterial(
+                "Blocked",
+                materialSet.blockedMaterial,
+                materialSet.blockedTiling,
+                new Color(0.4f, 0.4f, 0.4f) // Gray fallback
+            );
             
             // Layer 3: Decorative
-            layers[3] = CreateTerrainLayer(materialSet.decorativeMaterial, materialSet.decorativeTiling);
+            Debug.Log("Creating Decorative layer...");
+            layers[3] = CreateTerrainLayerFromMaterial(
+                "Decorative",
+                materialSet.decorativeMaterial,
+                materialSet.decorativeTiling,
+                new Color(0.6f, 0.5f, 0.7f) // Purple fallback
+            );
             
+            // Verify all layers are valid
+            for (var i = 0; i < layers.Length; i++)
+            {
+                if (layers[i] == null)
+                {
+                    Debug.LogError($"Layer {i} is NULL!");
+                    layers[i] = CreateFallbackLayer($"Fallback_{i}", Color.magenta);
+                }
+                else if (layers[i].diffuseTexture == null)
+                {
+                    Debug.LogError($"Layer {i} has NULL diffuse texture!");
+                    layers[i].diffuseTexture = CreateSolidColorTexture(Color.magenta, 64);
+                }
+                else
+                {
+                    Debug.Log($"✓ Layer {i} ({layers[i].name}) valid: {layers[i].diffuseTexture.width}x{layers[i].diffuseTexture.height}");
+                }
+            }
+            
+            // SET LAYERS FIRST!
             _terrainData.terrainLayers = layers;
+            
+            Debug.Log($"Terrain now has {_terrainData.terrainLayers.Length} layers");
+            
+            // NOW get alphamaps with correct dimensions
+            _alphaMaps = _terrainData.GetAlphamaps(0, 0, _alphamapResolution, _alphamapResolution);
+            
+            Debug.Log($"Alphamap dimensions: {_alphaMaps.GetLength(0)} x {_alphaMaps.GetLength(1)} x {_alphaMaps.GetLength(2)}");
             
             // Initialize with grass everywhere
             for (var y = 0; y < _alphamapResolution; y++)
@@ -52,22 +103,154 @@ namespace Generation.TrueGen.Generation
                     _alphaMaps[y, x, 3] = 0f;
                 }
             }
+            
+            _terrainData.SetAlphamaps(0, 0, _alphaMaps);
+            
+            Debug.Log("✓ Terrain layers configured and alpha maps initialized");
         }
         
-        private static TerrainLayer CreateTerrainLayer(Material material, float tiling)
+        /// <summary>
+        /// Create terrain layer from material with fallback color
+        /// </summary>
+        private TerrainLayer CreateTerrainLayerFromMaterial(string name, Material material, float tiling, Color fallbackColor)
         {
-            var layer = new TerrainLayer();
+            Texture2D diffuseTexture = null;
+            Texture2D normalTexture = null;
             
-            // Extract textures from material
-            if (material.HasProperty(BaseMap))
-                layer.diffuseTexture = material.GetTexture(BaseMap) as Texture2D;
+            if (material != null)
+            {
+                Debug.Log($"  Material: {material.name}, Shader: {material.shader.name}");
+                
+                // Try to extract textures
+                diffuseTexture = ExtractTextureFromMaterial(material);
+                normalTexture = ExtractNormalMapFromMaterial(material);
+                
+                if (diffuseTexture != null)
+                {
+                    Debug.Log($"  ✓ Found diffuse texture: {diffuseTexture.name} ({diffuseTexture.width}x{diffuseTexture.height})");
+                }
+                else
+                {
+                    Debug.LogWarning($"  ⚠ No diffuse texture found in material {material.name}");
+                }
+            }
+            else
+            {
+                Debug.LogError($"  ✗ Material is NULL for {name}");
+            }
             
-            if (material.HasProperty(BumpMap))
-                layer.normalMapTexture = material.GetTexture(BumpMap) as Texture2D;
+            // Create fallback if no texture found
+            if (diffuseTexture == null)
+            {
+                Debug.Log($"  Creating fallback texture with color {fallbackColor}");
+                diffuseTexture = CreateSolidColorTexture(fallbackColor, 256);
+            }
             
-            layer.tileSize = new Vector2(tiling * 10f, tiling * 10f); // Adjust scale
+            var layer = new TerrainLayer
+            {
+                name = name,
+                diffuseTexture = diffuseTexture,
+                normalMapTexture = normalTexture,
+                tileSize = new Vector2(tiling * 10f, tiling * 10f),
+                tileOffset = Vector2.zero,
+                metallic = 0f,
+                smoothness = 0f,
+                specular = Color.black
+            };
             
             return layer;
+        }
+        
+        /// <summary>
+        /// Extract diffuse texture from material
+        /// </summary>
+        private Texture2D ExtractTextureFromMaterial(Material material)
+        {
+            if (material == null) return null;
+            
+            // Check all common texture property names
+            string[] texturePropertyNames = { "_BaseMap", "_MainTex", "_BaseColorMap", "_AlbedoMap" };
+            
+            foreach (var propName in texturePropertyNames)
+            {
+                if (material.HasProperty(propName))
+                {
+                    var texture = material.GetTexture(propName) as Texture2D;
+                    if (texture != null)
+                    {
+                        Debug.Log($"    Found texture at property: {propName}");
+                        return texture;
+                    }
+                }
+            }
+            
+            return null;
+        }
+        
+        /// <summary>
+        /// Extract normal map from material
+        /// </summary>
+        private Texture2D ExtractNormalMapFromMaterial(Material material)
+        {
+            if (material == null) return null;
+            
+            string[] normalPropertyNames = { "_BumpMap", "_NormalMap" };
+            
+            foreach (var propName in normalPropertyNames)
+            {
+                if (material.HasProperty(propName))
+                {
+                    var texture = material.GetTexture(propName) as Texture2D;
+                    if (texture != null)
+                    {
+                        return texture;
+                    }
+                }
+            }
+            
+            return null;
+        }
+        
+        /// <summary>
+        /// Create a solid color texture
+        /// </summary>
+        private Texture2D CreateSolidColorTexture(Color color, int size)
+        {
+            var texture = new Texture2D(size, size, TextureFormat.RGBA32, false)
+            {
+                name = $"GeneratedTexture_{color}",
+                wrapMode = TextureWrapMode.Repeat
+            };
+            
+            var pixels = new Color[size * size];
+            for (var i = 0; i < pixels.Length; i++)
+            {
+                pixels[i] = color;
+            }
+            
+            texture.SetPixels(pixels);
+            texture.Apply();
+            
+            Debug.Log($"    Created {size}x{size} texture with color {color}");
+            
+            return texture;
+        }
+        
+        /// <summary>
+        /// Create emergency fallback layer
+        /// </summary>
+        private TerrainLayer CreateFallbackLayer(string name, Color color)
+        {
+            return new TerrainLayer
+            {
+                name = name,
+                diffuseTexture = CreateSolidColorTexture(color, 64),
+                tileSize = new Vector2(10f, 10f),
+                tileOffset = Vector2.zero,
+                metallic = 0f,
+                smoothness = 0f,
+                specular = Color.black
+            };
         }
         
         /// <summary>
@@ -77,6 +260,11 @@ namespace Generation.TrueGen.Generation
         {
             if (pathChunks == null || pathChunks.Count < 2)
                 return;
+            
+            Debug.Log($"Painting path with {pathChunks.Count} chunks...");
+            
+            // Refresh alphamaps
+            _alphaMaps = _terrainData.GetAlphamaps(0, 0, _alphamapResolution, _alphamapResolution);
             
             var splinePoints = new List<Vector3>();
             foreach (var chunk in pathChunks)
@@ -126,6 +314,11 @@ namespace Generation.TrueGen.Generation
             var width = chunks.GetLength(0);
             var height = chunks.GetLength(1);
             var terrainSize = _terrainData.size;
+            
+            Debug.Log($"Painting chunk types on {width}x{height} grid...");
+            
+            // Refresh alphamaps
+            _alphaMaps = _terrainData.GetAlphamaps(0, 0, _alphamapResolution, _alphamapResolution);
             
             for (var y = 0; y < height; y++)
             {
@@ -194,8 +387,8 @@ namespace Generation.TrueGen.Generation
                     var sum = 0f;
                     for (var layer = 0; layer < 4; layer++)
                         sum += _alphaMaps[alphaY, alphaX, layer];
-
-                    if (!(sum > 0)) continue;
+                    
+                    if (sum > 0)
                     {
                         for (var layer = 0; layer < 4; layer++)
                             _alphaMaps[alphaY, alphaX, layer] /= sum;

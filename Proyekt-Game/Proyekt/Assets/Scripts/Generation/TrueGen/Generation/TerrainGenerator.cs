@@ -5,7 +5,7 @@ namespace Generation.TrueGen.Generation
     public class TerrainGenerator
     {
         private readonly int _seed;
-        private readonly Terrain _terrain;
+        private Terrain _terrain;
         private readonly TerrainData _terrainData;
         
         public TerrainGenerator(int seed, Vector3 position, int resolution = 512)
@@ -21,23 +21,10 @@ namespace Generation.TrueGen.Generation
                 alphamapResolution = 512
             };
             
-            // Create Terrain GameObject
-            var terrainObj = new GameObject("ProceduralTerrain")
-            {
-                transform =
-                {
-                    position = position
-                }
-            };
-
-            _terrain = terrainObj.AddComponent<Terrain>();
-            _terrain.terrainData = _terrainData;
-            
-            var collider = terrainObj.AddComponent<TerrainCollider>();
-            collider.terrainData = _terrainData;
-            
             // Initialize with flat heightmap
             InitializeFlatTerrain();
+            
+            // Wait until after all data is set, before making creating the terrain.
         }
         
         private void InitializeFlatTerrain()
@@ -53,7 +40,7 @@ namespace Generation.TrueGen.Generation
                 for (var x = 0; x < resolution; x++)
                 {
                     // Base height (normalized 0-1)
-                    const float baseHeight = 0.5f;
+                    var baseHeight = 0.5f;
                     
                     // Add Perlin noise for gentle variation
                     var noise = Mathf.PerlinNoise(
@@ -67,6 +54,38 @@ namespace Generation.TrueGen.Generation
             }
             
             _terrainData.SetHeights(0, 0, heights);
+        }
+        
+        /// <summary>
+        /// Create the actual terrain GameObject AFTER all data is set up
+        /// </summary>
+        public Terrain CreateTerrainObject(Vector3 position)
+        {
+            Debug.Log("Creating fresh Terrain GameObject with configured data...");
+            
+            // Create NEW terrain GameObject
+            var terrainObj = new GameObject("ProceduralTerrain")
+            {
+                transform =
+                {
+                    position = position
+                }
+            };
+
+            // Add Terrain component and assign the pre-configured data
+            _terrain = terrainObj.AddComponent<Terrain>();
+            _terrain.terrainData = _terrainData;
+            
+            // Add TerrainCollider
+            var collider = terrainObj.AddComponent<TerrainCollider>();
+            collider.terrainData = _terrainData;
+            
+            // Force terrain to refresh
+            _terrain.Flush();
+            
+            Debug.Log("✓ Terrain object created successfully");
+            
+            return _terrain;
         }
         
         public Terrain GetTerrain() => _terrain;

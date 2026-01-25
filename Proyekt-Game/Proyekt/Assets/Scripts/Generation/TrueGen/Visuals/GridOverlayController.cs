@@ -1,7 +1,7 @@
 using Generation.TrueGen.Core;
 using Generation.TrueGen.Systems;
 using UnityEngine;
-using UnityEngine.InputSystem; // ADD THIS
+using UnityEngine.InputSystem;
 
 namespace Generation.TrueGen.Visuals
 {
@@ -25,6 +25,7 @@ namespace Generation.TrueGen.Visuals
         private MeshRenderer _gridRenderer;
         private bool _isPlacementMode;
         private ChunkNode _hoveredChunk;
+        private bool _isTerrainMode; // NEW
         
         private static readonly int GridColorProperty = Shader.PropertyToID("_GridColor");
         private static readonly int BaseColor = Shader.PropertyToID("_BaseColor");
@@ -34,9 +35,6 @@ namespace Generation.TrueGen.Visuals
         private static readonly int DstBlend = Shader.PropertyToID("_DstBlend");
         private static readonly int ZWrite = Shader.PropertyToID("_ZWrite");
 
-        /// <summary>
-        /// Initialize with custom material (useful for runtime creation)
-        /// </summary>
         public void Initialize(Material material)
         {
             gridOverlayMaterial = material;
@@ -46,6 +44,16 @@ namespace Generation.TrueGen.Visuals
         {
             _chunkGrid = GetComponent<ChunkGrid>();
             _buildingPlacement = GetComponent<BuildingPlacement>();
+            
+            // Check if this is terrain mode or mesh mode
+            _isTerrainMode = GetComponent<Terrain>() != null;
+            
+            if (_isTerrainMode)
+            {
+                Debug.Log("Grid overlay disabled - using Unity Terrain mode");
+                enabled = false; // Disable grid overlay for terrain mode
+                return;
+            }
             
             if (!gridOverlayMaterial)
             {
@@ -74,12 +82,24 @@ namespace Generation.TrueGen.Visuals
         
         private void CreateGridOverlay()
         {
-            // Create a duplicate of the terrain mesh for overlay
-            var terrainMesh = GetComponent<MeshFilter>().sharedMesh;
+            // Only works for mesh mode
+            var meshFilter = GetComponent<MeshFilter>();
+            if (!meshFilter)
+            {
+                Debug.LogWarning("GridOverlayController: No MeshFilter found, skipping grid overlay");
+                return;
+            }
+            
+            var terrainMesh = meshFilter.sharedMesh;
+            if (!terrainMesh)
+            {
+                Debug.LogWarning("GridOverlayController: No mesh found, skipping grid overlay");
+                return;
+            }
             
             _gridOverlay = new GameObject("GridOverlay");
             _gridOverlay.transform.SetParent(transform);
-            _gridOverlay.transform.localPosition = Vector3.up * 0.01f; // Slight offset to avoid z-fighting
+            _gridOverlay.transform.localPosition = Vector3.up * 0.01f;
             _gridOverlay.transform.localRotation = Quaternion.identity;
             _gridOverlay.transform.localScale = Vector3.one;
             
@@ -90,7 +110,6 @@ namespace Generation.TrueGen.Visuals
             _gridRenderer.material = gridOverlayMaterial;
             _gridRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             
-            // Start hidden
             _gridOverlay.SetActive(false);
         }
         
@@ -101,7 +120,6 @@ namespace Generation.TrueGen.Visuals
     
             _hoveredChunk = _buildingPlacement.GetChunkUnderMouse();
     
-            // Show/hide grid based on hover
             if (_gridOverlay)
             {
                 _gridOverlay.SetActive(_hoveredChunk != null || _isPlacementMode);
@@ -122,7 +140,6 @@ namespace Generation.TrueGen.Visuals
                 return;
             }
     
-            // Check if placement is valid
             var canBuild = _chunkGrid.CanBuildAt(_hoveredChunk.gridX, _hoveredChunk.gridY, 1, 1);
             var color = canBuild ? validPlacementColor : invalidPlacementColor;
     
@@ -150,10 +167,9 @@ namespace Generation.TrueGen.Visuals
         {
             gridOverlayMaterial = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
             gridOverlayMaterial.SetColor(BaseColor, new Color(1, 0, 0, 0.8f));
-            gridOverlayMaterial.SetFloat(Surface, 1); // Transparent
-            gridOverlayMaterial.SetFloat(Blend, 0); // Alpha blend
+            gridOverlayMaterial.SetFloat(Surface, 1);
+            gridOverlayMaterial.SetFloat(Blend, 0);
     
-            // Enable transparency
             gridOverlayMaterial.SetOverrideTag("RenderType", "Transparent");
             gridOverlayMaterial.SetInt(SrcBlend, (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
             gridOverlayMaterial.SetInt(DstBlend, (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);

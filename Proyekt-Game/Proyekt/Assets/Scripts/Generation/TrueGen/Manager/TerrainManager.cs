@@ -143,21 +143,16 @@ namespace Generation.TrueGen.Manager
         }
 
         /// <summary>
-        /// NEW - Generate terrain using Unity Terrain system
+        /// Generate terrain using Unity Terrain system
         /// </summary>
         private void GenerateTerrainMode()
         {
             var actualSeed = randomizeSeed ? Random.Range(0, 999999) : seed;
             Debug.Log($"🌍 Generating UNITY TERRAIN with seed: {actualSeed}");
             
-            // Step 1: Create Unity Terrain
+            // Step 1: Create TerrainData (but not the GameObject yet)
             var terrainGen = new TerrainGenerator(actualSeed, transform.position, terrainResolution);
-            _terrain = terrainGen.GetTerrain();
             var terrainData = terrainGen.GetTerrainData();
-            
-            // Parent to this manager
-            _terrain.transform.SetParent(transform);
-            _terrainObject = _terrain.gameObject;
             
             // Step 2: Generate logical ChunkGrid (invisible, regular grid for gameplay)
             var chunkGen = new ChunkGenerator(actualSeed);
@@ -181,29 +176,30 @@ namespace Generation.TrueGen.Manager
             painter.PaintPath(pathChunks, chunkSize * 0.7f);
             painter.PaintChunkTypes(_chunks);
             
-            // Step 7: Place props on terrain
+            // Step 7: NOW create the actual terrain GameObject with all data configured
+            _terrain = terrainGen.CreateTerrainObject(transform.position);
+            _terrain.transform.SetParent(transform);
+            _terrainObject = _terrain.gameObject;
+            
+            // Step 8: Place props on terrain
             if (generateProps && propDefinitions is { Length: > 0 })
             {
                 var propGen = new PropGenerator(actualSeed + 3, transform);
-                propGen.GenerateProps(_chunks, pathChunks, propDefinitions, _terrain); // Pass terrain
+                propGen.GenerateProps(_chunks, pathChunks, propDefinitions, _terrain);
             }
             
-            // Step 8: Setup ChunkGrid component
+            // Step 9: Setup ChunkGrid component
             _chunkGrid = _terrainObject.AddComponent<ChunkGrid>();
             _chunkGrid.Initialize(_chunks, pathChunks);
             
-            // Step 9: Building placement (works on logical grid)
+            // Step 10: Building placement (works on logical grid)
             var buildingPlacement = _terrainObject.AddComponent<BuildingPlacement>();
             buildingPlacement.Initialize(_chunkGrid);
             
-            // Step 10: Grid overlay
-            if (gridOverlayMaterial)
-            {
-                var gridOverlay = _terrainObject.AddComponent<GridOverlayController>();
-                gridOverlay.Initialize(gridOverlayMaterial);
-            }
+            // Step 11: Grid overlay (skip for terrain mode)
+            // Grid overlay is designed for mesh mode only
             
-            // Step 11: Wave Manager (unchanged)
+            // Step 12: Wave Manager (unchanged)
             if (enableWaveSystem)
             {
                 _waveManager = _terrainObject.AddComponent<WaveManager>();
@@ -219,7 +215,7 @@ namespace Generation.TrueGen.Manager
         }
 
         /// <summary>
-        /// EXISTING - Generate terrain using custom mesh system
+        /// Generate terrain using custom mesh system
         /// </summary>
         private void GenerateMeshMode()
         {
