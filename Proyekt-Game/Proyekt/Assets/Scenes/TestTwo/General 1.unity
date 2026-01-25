@@ -1797,12 +1797,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: faebb56c8dba3ffdb91d7fb7efe14745, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CameraControls
-  cameraSpeedIncrement: 0.5
-  cameraSpeedLimit: 3
+  cameraSpeedIncrement: 0.01
+  cameraSpeedLimit: 0.1
   damping: 0.95
   rotationSpeed: 1
-  tiltAmount: 1
-  tiltMax: 10
+  tiltAmount: 10
+  tiltMax: 100
 --- !u!1 &2040218743
 GameObject:
   m_ObjectHideFlags: 0
@@ -1834,21 +1834,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Generation.TrueGen.Manager.TerrainManager
   generateOnStart: 1
   generationDelay: 0
-  gridWidth: 20
-  gridHeight: 15
+  useUnityTerrain: 0
+  terrainResolution: 512
+  gridSize: 20
   chunkSize: 10
   distortionAmount: 2
   seed: 12345
   randomizeSeed: 1
   pathDepth: 0.3
-  pathRandomness: 0.2
+  spiralTightness: 0.6
   addPathSides: 1
   propDefinitions:
   - {fileID: 11400000, guid: ceb569d25a5f0884f8cc0792b0756563, type: 2}
   - {fileID: 11400000, guid: 0c7d1f12ef82fbd4bb89d364e348ea06, type: 2}
   - {fileID: 11400000, guid: 9a8d750c521aca24e8b023399b4a7e54, type: 2}
   generateProps: 1
-  randomBlockerChance: 0.05
   materialSet: {fileID: 11400000, guid: d1278d99e02b02841b2d0766889537e2, type: 2}
   gridOverlayMaterial: {fileID: 2100000, guid: 3d021334f28de954b8c0338be62e6fb8, type: 2}
   enableWaveSystem: 1
