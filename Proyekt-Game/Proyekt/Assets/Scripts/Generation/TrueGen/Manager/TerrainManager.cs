@@ -12,25 +12,32 @@ namespace Generation.TrueGen.Manager
 {
     public class TerrainManager : MonoBehaviour
     {
+        [Header("Runtime Settings")]
+        [SerializeField] private bool generateOnStart = true;
+        [SerializeField] private float generationDelay;
+        
+        [Header("Terrain Mode")]
+        [SerializeField] private bool useUnityTerrain = true; // Toggle between systems
+        [SerializeField] private int terrainResolution = 512;
+        
         [Header("Generation Settings")]
-        [SerializeField] private int gridWidth = 20;
-        [SerializeField] private int gridHeight = 15;
+        [SerializeField] private int gridSize = 20;
         [SerializeField] private float chunkSize = 10f;
         [SerializeField] private float distortionAmount = 2f;
         [SerializeField] private int seed = 12345;
+        [SerializeField] private bool randomizeSeed = true;
         
         [Header("Path Settings")]
         [SerializeField] private float pathDepth = 0.3f;
-        [SerializeField] private float pathRandomness = 0.2f;
+        [SerializeField] private float spiralTightness = 0.6f;
         [SerializeField] private bool addPathSides = true;
         
         [Header("Props")]
         [SerializeField] private PropDefinition[] propDefinitions;
         [SerializeField] private bool generateProps;
-        [SerializeField] private float randomBlockerChance = 0.05f;
         
         [Header("Materials")]
-        [SerializeField] private Material terrainMaterial;
+        [SerializeField] private TerrainMaterialSet materialSet;
         [SerializeField] private Material gridOverlayMaterial;
         
         [Header("Wave System")]
@@ -50,14 +57,30 @@ namespace Generation.TrueGen.Manager
         private GameObject _terrainObject;
         private ChunkGrid _chunkGrid;
         private WaveManager _waveManager;
+        private Terrain _terrain; // NEW - Store terrain reference
 
         public UnityEvent<EnemyPathFollower> onEnemySpawned;
         public UnityEvent onAllWavesCompleted;
+        public UnityEvent onTerrainGenerated;
+
+        private void Start()
+        {
+            if (!generateOnStart) return;
+            
+            if (generationDelay > 0)
+            {
+                Invoke(nameof(GenerateTerrain), generationDelay);
+            }
+            else
+            {
+                GenerateTerrain();
+            }
+        }
 
         private void Update()
         {
-            // If the lefy mouse button wasn't pressed this frame or the mouse is over a UI Game Object
-            if (!Mouse.current.leftButton.wasPressedThisFrame || EventSystem.current.IsPointerOverGameObject()) return;
+            if (!Mouse.current.leftButton.wasPressedThisFrame || EventSystem.current.IsPointerOverGameObject()) 
+                return;
             
             var placer = GetComponentInChildren<BuildingPlacement>();
             if (!placer) return;
@@ -65,24 +88,25 @@ namespace Generation.TrueGen.Manager
             var buildingToPlace = selectedBuildingPrefab;
             var buildingCost = 0;
             
-            // Use building database if available
             if (buildingDatabase)
             {
-                // Cannot get tower if building index is invalid. Meaning no building is selected.
-                if (selectedBuildIndex < 0 || selectedBuildIndex > buildingDatabase.GetBuildingCount() - 1) return;
+                if (selectedBuildIndex < 0 || selectedBuildIndex > buildingDatabase.GetBuildingCount() - 1) 
+                { 
+                    Debug.Log("Cannot try to build tower because selected index is invalid.");
+                    return; 
+                }
                 buildingToPlace = buildingDatabase.GetBuilding(selectedBuildIndex).Building;
                 buildingCost = buildingDatabase.GetBuilding(selectedBuildIndex).BuildingCost;
             }
             
             if (!buildingToPlace) return;
             
-            // Check if you can afford it
             if (economyRef && buildingCost > 0)
             {
                 if (economyRef.CanAfford(buildingCost))
                 {
-                    if (placer.TryPlaceBuildingAtMouse(buildingToPlace)) { economyRef.withDrag(buildingCost); }
-                    
+                    economyRef.withDrag(buildingCost);
+                    placer.TryPlaceBuildingAtMouse(buildingToPlace);
                 }
                 else
                 {
@@ -91,7 +115,6 @@ namespace Generation.TrueGen.Manager
             }
             else
             {
-                // Free placement if no economy
                 placer.TryPlaceBuildingAtMouse(buildingToPlace);
             }
         }
@@ -99,49 +122,136 @@ namespace Generation.TrueGen.Manager
         [ContextMenu("Generate Terrain")]
         public void GenerateTerrain()
         {
-            // Clean up previous terrain
             if (_terrainObject)
                 DestroyImmediate(_terrainObject);
             
-            // Step 1: Generate chunk grid
-            var chunkGen = new ChunkGenerator(seed);
-            _chunks = chunkGen.GenerateDistortedGrid(gridWidth, gridHeight, chunkSize, distortionAmount);
-            
-            // Step 1.5: Assign texture indices based on chunk type
-            for (var y = 0; y < gridHeight; y++)
+            if (!materialSet)
             {
-                for (var x = 0; x < gridWidth; x++)
-                {
-                    var chunk = _chunks[x, y];
-        
-                    // Set texture index based on type (if not already set by path/props)
-                    if (chunk.chunkType == ChunkType.Buildable && chunk.TextureIndex == 0)
-                    {
-                        chunk.TextureIndex = 0; // Buildable uses texture slot 0
-                    }
-                }
+                Debug.LogError("TerrainMaterialSet not assigned!");
+                return;
             }
             
-            // Step 2: Select entry and exit points
-            var entryChunk = _chunks[0, gridHeight / 2];
-            var exitChunk = _chunks[gridWidth - 1, gridHeight / 2];
+            // Route to appropriate generation method
+            if (useUnityTerrain)
+            {
+                GenerateTerrainMode();
+            }
+            else
+            {
+                GenerateMeshMode();
+            }
+        }
+
+        /// <summary>
+        /// NEW - Generate terrain using Unity Terrain system
+        /// </summary>
+        private void GenerateTerrainMode()
+        {
+            var actualSeed = randomizeSeed ? Random.Range(0, 999999) : seed;
+            Debug.Log($"🌍 Generating UNITY TERRAIN with seed: {actualSeed}");
             
-            // Step 3: Generate path
-            var pathGen = new PathGenerator(seed + 1);
-            var pathChunks = pathGen.GeneratePath(entryChunk, exitChunk, pathRandomness);
+            // Step 1: Create Unity Terrain
+            var terrainGen = new TerrainGenerator(actualSeed, transform.position, terrainResolution);
+            _terrain = terrainGen.GetTerrain();
+            var terrainData = terrainGen.GetTerrainData();
+            
+            // Parent to this manager
+            _terrain.transform.SetParent(transform);
+            _terrainObject = _terrain.gameObject;
+            
+            // Step 2: Generate logical ChunkGrid (invisible, regular grid for gameplay)
+            var chunkGen = new ChunkGenerator(actualSeed);
+            _chunks = chunkGen.GenerateDistortedGrid(gridSize, gridSize, chunkSize, distortionAmount);
+            
+            // Step 3: Generate path waypoints
+            var pathGen = new PathGenerator(actualSeed + 1);
+            var pathChunks = pathGen.GenerateSpiralPath(_chunks, gridSize, gridSize, spiralTightness);
+            
+            // Step 4: Mark castle area
+            PathGenerator.MarkCastleArea(_chunks, gridSize, gridSize, castleSize: 3);
             PathGenerator.ApplyPathToChunks(pathChunks, pathDepth);
             
-            // Step 3.5: Add random blockers
-            if (randomBlockerChance > 0)
+            // Step 5: Carve path into terrain
+            var carver = new TerrainCarver(terrainData);
+            carver.CarvePath(pathChunks, chunkSize * 0.7f, pathDepth);
+            
+            // Step 6: Paint textures
+            var painter = new TerrainPainter(terrainData);
+            painter.SetupTextureLayers(materialSet);
+            painter.PaintPath(pathChunks, chunkSize * 0.7f);
+            painter.PaintChunkTypes(_chunks);
+            
+            // Step 7: Place props on terrain
+            if (generateProps && propDefinitions is { Length: > 0 })
             {
-                PropGenerator.AddRandomBlockers(_chunks, pathChunks, seed + 2, randomBlockerChance);
+                var propGen = new PropGenerator(actualSeed + 3, transform);
+                propGen.GenerateProps(_chunks, pathChunks, propDefinitions, _terrain); // Pass terrain
             }
             
-            // Step 4: Build mesh
-            var meshBuilder = new TerrainMeshBuilder();
-            var terrainMesh = meshBuilder.BuildCombinedMesh(_chunks, addPathSides);
+            // Step 8: Setup ChunkGrid component
+            _chunkGrid = _terrainObject.AddComponent<ChunkGrid>();
+            _chunkGrid.Initialize(_chunks, pathChunks);
             
-            // Step 5: Create terrain GameObject
+            // Step 9: Building placement (works on logical grid)
+            var buildingPlacement = _terrainObject.AddComponent<BuildingPlacement>();
+            buildingPlacement.Initialize(_chunkGrid);
+            
+            // Step 10: Grid overlay
+            if (gridOverlayMaterial)
+            {
+                var gridOverlay = _terrainObject.AddComponent<GridOverlayController>();
+                gridOverlay.Initialize(gridOverlayMaterial);
+            }
+            
+            // Step 11: Wave Manager (unchanged)
+            if (enableWaveSystem)
+            {
+                _waveManager = _terrainObject.AddComponent<WaveManager>();
+                _waveManager.onAllWavesCompleted.AddListener(AllWavesCompleted);
+                _waveManager.Initialize(_chunkGrid, economyRef, enemyPrefab, enemyLayer);
+                _waveManager.onEnemySpawned.AddListener((enemy) => onEnemySpawned?.Invoke(enemy));
+                Debug.Log("✓ Wave system initialized");
+            }
+            
+            Debug.Log($"✓ Generated TERRAIN: {gridSize}x{gridSize} grid with {pathChunks.Count} waypoints");
+            
+            onTerrainGenerated?.Invoke();
+        }
+
+        /// <summary>
+        /// EXISTING - Generate terrain using custom mesh system
+        /// </summary>
+        private void GenerateMeshMode()
+        {
+            var actualSeed = randomizeSeed ? Random.Range(0, 999999) : seed;
+            Debug.Log($"🎨 Generating MESH TERRAIN with seed: {actualSeed}");
+            
+            // Step 1: Generate SQUARE chunk grid
+            var chunkGen = new ChunkGenerator(actualSeed);
+            _chunks = chunkGen.GenerateDistortedGrid(gridSize, gridSize, chunkSize, distortionAmount);
+            
+            // Step 2: Generate spiral path
+            var pathGen = new PathGenerator(actualSeed + 1);
+            var pathChunks = pathGen.GenerateSpiralPath(_chunks, gridSize, gridSize, spiralTightness);
+            
+            // Step 3: Mark castle area
+            PathGenerator.MarkCastleArea(_chunks, gridSize, gridSize, castleSize: 3);
+            
+            // Step 4: Apply path properties to chunks (for collision/gameplay)
+            PathGenerator.ApplyPathToChunks(pathChunks, pathDepth);
+            
+            // Step 5: Generate props
+            if (generateProps && propDefinitions is { Length: > 0 })
+            {
+                var propGen = new PropGenerator(actualSeed + 3, transform);
+                propGen.GenerateProps(_chunks, pathChunks, propDefinitions, null); // No terrain
+            }
+            
+            // Step 6: Build main terrain mesh
+            var meshBuilder = new TerrainMeshBuilder();
+            var terrainMesh = meshBuilder.BuildCombinedMesh(_chunks, materialSet, false);
+            
+            // Step 7: Create main terrain GameObject
             _terrainObject = new GameObject("GeneratedTerrain");
             _terrainObject.transform.SetParent(transform);
             _terrainObject.transform.localPosition = Vector3.zero;
@@ -150,55 +260,94 @@ namespace Generation.TrueGen.Manager
             mf.mesh = terrainMesh;
             
             var mr = _terrainObject.AddComponent<MeshRenderer>();
-            mr.material = terrainMaterial ? terrainMaterial : CreateDefaultMaterial();
+            
+            var materials = new Material[5];
+            materials[0] = materialSet.buildableMaterial;
+            materials[1] = materialSet.pathMaterial;
+            materials[2] = materialSet.blockedMaterial;
+            materials[3] = materialSet.decorativeMaterial;
+            materials[4] = materialSet.wallMaterial;
+            
+            mr.materials = materials;
             
             var mc = _terrainObject.AddComponent<MeshCollider>();
             mc.sharedMesh = terrainMesh;
             
-            // Step 6: Setup ChunkGrid component
+            // Step 8: Generate a smooth path as a separate mesh
+            var smoothPathObj = new GameObject("SmoothPath");
+            smoothPathObj.transform.SetParent(_terrainObject.transform);
+            smoothPathObj.transform.localPosition = Vector3.zero;
+            
+            var pathMesh = SmoothPathMeshGenerator.GenerateSmoothPathMesh(
+                pathChunks, 
+                pathWidth: chunkSize * 0.7f,
+                pathDepth: pathDepth,
+                segmentsPerChunk: 6
+            );
+            
+            var pathMf = smoothPathObj.AddComponent<MeshFilter>();
+            pathMf.mesh = pathMesh;
+            
+            var pathMr = smoothPathObj.AddComponent<MeshRenderer>();
+            pathMr.material = materialSet.pathMaterial;
+            pathMr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            
+            // Add smooth path walls
+            if (addPathSides)
+            {
+                var wallsObj = new GameObject("PathWalls");
+                wallsObj.transform.SetParent(_terrainObject.transform);
+                wallsObj.transform.localPosition = Vector3.zero;
+                
+                var wallsMesh = SmoothPathMeshGenerator.GenerateSmoothPathWalls(
+                    pathChunks,
+                    pathWidth: chunkSize * 0.7f,
+                    pathDepth: pathDepth,
+                    segmentsPerChunk: 6
+                );
+                
+                var wallsMf = wallsObj.AddComponent<MeshFilter>();
+                wallsMf.mesh = wallsMesh;
+                
+                var wallsMr = wallsObj.AddComponent<MeshRenderer>();
+                wallsMr.material = materialSet.wallMaterial;
+                wallsMr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
+            }
+            
+            var pathCollider = smoothPathObj.AddComponent<MeshCollider>();
+            pathCollider.sharedMesh = pathMesh;
+            pathCollider.convex = false;
+            
+            // Step 9: Setup ChunkGrid component
             _chunkGrid = _terrainObject.AddComponent<ChunkGrid>();
             _chunkGrid.Initialize(_chunks, pathChunks);
             
-            // Step 7: Add BuildingPlacement component
+            // Step 10: Add BuildingPlacement component
             var buildingPlacement = _terrainObject.AddComponent<BuildingPlacement>();
             buildingPlacement.Initialize(_chunkGrid);
             
-            // Step 8: Add grid overlay
+            // Step 11: Add grid overlay
             if (gridOverlayMaterial)
             {
                 var gridOverlay = _terrainObject.AddComponent<GridOverlayController>();
                 gridOverlay.Initialize(gridOverlayMaterial);
             }
             
-            // Step 9: Add Wave Manager
+            // Step 12: Add Wave Manager
             if (enableWaveSystem)
             {
                 _waveManager = _terrainObject.AddComponent<WaveManager>();
                 _waveManager.onAllWavesCompleted.AddListener(AllWavesCompleted);
                 _waveManager.Initialize(_chunkGrid, economyRef, enemyPrefab, enemyLayer);
-    
-                // Forward wave manager's OnEnemySpawned to our own event
                 _waveManager.onEnemySpawned.AddListener((enemy) => onEnemySpawned?.Invoke(enemy));
-    
                 Debug.Log("✓ Wave system initialized");
             }
             
-            // Step 10: Generate props
-            if (generateProps && propDefinitions is { Length: > 0 })
-            {
-                var propGen = new PropGenerator(seed + 3, _terrainObject.transform);
-                propGen.GenerateProps(_chunks, pathChunks, propDefinitions);
-                
-                // Rebuild mesh to reflect blocked chunks' colors
-                terrainMesh = meshBuilder.BuildCombinedMesh(_chunks, addPathSides);
-                mf.mesh = terrainMesh;
-                mc.sharedMesh = terrainMesh;
-            }
+            Debug.Log($"✓ Generated MESH: {gridSize}x{gridSize} terrain with {pathChunks.Count} path chunks");
             
-            Debug.Log($"✓ Generated terrain: {gridWidth}x{gridHeight} chunks, {pathChunks.Count} path chunks");
+            onTerrainGenerated?.Invoke();
         }
 
-        // Bind All waves completed event so it can be assigned in the editor.
         private void AllWavesCompleted()
         {
             onAllWavesCompleted?.Invoke();
@@ -236,7 +385,6 @@ namespace Generation.TrueGen.Manager
             enemyRigidBody.useGravity = false;
             enemyRigidBody.isKinematic = true;
 
-            // Temporarily set hardcoded health
             followerHealthSystem.ReAwaken(2);
             
             follower.Initialize(_chunkGrid.PathChunks);
@@ -246,17 +394,21 @@ namespace Generation.TrueGen.Manager
             Debug.Log("✓ Enemy spawned");
         }
         
-        private static Material CreateDefaultMaterial()
+        [ContextMenu("Regenerate Terrain (New Seed)")]
+        public void RegenerateTerrain()
         {
-            var mat = new Material(Shader.Find("Universal Render Pipeline/Lit"))
-            {
-                color = Color.white
-            };
-            return mat;
+            randomizeSeed = true;
+            GenerateTerrain();
         }
 
         public void SelectBuilding(int pIndex)
         {
+            if (!buildingDatabase || pIndex < 0 || pIndex >= buildingDatabase.GetBuildingCount())
+            {
+                Debug.LogError($"Invalid building index: {pIndex}");
+                return;
+            }
+            
             Debug.Log($"Selected building of index {pIndex} with name {buildingDatabase.GetBuilding(pIndex).Building.name}");
             
             selectedBuildingPrefab = buildingDatabase.GetBuilding(pIndex).Building;
@@ -265,5 +417,7 @@ namespace Generation.TrueGen.Manager
         
         public ChunkGrid GetChunkGrid() => _chunkGrid;
         public WaveManager GetWaveManager() => _waveManager;
+        public int GetCurrentSeed() => seed;
+        public Terrain GetTerrain() => _terrain;
     }
 }

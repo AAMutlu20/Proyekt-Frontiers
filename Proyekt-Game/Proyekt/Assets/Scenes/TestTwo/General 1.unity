@@ -472,65 +472,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &672787195
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 672787197}
-  - component: {fileID: 672787196}
-  m_Layer: 0
-  m_Name: ExecuteOnStart
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &672787196
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 672787195}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2b903987da874e3469b4099e154a6c27, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: irminNavmeshEnemyAiUnityPackage::EventOnStart
-  OnStartExecute:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 2040218744}
-        m_TargetAssemblyTypeName: Generation.TrueGen.Manager.TerrainManager, Assembly-CSharp
-        m_MethodName: GenerateTerrain
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
---- !u!4 &672787197
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 672787195}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1447.6733, y: 19.87767, z: 269.9252}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &712195698
 GameObject:
   m_ObjectHideFlags: 0
@@ -1891,11 +1832,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 92740864c607ee34dbd22fa5be646cfc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Generation.TrueGen.Manager.TerrainManager
+  generateOnStart: 1
+  generationDelay: 0
   gridWidth: 20
   gridHeight: 15
   chunkSize: 10
   distortionAmount: 2
   seed: 12345
+  randomizeSeed: 1
   pathDepth: 0.3
   pathRandomness: 0.2
   addPathSides: 1
@@ -1905,7 +1849,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 9a8d750c521aca24e8b023399b4a7e54, type: 2}
   generateProps: 1
   randomBlockerChance: 0.05
-  terrainMaterial: {fileID: 2100000, guid: f9fd900b7dd8d954280967857bf1d3be, type: 2}
+  materialSet: {fileID: 11400000, guid: d1278d99e02b02841b2d0766889537e2, type: 2}
   gridOverlayMaterial: {fileID: 2100000, guid: 3d021334f28de954b8c0338be62e6fb8, type: 2}
   enableWaveSystem: 1
   enemyPrefab: {fileID: 2617255769880434715, guid: 475ee09d2b6b94d4d8e6f299ba6a456d, type: 3}
@@ -1918,6 +1862,9 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   onAllWavesCompleted:
+    m_PersistentCalls:
+      m_Calls: []
+  onTerrainGenerated:
     m_PersistentCalls:
       m_Calls: []
 --- !u!4 &2040218745
@@ -1948,7 +1895,6 @@ SceneRoots:
   - {fileID: 640686465}
   - {fileID: 796339338}
   - {fileID: 1644721854}
-  - {fileID: 672787197}
   - {fileID: 1678660815}
   - {fileID: 928548055}
   - {fileID: 180748736}

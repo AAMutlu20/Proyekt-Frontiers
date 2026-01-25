@@ -1,41 +1,60 @@
 using System.Collections.Generic;
 using System.Linq;
 using Generation.TrueGen.Core;
+using Generation.TrueGen.Visuals;
 using UnityEngine;
 
 namespace Generation.TrueGen.Generation
 {
     public class TerrainMeshBuilder
     {
-        private readonly List<Vector3> _vertices = new();
-        private readonly List<int> _triangles = new();
-        private readonly List<Vector2> _uvs = new();
-        private readonly List<Color> _colors = new();
-        private readonly List<Vector4> _uv2 = new(); // NEW - for texture index and rotation
+        // Separate lists for each submesh
+        private class SubmeshData
+        {
+            public readonly List<Vector3> Vertices = new();
+            public readonly List<int> Triangles = new();
+            public readonly List<Vector2> Uvs = new();
+            public readonly List<Color> Colors = new();
+            public readonly List<Vector3> Normals = new();
+            
+            public void Clear()
+            {
+                Vertices.Clear();
+                Triangles.Clear();
+                Uvs.Clear();
+                Colors.Clear();
+                Normals.Clear();
+            }
+        }
+        
+        private readonly SubmeshData _buildableSubmesh = new();
+        private readonly SubmeshData _pathSubmesh = new();
+        private readonly SubmeshData _blockedSubmesh = new();
+        private readonly SubmeshData _decorativeSubmesh = new();
+        private readonly SubmeshData _wallSubmesh = new();
+        
+        private TerrainMaterialSet _materialSet;
         
         /// <summary>
-        /// Builds a single mesh from all chunks with texture data
+        /// Builds mesh with submeshes for different materials
         /// </summary>
-        public Mesh BuildCombinedMesh(ChunkNode[,] chunks, bool addPathSides = true)
+        public Mesh BuildCombinedMesh(ChunkNode[,] chunks, TerrainMaterialSet materialSet, bool addPathSides = true)
         {
             Clear();
+            _materialSet = materialSet;
             
             var width = chunks.GetLength(0);
             var height = chunks.GetLength(1);
             
-            // Add all chunk quads
+            // Add all chunk quads to appropriate submeshes (INCLUDING path chunks!)
             for (var y = 0; y < height; y++)
             {
                 for (var x = 0; x < width; x++)
                 {
                     var chunk = chunks[x, y];
-                    AddChunkQuad(chunk);
                     
-                    // Add side faces for path edges
-                    if (addPathSides && chunk.chunkType == ChunkType.Path)
-                    {
-                        AddPathSideFaces(chunk);
-                    }
+                    // Include ALL chunks - path chunks act as base layer
+                    AddChunkQuad(chunk);
                 }
             }
             
@@ -44,14 +63,18 @@ namespace Generation.TrueGen.Generation
         
         private void AddChunkQuad(ChunkNode chunk)
         {
-            var startIndex = _vertices.Count;
+            // Select the appropriate submesh based on chunk type
+            var submesh = GetSubmeshForChunkType(chunk.chunkType);
+            var tiling = _materialSet.GetTilingForChunkType(chunk.chunkType);
+            
+            var startIndex = submesh.Vertices.Count;
             
             // Calculate rotation matrix for UVs
-            var rotationRadians = chunk.TextureIndex * Mathf.Deg2Rad;
+            var rotationRadians = chunk.TextureRotation * Mathf.Deg2Rad;
             var cosRot = Mathf.Cos(rotationRadians);
             var sinRot = Mathf.Sin(rotationRadians);
             
-            // Define base UVs for a quad (0,0) to (1,1)
+            // Define base UVs for a quad
             Vector2[] baseUVs = {
                 new Vector2(0, 0),  // Bottom-left
                 new Vector2(1, 0),  // Bottom-right
@@ -59,44 +82,35 @@ namespace Generation.TrueGen.Generation
                 new Vector2(0, 1)   // Top-left
             };
             
-            // Add 4 corners with Y offset applied
+            // Add 4 corners
             for (var i = 0; i < 4; i++)
             {
                 var pos = chunk.worldCorners[i];
                 pos.y += chunk.yOffset;
-                _vertices.Add(pos);
+                submesh.Vertices.Add(pos);
                 
-                // Rotate UVs around center (0.5, 0.5)
+                // Rotate UVs around center (0.5, 0.5) and apply tiling
                 var uv = baseUVs[i];
                 var centered = uv - new Vector2(0.5f, 0.5f);
                 var rotated = new Vector2(
                     centered.x * cosRot - centered.y * sinRot,
                     centered.x * sinRot + centered.y * cosRot
                 );
-                var finalUV = rotated + new Vector2(0.5f, 0.5f);
+                var finalUV = (rotated + new Vector2(0.5f, 0.5f)) * tiling;
                 
-                _uvs.Add(finalUV);
-                
-                // Store texture index in UV2.x and extra data in other channels
-                _uv2.Add(new Vector4(
-                    chunk.TextureIndex,  // x: texture index (0-3)
-                    0,                   // y: unused
-                    0,                   // z: unused  
-                    0                 // w: unused
-                ));
-                
-                // Vertex color (can still be used for tinting)
-                _colors.Add(chunk.vertexColor);
+                submesh.Uvs.Add(finalUV);
+                submesh.Colors.Add(chunk.vertexColor);
+                submesh.Normals.Add(Vector3.up); // We'll recalculate later
             }
             
             // Two triangles forming the quad
-            _triangles.Add(startIndex + 0);
-            _triangles.Add(startIndex + 2);
-            _triangles.Add(startIndex + 1);
+            submesh.Triangles.Add(startIndex + 0);
+            submesh.Triangles.Add(startIndex + 2);
+            submesh.Triangles.Add(startIndex + 1);
             
-            _triangles.Add(startIndex + 0);
-            _triangles.Add(startIndex + 3);
-            _triangles.Add(startIndex + 2);
+            submesh.Triangles.Add(startIndex + 0);
+            submesh.Triangles.Add(startIndex + 3);
+            submesh.Triangles.Add(startIndex + 2);
         }
         
         private void AddPathSideFaces(ChunkNode pathChunk)
@@ -112,8 +126,7 @@ namespace Generation.TrueGen.Generation
                     sharedEdge[1], 
                     pathChunk.yOffset, 
                     0f, 
-                    new Color(0.3f, 0.25f, 0.2f),
-                    pathChunk.TextureIndex // Use path texture for walls
+                    new Color(0.3f, 0.25f, 0.2f)
                 );
             }
         }
@@ -141,9 +154,9 @@ namespace Generation.TrueGen.Generation
             return null;
         }
         
-        private void AddVerticalQuad(Vector3 bottom1, Vector3 bottom2, float yBottom, float yTop, Color color, int textureIndex)
+        private void AddVerticalQuad(Vector3 bottom1, Vector3 bottom2, float yBottom, float yTop, Color color)
         {
-            var startIndex = _vertices.Count;
+            var startIndex = _wallSubmesh.Vertices.Count;
             
             var top1 = bottom1;
             top1.y = yTop;
@@ -153,30 +166,40 @@ namespace Generation.TrueGen.Generation
             bottom1.y = yBottom;
             bottom2.y = yBottom;
             
-            _vertices.Add(bottom1);
-            _vertices.Add(bottom2);
-            _vertices.Add(top2);
-            _vertices.Add(top1);
+            _wallSubmesh.Vertices.Add(bottom1);
+            _wallSubmesh.Vertices.Add(bottom2);
+            _wallSubmesh.Vertices.Add(top2);
+            _wallSubmesh.Vertices.Add(top1);
             
-            _uvs.Add(Vector2.zero);
-            _uvs.Add(Vector2.right);
-            _uvs.Add(Vector2.one);
-            _uvs.Add(Vector2.up);
+            _wallSubmesh.Uvs.Add(Vector2.zero);
+            _wallSubmesh.Uvs.Add(Vector2.right);
+            _wallSubmesh.Uvs.Add(Vector2.one);
+            _wallSubmesh.Uvs.Add(Vector2.up);
             
-            // Add texture data for walls
             for (var i = 0; i < 4; i++)
             {
-                _colors.Add(color);
-                _uv2.Add(new Vector4(textureIndex, 0, 0, 0));
+                _wallSubmesh.Colors.Add(color);
+                _wallSubmesh.Normals.Add(Vector3.forward); // Approximate, will recalculate
             }
             
-            _triangles.Add(startIndex + 0);
-            _triangles.Add(startIndex + 2);
-            _triangles.Add(startIndex + 1);
+            _wallSubmesh.Triangles.Add(startIndex + 0);
+            _wallSubmesh.Triangles.Add(startIndex + 2);
+            _wallSubmesh.Triangles.Add(startIndex + 1);
             
-            _triangles.Add(startIndex + 0);
-            _triangles.Add(startIndex + 3);
-            _triangles.Add(startIndex + 2);
+            _wallSubmesh.Triangles.Add(startIndex + 0);
+            _wallSubmesh.Triangles.Add(startIndex + 3);
+            _wallSubmesh.Triangles.Add(startIndex + 2);
+        }
+        
+        private SubmeshData GetSubmeshForChunkType(ChunkType type)
+        {
+            return type switch
+            {
+                ChunkType.Path => _pathSubmesh,
+                ChunkType.Blocked => _blockedSubmesh,
+                ChunkType.Decorative => _decorativeSubmesh,
+                _ => _buildableSubmesh
+            };
         }
         
         private Mesh CreateMesh()
@@ -186,12 +209,76 @@ namespace Generation.TrueGen.Generation
                 name = "ChunkTerrain",
                 indexFormat = UnityEngine.Rendering.IndexFormat.UInt32
             };
-
-            mesh.SetVertices(_vertices);
-            mesh.SetTriangles(_triangles, 0);
-            mesh.SetUVs(0, _uvs);
-            mesh.SetUVs(1, _uv2);
-            mesh.SetColors(_colors);
+            
+            // Combine all vertices from all submeshes
+            var allVertices = new List<Vector3>();
+            var allUVs = new List<Vector2>();
+            var allColors = new List<Color>();
+            
+            allVertices.AddRange(_buildableSubmesh.Vertices);
+            allVertices.AddRange(_pathSubmesh.Vertices);
+            allVertices.AddRange(_blockedSubmesh.Vertices);
+            allVertices.AddRange(_decorativeSubmesh.Vertices);
+            allVertices.AddRange(_wallSubmesh.Vertices);
+            
+            allUVs.AddRange(_buildableSubmesh.Uvs);
+            allUVs.AddRange(_pathSubmesh.Uvs);
+            allUVs.AddRange(_blockedSubmesh.Uvs);
+            allUVs.AddRange(_decorativeSubmesh.Uvs);
+            allUVs.AddRange(_wallSubmesh.Uvs);
+            
+            allColors.AddRange(_buildableSubmesh.Colors);
+            allColors.AddRange(_pathSubmesh.Colors);
+            allColors.AddRange(_blockedSubmesh.Colors);
+            allColors.AddRange(_decorativeSubmesh.Colors);
+            allColors.AddRange(_wallSubmesh.Colors);
+            
+            mesh.SetVertices(allVertices);
+            mesh.SetUVs(0, allUVs);
+            mesh.SetColors(allColors);
+            
+            // Set up submeshes
+            mesh.subMeshCount = 5;
+            
+            var vertexOffset = 0;
+            
+            // Submesh 0: Buildable
+            if (_buildableSubmesh.Triangles.Count > 0)
+            {
+                mesh.SetTriangles(_buildableSubmesh.Triangles, 0);
+                vertexOffset += _buildableSubmesh.Vertices.Count;
+            }
+            
+            // Submesh 1: Path
+            if (_pathSubmesh.Triangles.Count > 0)
+            {
+                var offsetTriangles = _pathSubmesh.Triangles.Select(t => t + vertexOffset).ToList();
+                mesh.SetTriangles(offsetTriangles, 1);
+                vertexOffset += _pathSubmesh.Vertices.Count;
+            }
+            
+            // Submesh 2: Blocked
+            if (_blockedSubmesh.Triangles.Count > 0)
+            {
+                var offsetTriangles = _blockedSubmesh.Triangles.Select(t => t + vertexOffset).ToList();
+                mesh.SetTriangles(offsetTriangles, 2);
+                vertexOffset += _blockedSubmesh.Vertices.Count;
+            }
+            
+            // Submesh 3: Decorative
+            if (_decorativeSubmesh.Triangles.Count > 0)
+            {
+                var offsetTriangles = _decorativeSubmesh.Triangles.Select(t => t + vertexOffset).ToList();
+                mesh.SetTriangles(offsetTriangles, 3);
+                vertexOffset += _decorativeSubmesh.Vertices.Count;
+            }
+            
+            // Submesh 4: Walls
+            if (_wallSubmesh.Triangles.Count > 0)
+            {
+                var offsetTriangles = _wallSubmesh.Triangles.Select(t => t + vertexOffset).ToList();
+                mesh.SetTriangles(offsetTriangles, 4);
+            }
             
             mesh.RecalculateNormals();
             mesh.RecalculateTangents();
@@ -202,11 +289,11 @@ namespace Generation.TrueGen.Generation
         
         private void Clear()
         {
-            _vertices.Clear();
-            _triangles.Clear();
-            _uvs.Clear();
-            _colors.Clear();
-            _uv2.Clear();
+            _buildableSubmesh.Clear();
+            _pathSubmesh.Clear();
+            _blockedSubmesh.Clear();
+            _decorativeSubmesh.Clear();
+            _wallSubmesh.Clear();
         }
     }
 }

@@ -74,26 +74,20 @@ namespace Generation.TrueGen.Generation
                 gridX = x,
                 gridY = y,
                 // ReSharper disable once RedundantExplicitArraySize
-                worldCorners = new Vector3[4] // May be redundant to specify array size, but I still want to specify it
+                worldCorners = new Vector3[4]
                 {
-                    vertices[x, y],         // 0: bottom-left
-                    vertices[x + 1, y],     // 1: bottom-right
-                    vertices[x + 1, y + 1], // 2: top-right
-                    vertices[x, y + 1]      // 3: top-left
+                    vertices[x, y],
+                    vertices[x + 1, y],
+                    vertices[x + 1, y + 1],
+                    vertices[x, y + 1]
                 },
                 chunkType = ChunkType.Buildable,
-                
-                TextureRotation = Random.Range(0, 4) * 90f,
-                TextureIndex = 0
-                
+                TextureRotation = Random.Range(0, 4) * 90f
             };
-            
-            // Calculate center
+    
             chunk.center = CalculateQuadCenter(chunk.worldCorners);
-            
-            // Default color (can be changed later)
-            chunk.vertexColor = new Color(0.5f, 0.7f, 0.3f); // Grass is green
-            
+            chunk.vertexColor = new Color(0.5f, 0.7f, 0.3f);
+    
             return chunk;
         }
         

@@ -18,7 +18,8 @@ namespace Generation.TrueGen.Generation
         /// <summary>
         /// Generate props across the terrain
         /// </summary>
-        public void GenerateProps(ChunkNode[,] chunks, List<ChunkNode> pathChunks, PropDefinition[] propDefinitions)
+        public void GenerateProps(ChunkNode[,] chunks, List<ChunkNode> pathChunks, 
+            PropDefinition[] propDefinitions, Terrain terrain = null) // terrain parameter
         {
             Random.InitState(_seed);
             
@@ -64,7 +65,7 @@ namespace Generation.TrueGen.Generation
                             continue;
                         
                         // Place the prop
-                        PlaceProp(chunk, propDef);
+                        PlaceProp(chunk, propDef, terrain); // Pass terrain
                         propsPlaced++;
                         
                         // Only one prop per chunk
@@ -76,50 +77,48 @@ namespace Generation.TrueGen.Generation
             Debug.Log($"✓ Placed {propsPlaced} props across terrain");
         }
         
-        private void PlaceProp(ChunkNode chunk, PropDefinition propDef)
+        private void PlaceProp(ChunkNode chunk, PropDefinition propDef, Terrain terrain = null) // NEW - terrain parameter
         {
             if (!propDef.prefab)
             {
                 Debug.LogWarning($"Prop {propDef.name} has no prefab assigned");
                 return;
             }
-            
-            // Calculate position (center with slight offset)
+    
             var position = chunk.center;
             position.y = chunk.yOffset;
-            
-            // Add small random offset within chunk
+    
             var offsetX = Random.Range(-1f, 1f);
             var offsetZ = Random.Range(-1f, 1f);
             position += new Vector3(offsetX, 0, offsetZ);
             
-            // Random rotation
+            // NEW - If using terrain, sample actual height
+            if (terrain != null)
+            {
+                position.y = terrain.SampleHeight(position) + terrain.transform.position.y;
+            }
+    
             var rotation = Quaternion.identity;
             if (propDef.randomRotation)
             {
                 rotation = Quaternion.Euler(0, Random.Range(0f, 360f), 0);
             }
-            
-            // Instantiate prop
+    
             var prop = Object.Instantiate(propDef.prefab, position, rotation, _propParent);
             prop.name = $"{propDef.propType}_{chunk.gridX}_{chunk.gridY}";
-            
-            // Random scale
+    
             var scale = Random.Range(propDef.scaleRange.x, propDef.scaleRange.y);
             prop.transform.localScale = Vector3.one * scale;
-            
-            // Mark chunk as blocked if needed
+    
             if (propDef.blocksBuilding)
             {
                 chunk.chunkType = ChunkType.Blocked;
                 chunk.isBuildable = false;
                 chunk.vertexColor = new Color(0.4f, 0.4f, 0.35f);
-                chunk.TextureIndex = 2;
             }
             else
             {
                 chunk.chunkType = ChunkType.Decorative;
-                chunk.TextureIndex = 3;
             }
         }
         
