@@ -105,8 +105,10 @@ namespace Generation.TrueGen.Manager
             {
                 if (economyRef.CanAfford(buildingCost))
                 {
-                    economyRef.withDrag(buildingCost);
-                    placer.TryPlaceBuildingAtMouse(buildingToPlace);
+                    if(placer.TryPlaceBuildingAtMouse(buildingToPlace))
+                    {
+                        economyRef.withDrag(buildingCost);
+                    }
                 }
                 else
                 {
