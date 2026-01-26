@@ -228,7 +228,17 @@ namespace Generation.TrueGen.Systems
             // Spawn at first path chunk
             var spawnChunk = _chunkGrid.PathChunks[0];
             var spawnPos = spawnChunk.center;
-            spawnPos.y = spawnChunk.yOffset;
+            
+            // Sample terrain height if available
+            var terrain = GetComponent<Terrain>();
+            if (terrain != null)
+            {
+                spawnPos.y = terrain.SampleHeight(spawnPos) + terrain.transform.position.y;
+            }
+            else
+            {
+                spawnPos.y = spawnChunk.yOffset;
+            }
             
             var enemy = Instantiate(prefab, spawnPos, Quaternion.identity);
             enemy.name = $"Enemy_Wave{wave.waveNumber}_{_totalEnemiesSpawned + 1}";
@@ -268,7 +278,7 @@ namespace Generation.TrueGen.Systems
             
             // Initialize with wave settings
             healthSystem.ReAwaken(wave.enemyHealth);
-            follower.Initialize(_chunkGrid.PathChunks);
+            follower.Initialize(_chunkGrid.PathChunks, terrain); // PASS TERRAIN HERE
             follower.SetSpeed(wave.enemySpeed);
             follower.SetDamage(wave.damageToPlayer);
             follower.SetCoinsReward(wave.coinsReward);

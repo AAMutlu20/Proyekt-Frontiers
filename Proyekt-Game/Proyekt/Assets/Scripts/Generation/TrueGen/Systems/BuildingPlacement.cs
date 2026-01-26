@@ -11,7 +11,9 @@ namespace Generation.TrueGen.Systems
         [SerializeField] private Camera mainCamera;
         
         [Header("Settings")]
-        [SerializeField] private LayerMask terrainLayer = -1; // Default to everything
+        [SerializeField] private LayerMask terrainLayer = -1;
+        
+        private Terrain _terrain; // NEW - Cache terrain reference
         
         /// <summary>
         /// Initialize with chunk grid (for runtime setup)
@@ -19,6 +21,14 @@ namespace Generation.TrueGen.Systems
         public void Initialize(ChunkGrid grid)
         {
             chunkGrid = grid;
+            
+            // Check if we're in terrain mode
+            _terrain = GetComponent<Terrain>();
+            
+            if (_terrain != null)
+            {
+                Debug.Log("BuildingPlacement: Terrain mode detected");
+            }
         }
         
         private void Start()
@@ -26,9 +36,12 @@ namespace Generation.TrueGen.Systems
             if (!mainCamera)
                 mainCamera = Camera.main;
             
-            // Auto-find ChunkGrid if not set
             if (!chunkGrid)
                 chunkGrid = GetComponent<ChunkGrid>();
+            
+            // Cache terrain reference
+            if (_terrain == null)
+                _terrain = GetComponent<Terrain>();
         }
         
         /// <summary>
@@ -36,7 +49,6 @@ namespace Generation.TrueGen.Systems
         /// </summary>
         public bool TryPlaceBuildingAtMouse(GameObject buildingPrefab, int footprintWidth = 1, int footprintHeight = 1)
         {
-            // NEW INPUT SYSTEM - Changed from Input.mousePosition
             var mousePos = Mouse.current.position.ReadValue();
             var ray = mainCamera.ScreenPointToRay(mousePos);
             
@@ -50,7 +62,6 @@ namespace Generation.TrueGen.Systems
         private bool TryPlaceBuildingAtWorldPos(GameObject buildingPrefab, Vector3 worldPos, 
             int footprintWidth = 1, int footprintHeight = 1)
         {
-            // Get chunk at position
             var chunk = chunkGrid.GetChunkAtWorldPosition(worldPos);
             
             if (chunk == null)
@@ -59,16 +70,29 @@ namespace Generation.TrueGen.Systems
                 return false;
             }
             
-            // Check if we can build here
             if (!chunkGrid.CanBuildAt(chunk.gridX, chunk.gridY, footprintWidth, footprintHeight))
             {
                 Debug.Log("Cannot build at this location");
                 return false;
             }
             
-            // Place building at chunk center
+            // Calculate placement position
+            var placementPos = chunk.center;
+            
+            // Sample terrain height if in terrain mode
+            if (_terrain != null)
+            {
+                placementPos.y = _terrain.SampleHeight(placementPos) + _terrain.transform.position.y;
+            }
+            else
+            {
+                // Mesh mode - use chunk's yOffset (should be 0 for buildable chunks)
+                placementPos.y = chunk.yOffset;
+            }
+            
+            // Place building
             var building = Instantiate(buildingPrefab);
-            building.transform.position = chunk.center;
+            building.transform.position = placementPos;
             
             // Mark chunks as occupied
             var occupiedChunks = chunkGrid.GetChunksInFootprint(
@@ -80,7 +104,7 @@ namespace Generation.TrueGen.Systems
                 occupiedChunk.isOccupied = true;
             }
             
-            Debug.Log($"Building placed at chunk ({chunk.gridX}, {chunk.gridY})");
+            Debug.Log($"Building placed at chunk ({chunk.gridX}, {chunk.gridY}) at height {placementPos.y}");
             return true;
         }
         

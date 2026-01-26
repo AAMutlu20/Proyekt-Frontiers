@@ -29,23 +29,34 @@ namespace Generation.TrueGen.Systems
         /// <summary>
         /// Initialize enemy with path chunks
         /// </summary>
-        public void Initialize(List<ChunkNode> pathChunks)
+        public void Initialize(List<ChunkNode> pathChunks, Terrain terrain = null)
         {
             _waypoints = new List<Vector3>();
-            
+    
             if (pathChunks == null || pathChunks.Count == 0)
             {
                 Debug.LogError("EnemyPathFollower: No path chunks provided!");
                 return;
             }
-            
+    
             foreach (var chunk in pathChunks)
             {
                 var waypoint = chunk.center;
-                waypoint.y = chunk.yOffset; // Follow path height
+        
+                // If terrain is provided, sample actual terrain height
+                if (terrain != null)
+                {
+                    waypoint.y = terrain.SampleHeight(waypoint) + terrain.transform.position.y;
+                }
+                else
+                {
+                    // Mesh mode - use chunk's yOffset
+                    waypoint.y = chunk.yOffset;
+                }
+        
                 _waypoints.Add(waypoint);
             }
-            
+    
             if (_waypoints.Count > 0)
             {
                 transform.position = _waypoints[0];
