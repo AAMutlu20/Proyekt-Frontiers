@@ -91,6 +91,8 @@ namespace Generation.TrueGen.Systems
             {
                 StartCoroutine(WaveSequence());
             }
+
+            UI_WaveCounter.Singleton.SetWaveText(_currentWaveIndex, waves.Length);
         }
         
         private void Update()
@@ -220,6 +222,7 @@ namespace Generation.TrueGen.Systems
             IsWaveActive = true;
             
             Debug.Log($">>> Spawning Wave {wave.waveNumber}: {wave.enemyCount} enemies");
+            UI_WaveCounter.Singleton.SetWaveText(_currentWaveIndex, waves.Length);
             
             for (var i = 0; i < (wave._useSpecificEnemies ? wave._specificEnemies.Count : wave.enemyCount); i++)
             {
@@ -359,6 +362,7 @@ namespace Generation.TrueGen.Systems
         [ContextMenu("Start Next Wave")]
         public void StartNextWave()
         {
+            UI_WaveCounter.Singleton.SetWaveText(_currentWaveIndex, waves.Length);
             if (IsWaveActive)
             {
                 Debug.LogWarning("Wave already in progress!");
@@ -373,6 +377,7 @@ namespace Generation.TrueGen.Systems
             
             StartCoroutine(SpawnWave(waves[_currentWaveIndex]));
             _currentWaveIndex++;
+            
         }
         
         [ContextMenu("Skip Current Wave")]
