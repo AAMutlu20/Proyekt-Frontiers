@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: b2de6c6a00900c04e84a976678c6353a
+guid: 7cb371d895c2e9d4a9a67c259479894e
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -97,13 +97,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Archer Tower_0
+      name: New Project (4)_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
         width: 960
-        height: 1040
+        height: 1080
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -112,8 +112,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 2ce7d4296c77b764d83cfc86eb2b81e8
-      internalID: -1366446765
+      spriteID: 75d6bb76f35a2a74daf3f3f4ccbe283e
+      internalID: -1203660775
       vertices: []
       indices: 
       edges: []
@@ -122,7 +122,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: ee0b2b406aa6e2b439297d67b15f2983
+    spriteID: 7509426ca76abea4cae3bf6db4e44626
     internalID: 0
     vertices: []
     indices: 
@@ -132,7 +132,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Archer Tower_0: -1366446765
+      New Project (4)_0: -1203660775
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
