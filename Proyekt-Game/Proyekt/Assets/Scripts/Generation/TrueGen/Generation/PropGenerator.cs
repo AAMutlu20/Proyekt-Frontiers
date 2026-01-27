@@ -77,39 +77,44 @@ namespace Generation.TrueGen.Generation
             Debug.Log($"✓ Placed {propsPlaced} props across terrain");
         }
         
-        private void PlaceProp(ChunkNode chunk, PropDefinition propDef, Terrain terrain = null) // NEW - terrain parameter
+        private void PlaceProp(ChunkNode chunk, PropDefinition propDef, Terrain terrain = null)
         {
             if (!propDef.prefab)
             {
                 Debug.LogWarning($"Prop {propDef.name} has no prefab assigned");
                 return;
             }
-    
+
             var position = chunk.center;
-            position.y = chunk.yOffset;
     
+            // Add random offset within chunk
             var offsetX = Random.Range(-1f, 1f);
             var offsetZ = Random.Range(-1f, 1f);
             position += new Vector3(offsetX, 0, offsetZ);
-            
-            // NEW - If using terrain, sample actual height
+    
+            // Sample terrain height if available
             if (terrain != null)
             {
                 position.y = terrain.SampleHeight(position) + terrain.transform.position.y;
             }
-    
+            else
+            {
+                // Mesh mode - use chunk's yOffset
+                position.y = chunk.yOffset;
+            }
+
             var rotation = Quaternion.identity;
             if (propDef.randomRotation)
             {
                 rotation = Quaternion.Euler(0, Random.Range(0f, 360f), 0);
             }
-    
+
             var prop = Object.Instantiate(propDef.prefab, position, rotation, _propParent);
             prop.name = $"{propDef.propType}_{chunk.gridX}_{chunk.gridY}";
-    
+
             var scale = Random.Range(propDef.scaleRange.x, propDef.scaleRange.y);
             prop.transform.localScale = Vector3.one * scale;
-    
+
             if (propDef.blocksBuilding)
             {
                 chunk.chunkType = ChunkType.Blocked;

@@ -16,4 +16,4 @@ MonoBehaviour:
   _enemySpeed: 7
   _enemyHealth: 5
   _damageToPlayer: 2
-  _coinsReward: 20
+  _coinsReward: 12

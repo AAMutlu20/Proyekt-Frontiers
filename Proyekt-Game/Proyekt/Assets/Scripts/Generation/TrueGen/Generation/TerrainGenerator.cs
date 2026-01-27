@@ -1,4 +1,7 @@
 using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace Generation.TrueGen.Generation
 {
@@ -6,7 +9,7 @@ namespace Generation.TrueGen.Generation
     {
         private readonly int _seed;
         private Terrain _terrain;
-        private readonly TerrainData _terrainData;
+        private TerrainData _terrainData;
         
         public TerrainGenerator(int seed, Vector3 position, int resolution = 512)
         {
@@ -15,17 +18,42 @@ namespace Generation.TrueGen.Generation
             // Create TerrainData
             _terrainData = new TerrainData
             {
-                heightmapResolution = resolution + 1, // Unity adds 1
-                size = new Vector3(200, 10, 200), // Width, Height, Length
+                heightmapResolution = resolution + 1,
+                size = new Vector3(200, 10, 200),
                 baseMapResolution = 512,
                 alphamapResolution = 512
             };
             
+            // CRITICAL: Save TerrainData as asset in Editor mode
+            #if UNITY_EDITOR
+            SaveTerrainDataAsAsset();
+            #endif
+            
             // Initialize with flat heightmap
             InitializeFlatTerrain();
-            
-            // Wait until after all data is set, before making creating the terrain.
         }
+        
+        #if UNITY_EDITOR
+        /// <summary>
+        /// Save TerrainData as an actual asset (REQUIRED for Unity Terrain)
+        /// </summary>
+        private void SaveTerrainDataAsAsset()
+        {
+            var folderPath = "Assets/GeneratedTerrainData";
+            if (!AssetDatabase.IsValidFolder(folderPath))
+            {
+                AssetDatabase.CreateFolder("Assets", "GeneratedTerrainData");
+            }
+            
+            var assetPath = $"{folderPath}/TerrainData_{System.Guid.NewGuid()}.asset";
+            
+            AssetDatabase.CreateAsset(_terrainData, assetPath);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            
+            Debug.Log($"✓ Saved TerrainData asset: {assetPath}");
+        }
+        #endif
         
         private void InitializeFlatTerrain()
         {
@@ -34,26 +62,22 @@ namespace Generation.TrueGen.Generation
             
             Random.InitState(_seed);
             
-            // Add subtle noise for organic feel
             for (var y = 0; y < resolution; y++)
             {
                 for (var x = 0; x < resolution; x++)
                 {
-                    // Base height (normalized 0-1)
                     var baseHeight = 0.5f;
-                    
-                    // Add Perlin noise for gentle variation
-                    var noise = Mathf.PerlinNoise(
-                        x * 0.05f + _seed,
-                        y * 0.05f + _seed
-                    );
-                    
-                    // Very subtle - just enough for organic look
+                    var noise = Mathf.PerlinNoise(x * 0.05f + _seed, y * 0.05f + _seed);
                     heights[y, x] = baseHeight + (noise - 0.5f) * 0.02f;
                 }
             }
             
             _terrainData.SetHeights(0, 0, heights);
+            
+            #if UNITY_EDITOR
+            EditorUtility.SetDirty(_terrainData);
+            AssetDatabase.SaveAssets();
+            #endif
         }
         
         /// <summary>
@@ -61,29 +85,25 @@ namespace Generation.TrueGen.Generation
         /// </summary>
         public Terrain CreateTerrainObject(Vector3 position)
         {
-            Debug.Log("Creating fresh Terrain GameObject with configured data...");
+            Debug.Log("Creating Terrain GameObject with asset-backed data...");
             
-            // Create NEW terrain GameObject
-            var terrainObj = new GameObject("ProceduralTerrain")
-            {
-                transform =
-                {
-                    position = position
-                }
-            };
-
-            // Add Terrain component and assign the pre-configured data
+            var terrainObj = new GameObject("ProceduralTerrain");
+            terrainObj.transform.position = position;
+            
             _terrain = terrainObj.AddComponent<Terrain>();
             _terrain.terrainData = _terrainData;
             
-            // Add TerrainCollider
             var collider = terrainObj.AddComponent<TerrainCollider>();
             collider.terrainData = _terrainData;
             
-            // Force terrain to refresh
             _terrain.Flush();
             
-            Debug.Log("✓ Terrain object created successfully");
+            #if UNITY_EDITOR
+            EditorUtility.SetDirty(_terrain);
+            EditorUtility.SetDirty(terrainObj);
+            #endif
+            
+            Debug.Log("✓ Terrain created successfully with asset-backed data");
             
             return _terrain;
         }

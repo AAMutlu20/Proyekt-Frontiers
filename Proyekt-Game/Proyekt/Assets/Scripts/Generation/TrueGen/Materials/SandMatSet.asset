@@ -21,3 +21,7 @@ MonoBehaviour:
   pathTiling: 1
   blockedTiling: 1
   decorativeTiling: 1
+  grassLayer: {fileID: 8574412962073106934, guid: eef7cc6328491d9438649d53050a7167, type: 2}
+  pathLayer: {fileID: 8574412962073106934, guid: d5936f27afb528949884f154c0b518ed, type: 2}
+  blockedLayer: {fileID: 8574412962073106934, guid: 54156e10e3bb01a4b8012466af3c01f3, type: 2}
+  decorativeLayer: {fileID: 8574412962073106934, guid: cdc998e4096cc024aab04b60e061c4b4, type: 2}

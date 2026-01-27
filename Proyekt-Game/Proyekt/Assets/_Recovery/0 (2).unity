@@ -1209,260 +1209,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1152534072}
   m_CullTransparentMesh: 1
---- !u!1 &1290878995
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1290878998}
-  - component: {fileID: 1290878997}
-  - component: {fileID: 1290878996}
-  m_Layer: 0
-  m_Name: AudioManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1290878996
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1290878995}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3cf6c0dd0c5dac644ac05ef6afa7181f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Audio.Bridges.GameAudioController
-  audioLibrary: {fileID: 11400000, guid: 2b780d1d14a73ff4f8501b2e0ac96604, type: 2}
-  playMenuMusicOnStart: 0
-  playAmbianceInGame: 1
---- !u!114 &1290878997
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1290878995}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c7adc8deb5e3d1d4c810c381b0c56d57, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Audio.AudioManager
-  audioMixer: {fileID: 24100000, guid: cbb9a4fabb89f6c46af81e56b6c6ddab, type: 2}
-  masterChannel: {fileID: 11400000, guid: 75e4ae68f7fb66640a45b26dcadb9635, type: 2}
-  musicChannel: {fileID: 11400000, guid: aaabc54d9902e84448ab7f48ec53a642, type: 2}
-  sfxChannel: {fileID: 11400000, guid: ddf72f02286483d458f6a579c387da26, type: 2}
-  ambianceChannel: {fileID: 11400000, guid: 634205ac42bb1a94f91601c69e221a21, type: 2}
-  initialPoolSize: 10
-  audioSourcePrefab: {fileID: 0}
---- !u!4 &1290878998
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1290878995}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1318081055
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1318081056}
-  - component: {fileID: 1318081058}
-  - component: {fileID: 1318081057}
-  - component: {fileID: 1318081061}
-  - component: {fileID: 1318081060}
-  - component: {fileID: 1318081059}
-  m_Layer: 0
-  m_Name: TrueGen
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 2147483647
-  m_IsActive: 1
---- !u!4 &1318081056
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1318081055}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 2040218745}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!154 &1318081057
-TerrainCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1318081055}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_TerrainData: {fileID: 15600000, guid: 6144dc96a28b1604790fd60236a87400, type: 2}
-  m_EnableTreeColliders: 1
---- !u!218 &1318081058
-Terrain:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1318081055}
-  m_Enabled: 1
-  serializedVersion: 6
-  m_TerrainData: {fileID: 15600000, guid: 6144dc96a28b1604790fd60236a87400, type: 2}
-  m_TreeDistance: 5000
-  m_TreeBillboardDistance: 50
-  m_TreeCrossFadeLength: 5
-  m_TreeMaximumFullLODCount: 50
-  m_DetailObjectDistance: 80
-  m_DetailObjectDensity: 1
-  m_HeightmapPixelError: 5
-  m_SplatMapDistance: 1000
-  m_HeightmapMinimumLODSimplification: 0
-  m_HeightmapMaximumLOD: 0
-  m_ShadowCastingMode: 2
-  m_DrawHeightmap: 1
-  m_DrawInstanced: 0
-  m_DrawTreesAndFoliage: 1
-  m_StaticShadowCaster: 0
-  m_IgnoreQualitySettings: 0
-  m_ReflectionProbeUsage: 1
-  m_MaterialTemplate: {fileID: 2100000, guid: 594ea882c5a793440b60ff72d896021e, type: 2}
-  m_BakeLightProbesForTrees: 1
-  m_PreserveTreePrototypeLayers: 0
-  m_DeringLightProbesForTrees: 1
-  m_ReceiveGI: 1
-  m_ScaleInLightmap: 0.0256
-  m_LightmapParameters: {fileID: 15203, guid: 0000000000000000f000000000000000, type: 0}
-  m_GroupingID: 0
-  m_RenderingLayerMask: 1
-  m_AllowAutoConnect: 1
-  m_EnableHeightmapRayTracing: 1
-  m_EnableTreesAndDetailsRayTracing: 0
-  m_TreeMotionVectorModeOverride: 3
---- !u!114 &1318081059
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1318081055}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a7bbcff05fc93a549950c41eaeb5625b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Generation.TrueGen.Systems.WaveManager
-  waves:
-  - waveNumber: 1
-    enemyCount: 3
-    spawnInterval: 0.5
-    delayBeforeWave: 3
-    enemyPrefab: {fileID: 0}
-    enemySpeed: 5
-    enemyHealth: 2
-    damageToPlayer: 1
-    coinsReward: 10
-    goldReward: 100
-  - waveNumber: 1
-    enemyCount: 3
-    spawnInterval: 0.5
-    delayBeforeWave: 3
-    enemyPrefab: {fileID: 0}
-    enemySpeed: 5
-    enemyHealth: 2
-    damageToPlayer: 1
-    coinsReward: 10
-    goldReward: 100
-  - waveNumber: 1
-    enemyCount: 3
-    spawnInterval: 0.5
-    delayBeforeWave: 3
-    enemyPrefab: {fileID: 0}
-    enemySpeed: 5
-    enemyHealth: 2
-    damageToPlayer: 1
-    coinsReward: 10
-    goldReward: 100
-  autoStartWaves: 1
-  timeBetweenWaves: 5
-  defaultEnemyPrefab: {fileID: 2617255769880434715, guid: 475ee09d2b6b94d4d8e6f299ba6a456d, type: 3}
-  _enemyDatabase: {fileID: 0}
-  enemyLayer: 20
-  economyRef: {fileID: 227813987}
-  audioLibrary: {fileID: 0}
-  onWaveStarted:
-    m_PersistentCalls:
-      m_Calls: []
-  onWaveCompleted:
-    m_PersistentCalls:
-      m_Calls: []
-  onEnemySpawned:
-    m_PersistentCalls:
-      m_Calls: []
-  onAllWavesCompleted:
-    m_PersistentCalls:
-      m_Calls: []
---- !u!114 &1318081060
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1318081055}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 31f7b6c9db588a142872bab8c9c376e6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Generation.TrueGen.Systems.BuildingPlacement
-  chunkGrid: {fileID: 1318081061}
-  mainCamera: {fileID: 0}
-  terrainLayer:
-    serializedVersion: 2
-    m_Bits: 4294967295
---- !u!114 &1318081061
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1318081055}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 593d9b1ec37b2fe42826f5782c574dea, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Generation.TrueGen.Systems.ChunkGrid
 --- !u!1 &1570650775
 GameObject:
   m_ObjectHideFlags: 0
@@ -2089,14 +1835,13 @@ MonoBehaviour:
   generateOnStart: 1
   generationDelay: 0
   useUnityTerrain: 1
-  existingTerrain: {fileID: 1318081058}
   terrainResolution: 512
   gridSize: 20
   chunkSize: 10
   distortionAmount: 2
   seed: 12345
   randomizeSeed: 1
-  pathDepth: 0.1
+  pathDepth: 0.3
   spiralTightness: 0.6
   addPathSides: 1
   propDefinitions:
@@ -2113,7 +1858,6 @@ MonoBehaviour:
   selectedBuildIndex: -1
   selectedBuildingPrefab: {fileID: 0}
   economyRef: {fileID: 227813987}
-  audioLibrary: {fileID: 11400000, guid: 2b780d1d14a73ff4f8501b2e0ac96604, type: 2}
   onEnemySpawned:
     m_PersistentCalls:
       m_Calls: []
@@ -2135,8 +1879,7 @@ Transform:
   m_LocalPosition: {x: 0, y: -0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 1318081056}
+  m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1660057539 &9223372036854775807
@@ -2156,4 +1899,3 @@ SceneRoots:
   - {fileID: 928548055}
   - {fileID: 180748736}
   - {fileID: 921793476}
-  - {fileID: 1290878998}
