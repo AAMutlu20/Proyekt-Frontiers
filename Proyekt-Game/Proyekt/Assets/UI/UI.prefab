@@ -5205,7 +5205,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: -548223157, guid: aab850e0a23f60d46bbc5d8846bef0b4, type: 3}
+  m_Sprite: {fileID: 631082517, guid: 94475aa735c692b43a7a8f5ec602c076, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -8024,6 +8024,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 27fcf3315d606c94a9128f1749fc1596, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::OpenCloseController
+  isOpen: 0
 --- !u!1 &6871548633724861183
 GameObject:
   m_ObjectHideFlags: 0
@@ -9701,7 +9702,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: -548223157, guid: aab850e0a23f60d46bbc5d8846bef0b4, type: 3}
+  m_Sprite: {fileID: 1152386159, guid: e50a93e1bb22c8640b043c57d4a40f13, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -11156,6 +11157,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 27fcf3315d606c94a9128f1749fc1596, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::OpenCloseController
+  isOpen: 0
 --- !u!1 &9015169165008827025
 GameObject:
   m_ObjectHideFlags: 0
