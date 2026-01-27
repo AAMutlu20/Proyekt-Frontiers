@@ -21,6 +21,7 @@ public class YRotationSystem : MonoBehaviour
     public UnityEvent OnExitedRotationDeadzone;
 
     public Transform Target { get  { return _target; } set { _target = value; } }
+    public bool InRotationDeadzone { get { return _inRotationDeadzone; } }
 
     private void Update()
     {

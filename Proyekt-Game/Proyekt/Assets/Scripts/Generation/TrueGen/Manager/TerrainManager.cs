@@ -47,6 +47,7 @@ namespace Generation.TrueGen.Manager
         [SerializeField] private bool enableWaveSystem = true;
         [SerializeField] private GameObject enemyPrefab;
         [SerializeField] private int enemyLayer = 20;
+        [SerializeField] private WaveDefinition[] waveDefinitionsToPassOn;
         
         [Header("Building System")]
         [SerializeField] private SOS_BuildingDatabase buildingDatabase;
@@ -240,7 +241,7 @@ namespace Generation.TrueGen.Manager
                 _waveManager = _terrainObject.GetComponent<WaveManager>();
                 if (!_waveManager)
                     _waveManager = _terrainObject.AddComponent<WaveManager>();
-                
+                if (waveDefinitionsToPassOn.Length > 0) { _waveManager.WaveDefinitions = waveDefinitionsToPassOn; }
                 _waveManager.onAllWavesCompleted.RemoveAllListeners();
                 _waveManager.onAllWavesCompleted.AddListener(AllWavesCompleted);
                 _waveManager.Initialize(_chunkGrid, economyRef, enemyPrefab, enemyLayer);

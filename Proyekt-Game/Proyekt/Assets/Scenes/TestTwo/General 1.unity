@@ -15745,8 +15745,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3cf6c0dd0c5dac644ac05ef6afa7181f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Audio.Bridges.GameAudioController
-  audioLibrary: {fileID: 11400000, guid: 2b780d1d14a73ff4f8501b2e0ac96604, type: 2}
-  playMenuMusicOnStart: 0
+  audioLibrary: {fileID: 11400000, guid: f09c75f9950b0f242a867ffc41df9025, type: 2}
+  playMenuMusicOnStart: 1
   playAmbianceInGame: 1
 --- !u!114 &1290878997
 MonoBehaviour:
@@ -16370,6 +16370,8 @@ MonoBehaviour:
     spawnInterval: 0.5
     delayBeforeWave: 3
     enemyPrefab: {fileID: 0}
+    _useSpecificEnemies: 0
+    _specificEnemies: []
     enemySpeed: 5
     enemyHealth: 2
     damageToPlayer: 1
@@ -16380,6 +16382,8 @@ MonoBehaviour:
     spawnInterval: 0.5
     delayBeforeWave: 3
     enemyPrefab: {fileID: 0}
+    _useSpecificEnemies: 0
+    _specificEnemies: []
     enemySpeed: 5
     enemyHealth: 2
     damageToPlayer: 1
@@ -16390,6 +16394,8 @@ MonoBehaviour:
     spawnInterval: 0.5
     delayBeforeWave: 3
     enemyPrefab: {fileID: 0}
+    _useSpecificEnemies: 0
+    _specificEnemies: []
     enemySpeed: 5
     enemyHealth: 2
     damageToPlayer: 1
@@ -25575,6 +25581,60 @@ MonoBehaviour:
   enableWaveSystem: 1
   enemyPrefab: {fileID: 2617255769880434715, guid: 475ee09d2b6b94d4d8e6f299ba6a456d, type: 3}
   enemyLayer: 20
+  waveDefinitionsToPassOn:
+  - waveNumber: 3
+    enemyCount: 0
+    spawnInterval: 1
+    delayBeforeWave: 0
+    enemyPrefab: {fileID: 0}
+    _useSpecificEnemies: 1
+    _specificEnemies:
+    - {fileID: 11400000, guid: 36c0b091626eafc4a8aa49353d260fb6, type: 2}
+    - {fileID: 11400000, guid: 36c0b091626eafc4a8aa49353d260fb6, type: 2}
+    - {fileID: 11400000, guid: 36c0b091626eafc4a8aa49353d260fb6, type: 2}
+    enemySpeed: 0
+    enemyHealth: 0
+    damageToPlayer: 0
+    coinsReward: 0
+    goldReward: 20
+  - waveNumber: 6
+    enemyCount: 0
+    spawnInterval: 0.8
+    delayBeforeWave: 0
+    enemyPrefab: {fileID: 0}
+    _useSpecificEnemies: 1
+    _specificEnemies:
+    - {fileID: 11400000, guid: 36c0b091626eafc4a8aa49353d260fb6, type: 2}
+    - {fileID: 11400000, guid: 36c0b091626eafc4a8aa49353d260fb6, type: 2}
+    - {fileID: 11400000, guid: 36c0b091626eafc4a8aa49353d260fb6, type: 2}
+    - {fileID: 11400000, guid: 3d8ce9dcfed2d2144aa44e19ed195a77, type: 2}
+    - {fileID: 11400000, guid: 3d8ce9dcfed2d2144aa44e19ed195a77, type: 2}
+    - {fileID: 11400000, guid: 3d8ce9dcfed2d2144aa44e19ed195a77, type: 2}
+    enemySpeed: 0
+    enemyHealth: 0
+    damageToPlayer: 0
+    coinsReward: 0
+    goldReward: 20
+  - waveNumber: 8
+    enemyCount: 0
+    spawnInterval: 0.5
+    delayBeforeWave: 0
+    enemyPrefab: {fileID: 0}
+    _useSpecificEnemies: 1
+    _specificEnemies:
+    - {fileID: 11400000, guid: 3d8ce9dcfed2d2144aa44e19ed195a77, type: 2}
+    - {fileID: 11400000, guid: 3d8ce9dcfed2d2144aa44e19ed195a77, type: 2}
+    - {fileID: 11400000, guid: 3d8ce9dcfed2d2144aa44e19ed195a77, type: 2}
+    - {fileID: 11400000, guid: 3d8ce9dcfed2d2144aa44e19ed195a77, type: 2}
+    - {fileID: 11400000, guid: 3d8ce9dcfed2d2144aa44e19ed195a77, type: 2}
+    - {fileID: 11400000, guid: 3d8ce9dcfed2d2144aa44e19ed195a77, type: 2}
+    - {fileID: 11400000, guid: 3d8ce9dcfed2d2144aa44e19ed195a77, type: 2}
+    - {fileID: 11400000, guid: 3d8ce9dcfed2d2144aa44e19ed195a77, type: 2}
+    enemySpeed: 0
+    enemyHealth: 0
+    damageToPlayer: 0
+    coinsReward: 0
+    goldReward: 30
   buildingDatabase: {fileID: 11400000, guid: 206f84bd001051e4cbf8104f2f6e0ba6, type: 2}
   selectedBuildIndex: -1
   selectedBuildingPrefab: {fileID: 0}
