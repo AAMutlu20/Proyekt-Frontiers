@@ -17,3 +17,4 @@ MonoBehaviour:
   _enemyHealth: 2
   _damageToPlayer: 1
   _coinsReward: 10
+  _layer: 21

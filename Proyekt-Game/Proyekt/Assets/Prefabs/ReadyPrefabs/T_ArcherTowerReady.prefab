@@ -332,7 +332,7 @@ MonoBehaviour:
   firePoint: {fileID: 1532081174181645834}
   arrowSpeed: 20
   arrowPrefab: {fileID: 6210907664736125676, guid: 244f036a2bd18fbd19323f932995b8aa, type: 3}
-  fireRate: 60
+  fireRate: 40
 --- !u!1 &2784773082073005609
 GameObject:
   m_ObjectHideFlags: 0

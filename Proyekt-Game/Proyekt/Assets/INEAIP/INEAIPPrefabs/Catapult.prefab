@@ -159,11 +159,11 @@ MonoBehaviour:
   _currentlySpawnedShootObject: {fileID: 0}
   _slingObjectParent: {fileID: 3575955042418457637}
   _pathType: 1
-  _explosionRadius: 10
+  _explosionRadius: 6
   _enemyLayerMask:
     serializedVersion: 2
     m_Bits: 1048576
-  _damage: 1
+  _damage: 3
   _useGameObjectPooling: 1
   _gameObjectPool: {fileID: 8710647357834676860}
   _canShoot: 0
