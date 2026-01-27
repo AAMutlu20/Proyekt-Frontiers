@@ -7,6 +7,8 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+using Audio;
+using Audio.Bridges;
 
 namespace Generation.TrueGen.Manager
 {
@@ -53,6 +55,9 @@ namespace Generation.TrueGen.Manager
         
         [Header("Economy")]
         [SerializeField] private Economy economyRef;
+        
+        [Header("Audio")]
+        [SerializeField] private AudioLibrary audioLibrary;
         
         private ChunkNode[,] _chunks;
         private GameObject _terrainObject;
@@ -223,6 +228,12 @@ namespace Generation.TrueGen.Manager
                 buildingPlacement = _terrainObject.AddComponent<BuildingPlacement>();
             buildingPlacement.Initialize(_chunkGrid);
             
+            // NEW: Pass audio library to building placement
+            if (audioLibrary)
+            {
+                buildingPlacement.SetAudioLibrary(audioLibrary);
+            }
+            
             // Step 11: Wave Manager
             if (enableWaveSystem)
             {
@@ -234,6 +245,13 @@ namespace Generation.TrueGen.Manager
                 _waveManager.onAllWavesCompleted.AddListener(AllWavesCompleted);
                 _waveManager.Initialize(_chunkGrid, economyRef, enemyPrefab, enemyLayer);
                 _waveManager.onEnemySpawned.AddListener((enemy) => onEnemySpawned?.Invoke(enemy));
+                
+                // NEW: Pass audio library to wave manager
+                if (audioLibrary)
+                {
+                    _waveManager.SetAudioLibrary(audioLibrary);
+                }
+                
                 Debug.Log("✓ Wave system initialized");
             }
             
@@ -445,6 +463,12 @@ namespace Generation.TrueGen.Manager
             var buildingPlacement = _terrainObject.AddComponent<BuildingPlacement>();
             buildingPlacement.Initialize(_chunkGrid);
             
+            // Pass audio library to building placement in mesh mode too
+            if (audioLibrary)
+            {
+                buildingPlacement.SetAudioLibrary(audioLibrary);
+            }
+            
             if (gridOverlayMaterial)
             {
                 var gridOverlay = _terrainObject.AddComponent<GridOverlayController>();
@@ -457,6 +481,13 @@ namespace Generation.TrueGen.Manager
                 _waveManager.onAllWavesCompleted.AddListener(AllWavesCompleted);
                 _waveManager.Initialize(_chunkGrid, economyRef, enemyPrefab, enemyLayer);
                 _waveManager.onEnemySpawned.AddListener((enemy) => onEnemySpawned?.Invoke(enemy));
+                
+                // Pass audio library to wave manager in mesh mode too
+                if (audioLibrary)
+                {
+                    _waveManager.SetAudioLibrary(audioLibrary);
+                }
+                
                 Debug.Log("✓ Wave system initialized");
             }
             
@@ -501,11 +532,14 @@ namespace Generation.TrueGen.Manager
             var enemyRigidBody = enemy.AddComponent<Rigidbody>();
             enemyRigidBody.useGravity = false;
             enemyRigidBody.isKinematic = true;
+    
+            // Add audio bridge
+            var audioBridge = enemy.AddComponent<EnemyHealthAudioBridge>();
 
             followerHealthSystem.ReAwaken(2);
     
-            // Pass terrain reference if in terrain mode
-            follower.Initialize(_chunkGrid.PathChunks, _terrain); // PASS TERRAIN HERE
+            follower.Initialize(_chunkGrid.PathChunks, _terrain);
+            follower.SetAudioLibrary(audioLibrary);
             follower.gameObject.layer = enemyLayer;
             onEnemySpawned?.Invoke(follower);
     

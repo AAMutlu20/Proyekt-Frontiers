@@ -1,6 +1,7 @@
 using Generation.TrueGen.Core;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Audio;
 
 namespace Generation.TrueGen.Systems
 {
@@ -13,7 +14,18 @@ namespace Generation.TrueGen.Systems
         [Header("Settings")]
         [SerializeField] private LayerMask terrainLayer = -1;
         
-        private Terrain _terrain; // NEW - Cache terrain reference
+        [Header("Audio")]
+        [SerializeField] private AudioLibrary audioLibrary;
+        
+        private Terrain _terrain;
+        
+        /// <summary>
+        /// Set the audio library (for runtime assignment)
+        /// </summary>
+        public void SetAudioLibrary(AudioLibrary library)
+        {
+            audioLibrary = library;
+        }
         
         /// <summary>
         /// Initialize with chunk grid (for runtime setup)
@@ -39,7 +51,6 @@ namespace Generation.TrueGen.Systems
             if (!chunkGrid)
                 chunkGrid = GetComponent<ChunkGrid>();
             
-            // Cache terrain reference
             if (_terrain == null)
                 _terrain = GetComponent<Terrain>();
         }
@@ -67,12 +78,26 @@ namespace Generation.TrueGen.Systems
             if (chunk == null)
             {
                 Debug.Log("No chunk found at position");
+                
+                // Play invalid sound
+                if (audioLibrary && audioLibrary.invalidAction)
+                {
+                    AudioManager.Instance?.PlaySound(audioLibrary.invalidAction);
+                }
+                
                 return false;
             }
             
             if (!chunkGrid.CanBuildAt(chunk.gridX, chunk.gridY, footprintWidth, footprintHeight))
             {
                 Debug.Log("Cannot build at this location");
+                
+                // Play invalid sound
+                if (audioLibrary && audioLibrary.invalidAction)
+                {
+                    AudioManager.Instance?.PlaySound(audioLibrary.invalidAction);
+                }
+                
                 return false;
             }
             
@@ -102,6 +127,12 @@ namespace Generation.TrueGen.Systems
             foreach (var occupiedChunk in occupiedChunks)
             {
                 occupiedChunk.isOccupied = true;
+            }
+            
+            // Play tower place sound
+            if (audioLibrary && audioLibrary.towerPlace)
+            {
+                AudioManager.Instance?.PlaySound3D(audioLibrary.towerPlace, placementPos);
             }
             
             Debug.Log($"Building placed at chunk ({chunk.gridX}, {chunk.gridY}) at height {placementPos.y}");

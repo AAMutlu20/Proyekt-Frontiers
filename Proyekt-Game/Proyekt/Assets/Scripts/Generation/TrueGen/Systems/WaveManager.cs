@@ -6,6 +6,8 @@ using irminNavmeshEnemyAiUnityPackage;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.InputSystem;
+using Audio;
+using Audio.Bridges;
 
 namespace Generation.TrueGen.Systems
 {
@@ -24,6 +26,9 @@ namespace Generation.TrueGen.Systems
         [Header("Economy")]
         [SerializeField] private Economy economyRef;
         
+        [Header("Audio")]
+        [SerializeField] private AudioLibrary audioLibrary;
+        
         private ChunkGrid _chunkGrid;
         private readonly List<EnemyPathFollower> _activeEnemies = new();
         private int _currentWaveIndex;
@@ -34,11 +39,18 @@ namespace Generation.TrueGen.Systems
         private bool IsWaveActive { get; set; }
         public int ActiveEnemyCount => _activeEnemies.Count;
         
-        // Events
         public UnityEvent<int> onWaveStarted = new();
         public UnityEvent<int> onWaveCompleted = new();
         public UnityEvent<EnemyPathFollower> onEnemySpawned = new();
         public UnityEvent onAllWavesCompleted = new();
+        
+        /// <summary>
+        /// Set the audio library (for runtime assignment)
+        /// </summary>
+        public void SetAudioLibrary(AudioLibrary library)
+        {
+            audioLibrary = library;
+        }
         
         public void Initialize(ChunkGrid chunkGrid, Economy economy, GameObject enemyPrefab, int layer)
         {
@@ -68,7 +80,6 @@ namespace Generation.TrueGen.Systems
                 Debug.LogWarning("WaveManager: No economy assigned! Rewards won't work.");
             }
             
-            // Create default waves if none defined
             if (waves == null || waves.Length == 0)
             {
                 CreateDefaultWaves();
@@ -82,14 +93,12 @@ namespace Generation.TrueGen.Systems
         
         private void Update()
         {
-            // DEBUG - Press K to see active enemy count
             if (Keyboard.current == null || !Keyboard.current.kKey.wasPressedThisFrame) return;
             Debug.Log($"=== Wave Debug ===");
             Debug.Log($"Current Wave: {_currentWaveIndex + 1}/{waves.Length}");
             Debug.Log($"Active Enemies: {_activeEnemies.Count}");
             Debug.Log($"Wave In Progress: {IsWaveActive}");
                 
-            // Check for null enemies
             var nullCount = _activeEnemies.Count(e => !e);
             if (nullCount <= 0) return;
             {
@@ -103,7 +112,6 @@ namespace Generation.TrueGen.Systems
         {
             waves = new WaveDefinition[3];
             
-            // Wave 1: 3 enemies
             waves[0] = new WaveDefinition
             {
                 waveNumber = 1,
@@ -118,7 +126,6 @@ namespace Generation.TrueGen.Systems
                 goldReward = 100
             };
             
-            // Wave 2: 5 enemies
             waves[1] = new WaveDefinition
             {
                 waveNumber = 2,
@@ -133,7 +140,6 @@ namespace Generation.TrueGen.Systems
                 goldReward = 150
             };
             
-            // Wave 3: 10 enemies
             waves[2] = new WaveDefinition
             {
                 waveNumber = 3,
@@ -157,21 +163,28 @@ namespace Generation.TrueGen.Systems
             {
                 var wave = waves[_currentWaveIndex];
                 
-                // Wait before wave
                 Debug.Log($"Wave {wave.waveNumber} starting in {wave.delayBeforeWave} seconds...");
                 yield return new WaitForSeconds(wave.delayBeforeWave);
                 
-                // Notify wave started
+                // Play wave start sound
+                if (audioLibrary && audioLibrary.waveStart)
+                {
+                    AudioManager.Instance?.PlaySound(audioLibrary.waveStart);
+                }
+                
                 onWaveStarted?.Invoke(wave.waveNumber);
                 
-                // Spawn wave
                 yield return StartCoroutine(SpawnWave(wave));
                 
-                // Wait for all enemies to be defeated
                 Debug.Log($"Wave {wave.waveNumber} spawned! Waiting for enemies to be defeated...");
                 yield return new WaitUntil(() => _activeEnemies.Count == 0);
                 
-                // Wave completed - give gold reward
+                // Play wave complete sound
+                if (audioLibrary && audioLibrary.waveComplete)
+                {
+                    AudioManager.Instance?.PlaySound(audioLibrary.waveComplete);
+                }
+                
                 if (economyRef)
                 {
                     economyRef.AwardCoins(wave.goldReward);
@@ -182,7 +195,6 @@ namespace Generation.TrueGen.Systems
                 
                 _currentWaveIndex++;
                 
-                // Wait between waves
                 if (_currentWaveIndex < waves.Length)
                 {
                     yield return new WaitForSeconds(timeBetweenWaves);
@@ -190,6 +202,13 @@ namespace Generation.TrueGen.Systems
             }
             
             Debug.Log("=== All Waves Completed! Victory! ===");
+            
+            // Play victory sound
+            if (audioLibrary && audioLibrary.gameWin)
+            {
+                AudioManager.Instance?.PlaySound(audioLibrary.gameWin);
+            }
+            
             onAllWavesCompleted?.Invoke();
         }
         
@@ -216,7 +235,6 @@ namespace Generation.TrueGen.Systems
                 return;
             }
             
-            // Use wave's prefab, or fall back to default
             var prefab = wave.enemyPrefab ? wave.enemyPrefab : defaultEnemyPrefab;
             
             if (!prefab)
@@ -225,11 +243,9 @@ namespace Generation.TrueGen.Systems
                 return;
             }
             
-            // Spawn at first path chunk
             var spawnChunk = _chunkGrid.PathChunks[0];
             var spawnPos = spawnChunk.center;
             
-            // Sample terrain height if available
             var terrain = GetComponent<Terrain>();
             if (terrain != null)
             {
@@ -243,14 +259,12 @@ namespace Generation.TrueGen.Systems
             var enemy = Instantiate(prefab, spawnPos, Quaternion.identity);
             enemy.name = $"Enemy_Wave{wave.waveNumber}_{_totalEnemiesSpawned + 1}";
             
-            // Setup path follower
             var follower = enemy.GetComponent<EnemyPathFollower>();
             if (!follower)
             {
                 follower = enemy.AddComponent<EnemyPathFollower>();
             }
             
-            // Setup health system
             var healthSystem = enemy.GetComponent<IrminBaseHealthSystem>();
             if (!healthSystem)
             {
@@ -258,7 +272,6 @@ namespace Generation.TrueGen.Systems
             }
             healthSystem.DestroyAtMinHealth = true;
             
-            // Setup faction
             var factionComponent = enemy.GetComponent<FactionMemberComponent>();
             if (!factionComponent)
             {
@@ -267,7 +280,6 @@ namespace Generation.TrueGen.Systems
             healthSystem.FactionMemberComponent = factionComponent;
             healthSystem.Faction = 1;
             
-            // Setup rigidbody
             var rb = enemy.GetComponent<Rigidbody>();
             if (!rb)
             {
@@ -276,15 +288,17 @@ namespace Generation.TrueGen.Systems
             rb.useGravity = false;
             rb.isKinematic = true;
             
-            // Initialize with wave settings
+            // Add audio bridge for health damage sounds
+            var audioBridge = enemy.AddComponent<EnemyHealthAudioBridge>();
+            
             healthSystem.ReAwaken(wave.enemyHealth);
-            follower.Initialize(_chunkGrid.PathChunks, terrain); // PASS TERRAIN HERE
+            follower.Initialize(_chunkGrid.PathChunks, terrain);
             follower.SetSpeed(wave.enemySpeed);
             follower.SetDamage(wave.damageToPlayer);
             follower.SetCoinsReward(wave.coinsReward);
+            follower.SetAudioLibrary(audioLibrary);
             follower.gameObject.layer = enemyLayer;
             
-            // Subscribe to events
             follower.onPathCompleteEvent.AddListener(OnEnemyReachedEnd);
             follower.onEnemyKilled.AddListener(OnEnemyKilledByTower);
             follower.onEnemyDestroyed.AddListener(OnEnemyDestroyedHandler);
@@ -292,7 +306,6 @@ namespace Generation.TrueGen.Systems
             _activeEnemies.Add(follower);
             _totalEnemiesSpawned++;
             
-            // Notify that enemy spawned
             onEnemySpawned?.Invoke(follower);
             
             Debug.Log($"Spawned enemy {_totalEnemiesSpawned} from wave {wave.waveNumber}");
@@ -303,7 +316,6 @@ namespace Generation.TrueGen.Systems
             if (!_activeEnemies.Contains(enemy)) return;
             _activeEnemies.Remove(enemy);
                 
-            // Deal damage to player
             if (!economyRef) return;
             economyRef.withDrag((int)enemy.DamageAtEndOfPath);
             Debug.Log($"Enemy reached end! Player health: -{enemy.DamageAtEndOfPath} ({_activeEnemies.Count} enemies remaining)");
@@ -311,7 +323,6 @@ namespace Generation.TrueGen.Systems
         
         private void OnEnemyKilledByTower(EnemyPathFollower enemy)
         {
-            // Remove from active list when killed by tower
             if (!_activeEnemies.Contains(enemy)) return;
             _activeEnemies.Remove(enemy);
             Debug.Log($"Enemy killed by tower! ({_activeEnemies.Count} enemies remaining)");
@@ -319,13 +330,11 @@ namespace Generation.TrueGen.Systems
         
         private void OnEnemyDestroyedHandler(int coinsReward)
         {
-            // Give coins when enemy is killed
             if (!economyRef) return;
             economyRef.AwardCoins(coinsReward);
             Debug.Log($"Enemy defeated! +{coinsReward} coins");
         }
         
-        // Manual control methods
         [ContextMenu("Start Next Wave")]
         public void StartNextWave()
         {
@@ -348,7 +357,6 @@ namespace Generation.TrueGen.Systems
         [ContextMenu("Skip Current Wave")]
         public void SkipCurrentWave()
         {
-            // Clear all active enemies
             foreach (var enemy in new List<EnemyPathFollower>(_activeEnemies).Where(enemy => enemy))
             {
                 Destroy(enemy.gameObject);
