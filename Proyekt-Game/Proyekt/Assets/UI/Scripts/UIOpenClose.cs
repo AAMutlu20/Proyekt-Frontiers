@@ -6,11 +6,16 @@ public class UIOpenClose : MonoBehaviour
     [SerializeField] private GameObject UIToClose;
     [SerializeField] private GameObject UIToClose2;
 
+    public void Start()
+    {
+        Time.timeScale = 0f;
+    }
     public void OpenUI()
     {
         if (UIToOpen.activeSelf == false)
         {
             UIToOpen.SetActive(true);
+            
         }
         else
         {
@@ -23,8 +28,10 @@ public class UIOpenClose : MonoBehaviour
         
         if (UIToClose != null)
             UIToClose.SetActive(false);
+            Time.timeScale = 1f;
             if (UIToClose2 != null)
             UIToClose2.SetActive(false);
+            Time.timeScale = 1f;
     
     }
 }
