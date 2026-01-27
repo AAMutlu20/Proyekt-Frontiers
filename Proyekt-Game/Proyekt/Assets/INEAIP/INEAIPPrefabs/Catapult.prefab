@@ -163,9 +163,10 @@ MonoBehaviour:
   _enemyLayerMask:
     serializedVersion: 2
     m_Bits: 1048576
-  _damage: 2
+  _damage: 1
   _useGameObjectPooling: 1
   _gameObjectPool: {fileID: 8710647357834676860}
+  _canShoot: 0
 --- !u!1 &321286649550788048
 GameObject:
   m_ObjectHideFlags: 0
@@ -511,6 +512,7 @@ MonoBehaviour:
   _damage: 2
   _useGameObjectPooling: 0
   _gameObjectPool: {fileID: 0}
+  _canShoot: 0
 --- !u!1 &6044348619161567793
 GameObject:
   m_ObjectHideFlags: 0
@@ -977,6 +979,7 @@ MonoBehaviour:
   _damage: 2
   _useGameObjectPooling: 1
   _gameObjectPool: {fileID: 8710647357834676860}
+  _canShoot: 0
 --- !u!95 &8956652252442356541 stripped
 Animator:
   m_CorrespondingSourceObject: {fileID: 433383580142778437, guid: dafdc0cd0f4ee6a4d8d4c5e140c9d9d6, type: 3}

@@ -9,6 +9,7 @@ public class SOS_Enemy : ScriptableObject
     [SerializeField] private float _enemyHealth = 3f;
     [SerializeField] private float _damageToPlayer = 1f;
     [SerializeField] private int _coinsReward = 15;
+    [SerializeField] private int _layer = 20;
 
     public float EnemySpeed { get { return _enemySpeed; } }
     public float EnemyHealth { get { return _enemyHealth; } }

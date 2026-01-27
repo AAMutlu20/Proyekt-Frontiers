@@ -13,7 +13,8 @@ MonoBehaviour:
   m_Name: SOS_Harpy
   m_EditorClassIdentifier: Assembly-CSharp::SOS_Enemy
   _enemyPrefab: {fileID: 2617255769880434715, guid: 475ee09d2b6b94d4d8e6f299ba6a456d, type: 3}
-  _enemySpeed: 7
-  _enemyHealth: 5
+  _enemySpeed: 8
+  _enemyHealth: 8
   _damageToPlayer: 2
-  _coinsReward: 12
+  _coinsReward: 4
+  _layer: 21

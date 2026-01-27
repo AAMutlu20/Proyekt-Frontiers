@@ -36,4 +36,13 @@ public class SOS_BuildingDatabase : ScriptableObject
     {
         return pBuildingIndex > 0 && pBuildingIndex < _buildings.Count;
     }
+
+    public void ReinitializeAllSOSBuildings()
+    {
+        for (int i = 0; i < _buildings.Count; i++)
+        {
+            _buildings[i].IDIndex = i;
+            _buildings[i].Initialize();
+        }
+    }
 }

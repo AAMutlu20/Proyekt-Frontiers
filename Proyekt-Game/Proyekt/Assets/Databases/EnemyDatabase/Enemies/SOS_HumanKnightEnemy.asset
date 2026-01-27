@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SOS_Enemy
   _enemyPrefab: {fileID: 2617255769880434715, guid: 004657f6abf96bd4ba0df06dc1db6ebe, type: 3}
   _enemySpeed: 6
-  _enemyHealth: 3
+  _enemyHealth: 10
   _damageToPlayer: 1
-  _coinsReward: 10
+  _coinsReward: 2
+  _layer: 20

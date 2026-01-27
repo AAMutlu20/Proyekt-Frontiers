@@ -279,6 +279,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3387518577746994146}
+  - component: {fileID: -1737430713099543469}
   m_Layer: 0
   m_Name: T_ArcherTowerReady
   m_TagString: Untagged
@@ -312,6 +313,26 @@ Transform:
   - {fileID: 7019853132499783660}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &-1737430713099543469
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1713415420867813923}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 11782e541a031accb83ea6ca64601add, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ArcherTower
+  range: 20
+  enemyLayer:
+    serializedVersion: 2
+    m_Bits: 3145728
+  firePoint: {fileID: 1532081174181645834}
+  arrowSpeed: 20
+  arrowPrefab: {fileID: 6210907664736125676, guid: 244f036a2bd18fbd19323f932995b8aa, type: 3}
+  fireRate: 60
 --- !u!1 &2784773082073005609
 GameObject:
   m_ObjectHideFlags: 0

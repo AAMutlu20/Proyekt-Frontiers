@@ -94,7 +94,7 @@ namespace Generation.TrueGen.Manager
             
             var buildingToPlace = selectedBuildingPrefab;
             var buildingCost = 0;
-            
+            SOS_Building buildingToPlaceSOS = null;
             if (buildingDatabase)
             {
                 if (selectedBuildIndex < 0 || selectedBuildIndex > buildingDatabase.GetBuildingCount() - 1) 
@@ -102,7 +102,8 @@ namespace Generation.TrueGen.Manager
                     Debug.Log("Cannot try to build tower because selected index is invalid.");
                     return; 
                 }
-                buildingToPlace = buildingDatabase.GetBuilding(selectedBuildIndex).Building;
+                buildingToPlaceSOS = buildingDatabase.GetBuilding(selectedBuildIndex);
+                buildingToPlace = buildingToPlaceSOS.Building;
                 buildingCost = buildingDatabase.GetBuilding(selectedBuildIndex).BuildingCost;
             }
             
@@ -115,6 +116,7 @@ namespace Generation.TrueGen.Manager
                     if(placer.TryPlaceBuildingAtMouse(buildingToPlace))
                     {
                         economyRef.withDrag(buildingCost);
+                        buildingToPlaceSOS.IncreasePriceOfBuilding();
                     }
                 }
                 else

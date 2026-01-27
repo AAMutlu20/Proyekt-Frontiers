@@ -12,5 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 35b5b0965deb746458c718750398b9fb, type: 3}
   m_Name: SO_ArcherTower
   m_EditorClassIdentifier: Assembly-CSharp::SOS_Building
-  _building: {fileID: 2698357478732313575, guid: ea1acb196d3616d448d3c3fdf811af9d, type: 3}
-  _buildingCost: 15
+  _building: {fileID: 1713415420867813923, guid: 563557e3e23fc414cac5472d60047403, type: 3}
+  _startingBuildingCost: 10
+  _buildingCost: 10
+  _idIndex: 1
+  OnPriceChanged:
+    m_PersistentCalls:
+      m_Calls: []

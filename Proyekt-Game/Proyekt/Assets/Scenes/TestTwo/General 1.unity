@@ -5672,6 +5672,26 @@ MonoBehaviour:
   _isSingleton: 1
   _waveTextMeshPro: {fileID: 796339343}
   _divider: /
+--- !u!114 &451819379
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 451819373}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cf14347677384084b818e325a718409b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UI_TowerUIUpdater
+  _isSingleton: 1
+  _reinitializeAllBuildingCostsOnStart: 1
+  _updateAllPriceUIElementsOnStart: 1
+  _buildingDatabase: {fileID: 11400000, guid: 206f84bd001051e4cbf8104f2f6e0ba6, type: 2}
+  _priceTextMeshProElementsByBuildingIndex:
+  - {fileID: 1739519710}
+  - {fileID: 2102100104}
+  _currencyName: Gold
 --- !u!1001 &451879920
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -9886,6 +9906,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 3725122022057859509, guid: 27ae1ad6d66222d48ae72939be8a91e9, type: 3}
       insertIndex: -1
       addedObject: {fileID: 451819377}
+    - targetCorrespondingSourceObject: {fileID: 3725122022057859509, guid: 27ae1ad6d66222d48ae72939be8a91e9, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 451819379}
   m_SourcePrefab: {fileID: 100100000, guid: 27ae1ad6d66222d48ae72939be8a91e9, type: 3}
 --- !u!114 &796339339 stripped
 MonoBehaviour:
@@ -21566,6 +21589,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3344622530597335580, guid: de9c7e3624219b840ad4779f88a96220, type: 3}
   m_PrefabInstance: {fileID: 1516313708}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1739519710 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8146180945797435613, guid: 27ae1ad6d66222d48ae72939be8a91e9, type: 3}
+  m_PrefabInstance: {fileID: 796339338}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
 --- !u!4 &1740962051 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3344622530597335580, guid: de9c7e3624219b840ad4779f88a96220, type: 3}
@@ -25596,7 +25630,7 @@ MonoBehaviour:
   useUnityTerrain: 1
   existingTerrain: {fileID: 1318081058}
   terrainResolution: 512
-  gridSize: 10
+  gridSize: 15
   chunkSize: 5
   distortionAmount: 2
   seed: 12345
@@ -25678,7 +25712,19 @@ MonoBehaviour:
       m_Calls: []
   onAllWavesCompleted:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 928548054}
+        m_TargetAssemblyTypeName: SceneLoaderComponent, Assembly-CSharp
+        m_MethodName: LoadScene
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   onTerrainGenerated:
     m_PersistentCalls:
       m_Calls: []
@@ -26568,6 +26614,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: de9c7e3624219b840ad4779f88a96220, type: 3}
+--- !u!114 &2102100104 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1809019949650900477, guid: 27ae1ad6d66222d48ae72939be8a91e9, type: 3}
+  m_PrefabInstance: {fileID: 796339338}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
 --- !u!4 &2104510910 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3344622530597335580, guid: de9c7e3624219b840ad4779f88a96220, type: 3}
