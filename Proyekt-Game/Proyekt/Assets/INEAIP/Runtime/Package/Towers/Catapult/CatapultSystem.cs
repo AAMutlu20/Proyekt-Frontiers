@@ -6,11 +6,13 @@ using DG.Tweening;
 using IrminTimerPackage.Tools;
 using System;
 using UnityEngine;
+using Audio.Bridges;
 
 namespace irminNavmeshEnemyAiUnityPackage
 {
     public class CatapultSystem : MonoBehaviour
     {
+        [SerializeField] private TowerAudioController _towerAudioController;
         /// <summary>
         /// Detection system. Basically a seperate.
         /// </summary>
@@ -63,6 +65,8 @@ namespace irminNavmeshEnemyAiUnityPackage
 
         //[SerializeField] private int _halfArcResolution = 3;
 
+        [SerializeField] private bool _canShoot = false;
+
         private void Start()
         {
             // Event binding
@@ -73,11 +77,23 @@ namespace irminNavmeshEnemyAiUnityPackage
 
         }
 
+        private void CanShoot()
+        {
+            _canShoot = true;
+        }
+
         private void Update()
         {
             // Timer updates
             _shootCooldownTimer.UpdateTimer(Time.deltaTime);
             _shootTimer.UpdateTimer(Time.deltaTime);
+            if(_canShoot)
+            {
+                if(ShootCatapultWithCooldownWithAimCheck())
+                {
+                    _canShoot = false;
+                }
+            }
         }
 
         /// <summary>
@@ -124,6 +140,20 @@ namespace irminNavmeshEnemyAiUnityPackage
             }
         }
 
+        public bool ShootCatapultWithCooldownWithAimCheck()
+        {
+            if(_catapultYRotationSystem.InRotationDeadzone)
+            {
+                ShootCatapultWithCooldown();
+                return true;
+            }
+            return false;
+        }
+
+
+        /// <summary>
+        /// Will prepare the catapult to shoot.
+        /// </summary>
         public void ShootCatapultWithCooldown()
         {
             if (_targetTransform == null) { _shootCooldownTimer.ResetCurrentTime(); _shootCooldownTimer.PauseTimer(); return; }
@@ -135,7 +165,6 @@ namespace irminNavmeshEnemyAiUnityPackage
             _catapultAnimator.SetTrigger(_catapultSlingAnimationtriggerName);
             _shootTimer.ResetCurrentTime();
             _shootTimer.StartTimer();
-            //Shoot();
 
             _shootCooldownTimer.ResetCurrentTime();
             _shootCooldownTimer.StartTimer();
@@ -182,6 +211,7 @@ namespace irminNavmeshEnemyAiUnityPackage
             end,
             };
 
+            _towerAudioController.OnShoot();
             GameObject shootObject = _currentlySpawnedShootObject;
             _currentlySpawnedShootObject.transform.DOPath(path, _doTweenArcAnimationDuration, _pathType).SetEase(_doTweenEase).SetLookAt(0.01f).OnComplete(() =>
             {

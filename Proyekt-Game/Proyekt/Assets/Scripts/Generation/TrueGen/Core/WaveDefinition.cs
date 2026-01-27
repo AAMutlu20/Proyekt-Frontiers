@@ -1,3 +1,5 @@
+using NUnit.Framework;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Generation.TrueGen.Core
@@ -13,6 +15,8 @@ namespace Generation.TrueGen.Core
         
         [Header("Enemy Settings")]
         public GameObject enemyPrefab;
+        public bool _useSpecificEnemies = false;
+        public List<SOS_Enemy> _specificEnemies = new();
         public float enemySpeed = 5f;
         public float enemyHealth = 2f;
         public float damageToPlayer = 1f;

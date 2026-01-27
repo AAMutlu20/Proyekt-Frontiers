@@ -51,6 +51,8 @@ namespace Generation.TrueGen.Systems
         {
             audioLibrary = library;
         }
+
+        public WaveDefinition[] WaveDefinitions { get { return waves; } set { waves = value; } }
         
         public void Initialize(ChunkGrid chunkGrid, Economy economy, GameObject enemyPrefab, int layer)
         {
@@ -110,6 +112,7 @@ namespace Generation.TrueGen.Systems
         
         private void CreateDefaultWaves()
         {
+            if (waves != null) return;
             waves = new WaveDefinition[3];
             
             waves[0] = new WaveDefinition
@@ -218,16 +221,24 @@ namespace Generation.TrueGen.Systems
             
             Debug.Log($">>> Spawning Wave {wave.waveNumber}: {wave.enemyCount} enemies");
             
-            for (var i = 0; i < wave.enemyCount; i++)
+            for (var i = 0; i < (wave._useSpecificEnemies ? wave._specificEnemies.Count : wave.enemyCount); i++)
             {
-                SpawnEnemy(wave);
+                if(wave._useSpecificEnemies)
+                {
+                    SpawnEnemy(wave, i);
+                }
+                else
+                {
+                    SpawnEnemy(wave);
+                }
+                    
                 yield return new WaitForSeconds(wave.spawnInterval);
             }
             
             IsWaveActive = false;
         }
         
-        private void SpawnEnemy(WaveDefinition wave)
+        private void SpawnEnemy(WaveDefinition wave, int pSpecificEnemy = -1)
         {
             if (!_chunkGrid || _chunkGrid.PathChunks == null || _chunkGrid.PathChunks.Count == 0)
             {
@@ -235,7 +246,7 @@ namespace Generation.TrueGen.Systems
                 return;
             }
             
-            var prefab = wave.enemyPrefab ? wave.enemyPrefab : defaultEnemyPrefab;
+            var prefab = wave._useSpecificEnemies && pSpecificEnemy >= 0 ? wave._specificEnemies[pSpecificEnemy].EnemyPrefab : ( wave.enemyPrefab ? wave.enemyPrefab : defaultEnemyPrefab);
             
             if (!prefab)
             {
@@ -293,10 +304,20 @@ namespace Generation.TrueGen.Systems
             
             healthSystem.ReAwaken(wave.enemyHealth);
             follower.Initialize(_chunkGrid.PathChunks, terrain);
-            follower.SetSpeed(wave.enemySpeed);
-            follower.SetDamage(wave.damageToPlayer);
-            follower.SetCoinsReward(wave.coinsReward);
+            if (wave._useSpecificEnemies)
+            {
+                follower.SetSpeed(wave._specificEnemies[pSpecificEnemy].EnemySpeed);
+                follower.SetDamage(wave._specificEnemies[pSpecificEnemy].DamageToPlayer);
+                follower.SetCoinsReward(wave._specificEnemies[pSpecificEnemy].CoinsReward);
+            }
+            else
+            {
+                follower.SetSpeed(wave.enemySpeed);
+                follower.SetDamage(wave.damageToPlayer);
+                follower.SetCoinsReward(wave.coinsReward);
+            }
             follower.SetAudioLibrary(audioLibrary);
+
             follower.gameObject.layer = enemyLayer;
             
             follower.onPathCompleteEvent.AddListener(OnEnemyReachedEnd);
