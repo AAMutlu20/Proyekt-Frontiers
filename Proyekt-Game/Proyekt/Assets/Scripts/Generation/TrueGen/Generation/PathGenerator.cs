@@ -15,227 +15,94 @@ namespace Generation.TrueGen.Generation
         }
         
         /// <summary>
-        /// Generates a single-width spiral path from edge to center
-        /// ENSURES path never places chunks adjacent to existing path chunks
+        /// SIMPLE spiral path from castle gate to map edge
+        /// Just smooth curves, no loops, no complexity
         /// </summary>
         public List<ChunkNode> GenerateSpiralPath(ChunkNode[,] chunks, int width, int height, 
             float spiralTightness = 0.6f)
         {
             Random.InitState(_seed);
             
-            var path = new List<ChunkNode>();
-            var pathSet = new HashSet<ChunkNode>(); // For fast lookup
-            
-            // Step 1: Calculate center
             var centerX = width / 2f;
             var centerY = height / 2f;
             
-            // Step 2: Pick random starting edge
-            var startChunk = GetRandomEdgeChunk(chunks, width, height);
-            var currentChunk = startChunk;
+            var path = new List<ChunkNode>();
+            var pathSet = new HashSet<ChunkNode>();
             
-            path.Add(currentChunk);
-            pathSet.Add(currentChunk);
+            // GATE POSITION: Exact position of castle gate opening (south side)
+            // Adjust this value to match your castle's actual gate position
+            const float gateDistance = 2.5f; // Distance from center to gate opening
+            var gateX = Mathf.RoundToInt(centerX);
+            var gateY = Mathf.RoundToInt(centerY - gateDistance);
+            gateX = Mathf.Clamp(gateX, 0, width - 1);
+            gateY = Mathf.Clamp(gateY, 0, height - 1);
+            var gateChunk = chunks[gateX, gateY];
             
-            // Step 3: Calculate starting parameters
-            var currentAngle = Mathf.Atan2(startChunk.gridY - centerY, startChunk.gridX - centerX);
-            var startRadius = Vector2.Distance(
-                new Vector2(startChunk.gridX, startChunk.gridY),
-                new Vector2(centerX, centerY)
-            );
+            Debug.Log($"Gate position: ({gateX}, {gateY}) - Center: ({centerX}, {centerY})");
             
-            var currentRadius = startRadius;
-            const float targetRadius = 1.5f;
+            // START spiral from just beyond the gate
+            var currentRadius = gateDistance + 0.5f; // Start just past gate
+            var currentAngle = -Mathf.PI / 2f; // Start pointing south (gate direction)
             
-            // Step 4: Spiral parameters
-            var spiralLoops = Random.Range(2.5f, 4f);
-            const float angleStep = 0.2f; // Angle increment per step
-            var radiusDecrement = (startRadius - targetRadius) / (spiralLoops * Mathf.PI * 2f / angleStep);
+            // END: When we reach map edge
+            var maxRadius = Mathf.Min(width, height) / 2f - 1f;
             
-            var spiralDirection = Random.value > 0.5f ? 1f : -1f; // Clockwise or counter-clockwise
+            // Spiral parameters
+            var angleStep = 0.15f; // How fast we rotate (smaller = tighter spiral)
+            var radiusStep = 0.08f; // How fast we move outward (smaller = more windy)
             
-            var stuckCounter = 0;
-            const int maxStuckAttempts = 50;
-            
-            // Step 5: Build spiral path
-            while (currentRadius > targetRadius && stuckCounter < maxStuckAttempts)
+            // Build spiral
+            while (currentRadius < maxRadius)
             {
-                // Try to find next valid chunk
-                var foundNext = false;
-                var attempts = 0;
-                const int maxAttempts = 8;
+                // Calculate position
+                var x = centerX + Mathf.Cos(currentAngle) * currentRadius;
+                var y = centerY + Mathf.Sin(currentAngle) * currentRadius;
                 
-                while (!foundNext && attempts < maxAttempts)
+                // Clamp to grid
+                x = Mathf.Clamp(x, 0, width - 1);
+                y = Mathf.Clamp(y, 0, height - 1);
+                
+                var chunkX = Mathf.RoundToInt(x);
+                var chunkY = Mathf.RoundToInt(y);
+                var chunk = chunks[chunkX, chunkY];
+                
+                // Add if not already in path
+                if (!pathSet.Contains(chunk))
                 {
-                    // Update angle
-                    currentAngle += angleStep * spiralDirection;
-                    
-                    // Calculate next position
-                    var jitterRadius = currentRadius + Random.Range(-0.3f, 0.3f);
-                    var nextX = centerX + Mathf.Cos(currentAngle) * jitterRadius;
-                    var nextY = centerY + Mathf.Sin(currentAngle) * jitterRadius;
-                    
-                    // Clamp to grid
-                    nextX = Mathf.Clamp(nextX, 0, width - 1);
-                    nextY = Mathf.Clamp(nextY, 0, height - 1);
-                    
-                    var nextChunk = chunks[Mathf.RoundToInt(nextX), Mathf.RoundToInt(nextY)];
-                    
-                    // Check if this chunk is valid
-                    if (IsValidNextChunk(nextChunk, currentChunk, pathSet))
-                    {
-                        path.Add(nextChunk);
-                        pathSet.Add(nextChunk);
-                        currentChunk = nextChunk;
-                        foundNext = true;
-                        stuckCounter = 0; // Reset stuck counter
-                        
-                        // Gradually decrease radius
-                        currentRadius -= radiusDecrement;
-                    }
-                    else
-                    {
-                        // Try different angle
-                        attempts++;
-                        currentAngle += 0.3f * spiralDirection;
-                    }
+                    path.Add(chunk);
+                    pathSet.Add(chunk);
                 }
-
-                if (foundNext) continue;
-                stuckCounter++;
-                // Try to unstick by changing angle more dramatically
-                currentAngle += Mathf.PI * 0.25f * spiralDirection;
+                
+                // Move along spiral
+                currentAngle += angleStep;
+                currentRadius += radiusStep;
             }
             
-            // Step 6: Connect to center if we're close
-            var centerChunk = chunks[Mathf.RoundToInt(centerX), Mathf.RoundToInt(centerY)];
-            if (!pathSet.Contains(centerChunk))
+            // Reverse so enemies spawn at edge and walk to gate
+            path.Reverse();
+            
+            // ADD GATE CHUNK at the end (where enemies finish)
+            if (!pathSet.Contains(gateChunk))
             {
-                var finalPath = ConnectToCenter(currentChunk, centerChunk, chunks, pathSet);
-                path.AddRange(finalPath);
+                path.Add(gateChunk);
             }
             
-            Debug.Log($"✓ Generated single-width spiral path with {path.Count} chunks");
+            Debug.Log($"✓ Generated simple spiral path with {path.Count} chunks");
+            Debug.Log($"   Path ends at gate: ({gateX}, {gateY})");
+            Debug.Log($"   Enemies spawn at edge, walk to gate");
+            
             return path;
         }
         
-        /// <summary>
-        /// Check if a chunk is a valid next step in the path
-        /// - Must be adjacent to current chunk
-        /// - Must not be already in path
-        /// - Must not be adjacent to any path chunk (except current)
-        /// </summary>
-        private static bool IsValidNextChunk(ChunkNode candidate, ChunkNode current, HashSet<ChunkNode> pathSet)
-        {
-            // Already in path?
-            if (pathSet.Contains(candidate))
-                return false;
-
-            // Adjacent to current?
-            return IsAdjacent(current, candidate) &&
-                   // CRITICAL CHECK: Is this chunk adjacent to any other path chunk?
-                   // This prevents the path from widening
-                   candidate.Neighbors.Where(neighbor => neighbor != current).All(neighbor => !pathSet.Contains(neighbor));
-        }
-        
-        /// <summary>
-        /// Check if two chunks are adjacent (share an edge)
-        /// </summary>
-        private static bool IsAdjacent(ChunkNode chunk1, ChunkNode chunk2)
-        {
-            var dx = Mathf.Abs(chunk1.gridX - chunk2.gridX);
-            var dy = Mathf.Abs(chunk1.gridY - chunk2.gridY);
-            
-            return (dx == 1 && dy == 0) || (dx == 0 && dy == 1);
-        }
-        
-        /// <summary>
-        /// Connect current position to center chunk with single-width path
-        /// </summary>
-        private List<ChunkNode> ConnectToCenter(ChunkNode from, ChunkNode to, ChunkNode[,] chunks, HashSet<ChunkNode> pathSet)
-        {
-            var connection = new List<ChunkNode>();
-            var current = from;
-            var attempts = 0;
-            const int maxAttempts = 100;
-            
-            while (current != to && attempts < maxAttempts)
-            {
-                attempts++;
-                
-                var dx = to.gridX - current.gridX;
-                var dy = to.gridY - current.gridY;
-                
-                // Try to move toward target
-                var potentialMoves = new List<ChunkNode>();
-                
-                // Horizontal movement
-                if (dx != 0)
-                {
-                    var targetX = current.gridX + (dx > 0 ? 1 : -1);
-                    if (targetX >= 0 && targetX < chunks.GetLength(0))
-                        potentialMoves.Add(chunks[targetX, current.gridY]);
-                }
-                
-                // Vertical movement
-                if (dy != 0)
-                {
-                    var targetY = current.gridY + (dy > 0 ? 1 : -1);
-                    if (targetY >= 0 && targetY < chunks.GetLength(1))
-                        potentialMoves.Add(chunks[current.gridX, targetY]);
-                }
-                
-                // Find valid move
-                ChunkNode nextChunk = potentialMoves.FirstOrDefault(move => IsValidNextChunk(move, current, pathSet));
-
-                if (nextChunk != null)
-                {
-                    connection.Add(nextChunk);
-                    pathSet.Add(nextChunk);
-                    current = nextChunk;
-                }
-                else
-                {
-                    break; // Can't continue
-                }
-            }
-            
-            return connection;
-        }
-        
-        /// <summary>
-        /// Get a random chunk on the edge of the grid (middle sections only)
-        /// </summary>
-        private static ChunkNode GetRandomEdgeChunk(ChunkNode[,] chunks, int width, int height)
-        {
-            var edge = Random.Range(0, 4); // 0=left, 1=right, 2=top, 3=bottom
-            
-            return edge switch
-            {
-                0 => chunks[0, Random.Range(height / 4, 3 * height / 4)],
-                1 => chunks[width - 1, Random.Range(height / 4, 3 * height / 4)],
-                2 => chunks[Random.Range(width / 4, 3 * width / 4), height - 1],
-                _ => chunks[Random.Range(width / 4, 3 * width / 4), 0]
-            };
-        }
-        
-        /// <summary>
-        /// Generates a path from start to end using A* with randomization (legacy method)
-        /// </summary>
         public List<ChunkNode> GeneratePath(ChunkNode start, ChunkNode end, float randomnessFactor = 0.3f)
         {
             Random.InitState(_seed);
-            
             var path = AStar(start, end, randomnessFactor);
-
             if (path != null && path.Count != 0) return path;
             Debug.LogError("Failed to generate path!");
             return new List<ChunkNode>();
         }
         
-        /// <summary>
-        /// Applies path properties to chunks
-        /// </summary>
         public static void ApplyPathToChunks(List<ChunkNode> path, float pathDepth)
         {
             foreach (var chunk in path)
@@ -248,9 +115,6 @@ namespace Generation.TrueGen.Generation
             }
         }
         
-        /// <summary>
-        /// Mark center chunks as castle area (special type)
-        /// </summary>
         public static void MarkCastleArea(ChunkNode[,] chunks, int width, int height, int castleSize = 3)
         {
             var startX = (width - castleSize) / 2;

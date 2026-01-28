@@ -13,10 +13,10 @@ MonoBehaviour:
   m_Name: Tree
   m_EditorClassIdentifier: Assembly-CSharp::Generation.TrueGen.Core.PropDefinition
   propType: 1
-  prefab: {fileID: 5649967707761606963, guid: 49fb3c641b451814c9ece5f1d541add6, type: 3}
+  prefab: {fileID: 2353251281355830074, guid: 38ee1bcc95a5ea64c8294c35e8b019ca, type: 3}
   blocksBuilding: 1
-  scaleRange: {x: 0.8, y: 1.2}
+  scaleRange: {x: 0.01, y: 0.01}
   randomRotation: 1
   spawnChance: 0.1
   canSpawnOnPath: 0
-  preferEdges: 0
+  preferEdges: 1

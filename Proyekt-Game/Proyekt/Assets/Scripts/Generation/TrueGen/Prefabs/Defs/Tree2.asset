@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e98a8cc6ba8614146b1fd3d5abfcc702, type: 3}
-  m_Name: Hole
+  m_Name: Tree2
   m_EditorClassIdentifier: Assembly-CSharp::Generation.TrueGen.Core.PropDefinition
-  propType: 2
-  prefab: {fileID: 8822656802892345599, guid: 9c5f1177044fc8c4db00273fec5c419a, type: 3}
+  propType: 1
+  prefab: {fileID: 6837372142928603549, guid: 1b02be4bdb7784a4194d60938d36224d, type: 3}
   blocksBuilding: 1
-  scaleRange: {x: 0.8, y: 1.2}
+  scaleRange: {x: 0.01, y: 0.01}
   randomRotation: 1
   spawnChance: 0.03
   canSpawnOnPath: 0

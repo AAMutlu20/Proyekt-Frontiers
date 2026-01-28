@@ -6,13 +6,11 @@ using DG.Tweening;
 using IrminTimerPackage.Tools;
 using System;
 using UnityEngine;
-using Audio.Bridges;
 
 namespace irminNavmeshEnemyAiUnityPackage
 {
     public class CatapultSystem : MonoBehaviour
     {
-        [SerializeField] private TowerAudioController _towerAudioController;
         /// <summary>
         /// Detection system. Basically a seperate.
         /// </summary>
@@ -210,8 +208,7 @@ namespace irminNavmeshEnemyAiUnityPackage
             mid,
             end,
             };
-
-            _towerAudioController.OnShoot();
+            
             GameObject shootObject = _currentlySpawnedShootObject;
             _currentlySpawnedShootObject.transform.DOPath(path, _doTweenArcAnimationDuration, _pathType).SetEase(_doTweenEase).SetLookAt(0.01f).OnComplete(() =>
             {

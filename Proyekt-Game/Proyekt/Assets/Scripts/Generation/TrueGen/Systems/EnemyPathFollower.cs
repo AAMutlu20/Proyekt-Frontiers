@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using Generation.TrueGen.Core;
 using UnityEngine;
 using UnityEngine.Events;
-using Audio; // ADD THIS
 
 namespace Generation.TrueGen.Systems
 {
@@ -17,9 +16,8 @@ namespace Generation.TrueGen.Systems
         [Header("Debug")]
         [SerializeField] private bool showDebugInfo;
         
-        [Header("Audio")] // NEW
-        [SerializeField] private AudioLibrary audioLibrary;
-        [SerializeField] private float footstepInterval = 0.5f; // Time between footstep sounds
+        [Header("Audio")]
+        [SerializeField] private float footstepInterval = 0.5f;
         
         private List<Vector3> _waypoints;
         private int _currentWaypointIndex;
@@ -88,11 +86,6 @@ namespace Generation.TrueGen.Systems
             coinsGainedAtDefeat = coins;
         }
         
-        public void SetAudioLibrary(AudioLibrary library)
-        {
-            audioLibrary = library;
-        }
-        
         private void Update()
         {
             if (_waypoints == null || _waypoints.Count == 0)
@@ -109,7 +102,6 @@ namespace Generation.TrueGen.Systems
             }
             
             MoveTowardsCurrentWaypoint();
-            UpdateFootstepSounds();
         }
         
         private void MoveTowardsCurrentWaypoint()
@@ -135,23 +127,6 @@ namespace Generation.TrueGen.Systems
                 Debug.Log($"✓ Reached waypoint {_currentWaypointIndex - 1}, moving to next");
         }
         
-        private void UpdateFootstepSounds()
-        {
-            if (!audioLibrary || audioLibrary.enemyWalkSounds == null || audioLibrary.enemyWalkSounds.Length == 0)
-                return;
-            
-            _footstepTimer -= Time.deltaTime;
-            
-            if (_footstepTimer <= 0f)
-            {
-                // Play random footstep sound
-                var randomFootstep = audioLibrary.enemyWalkSounds[Random.Range(0, audioLibrary.enemyWalkSounds.Length)];
-                AudioManager.Instance?.PlaySound3D(randomFootstep, transform.position);
-                
-                _footstepTimer = footstepInterval;
-            }
-        }
-        
         private void OnPathComplete()
         {
             if (showDebugInfo)
@@ -166,10 +141,7 @@ namespace Generation.TrueGen.Systems
         /// </summary>
         public void OnTakeDamage()
         {
-            if (audioLibrary && audioLibrary.enemyHit)
-            {
-                AudioManager.Instance?.PlaySound3D(audioLibrary.enemyHit, transform.position);
-            }
+            
         }
         
         /// <summary>
@@ -177,10 +149,7 @@ namespace Generation.TrueGen.Systems
         /// </summary>
         public void OnDeath()
         {
-            if (audioLibrary && audioLibrary.enemyDeath)
-            {
-                AudioManager.Instance?.PlaySound3D(audioLibrary.enemyDeath, transform.position);
-            }
+            
         }
         
         private void OnDrawGizmos()

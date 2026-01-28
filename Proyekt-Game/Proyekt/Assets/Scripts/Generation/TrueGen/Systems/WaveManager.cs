@@ -6,8 +6,6 @@ using irminNavmeshEnemyAiUnityPackage;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.InputSystem;
-using Audio;
-using Audio.Bridges;
 
 namespace Generation.TrueGen.Systems
 {
@@ -26,9 +24,6 @@ namespace Generation.TrueGen.Systems
         [Header("Economy")]
         [SerializeField] private Economy economyRef;
         
-        [Header("Audio")]
-        [SerializeField] private AudioLibrary audioLibrary;
-        
         private ChunkGrid _chunkGrid;
         private readonly List<EnemyPathFollower> _activeEnemies = new();
         private int _currentWaveIndex;
@@ -43,14 +38,6 @@ namespace Generation.TrueGen.Systems
         public UnityEvent<int> onWaveCompleted = new();
         public UnityEvent<EnemyPathFollower> onEnemySpawned = new();
         public UnityEvent onAllWavesCompleted = new();
-        
-        /// <summary>
-        /// Set the audio library (for runtime assignment)
-        /// </summary>
-        public void SetAudioLibrary(AudioLibrary library)
-        {
-            audioLibrary = library;
-        }
 
         public WaveDefinition[] WaveDefinitions { get { return waves; } set { waves = value; } }
         
@@ -171,24 +158,12 @@ namespace Generation.TrueGen.Systems
                 Debug.Log($"Wave {wave.waveNumber} starting in {wave.delayBeforeWave} seconds...");
                 yield return new WaitForSeconds(wave.delayBeforeWave);
                 
-                // Play wave start sound
-                if (audioLibrary && audioLibrary.waveStart)
-                {
-                    AudioManager.Instance?.PlaySound(audioLibrary.waveStart);
-                }
-                
                 onWaveStarted?.Invoke(wave.waveNumber);
                 
                 yield return StartCoroutine(SpawnWave(wave));
                 
                 Debug.Log($"Wave {wave.waveNumber} spawned! Waiting for enemies to be defeated...");
                 yield return new WaitUntil(() => _activeEnemies.Count == 0);
-                
-                // Play wave complete sound
-                if (audioLibrary && audioLibrary.waveComplete)
-                {
-                    AudioManager.Instance?.PlaySound(audioLibrary.waveComplete);
-                }
                 
                 if (economyRef)
                 {
@@ -207,12 +182,6 @@ namespace Generation.TrueGen.Systems
             }
             
             Debug.Log("=== All Waves Completed! Victory! ===");
-            
-            // Play victory sound
-            if (audioLibrary && audioLibrary.gameWin)
-            {
-                AudioManager.Instance?.PlaySound(audioLibrary.gameWin);
-            }
             
             onAllWavesCompleted?.Invoke();
         }
@@ -302,9 +271,6 @@ namespace Generation.TrueGen.Systems
             rb.useGravity = false;
             rb.isKinematic = true;
             
-            // Add audio bridge for health damage sounds
-            var audioBridge = enemy.AddComponent<EnemyHealthAudioBridge>();
-            
             healthSystem.ReAwaken(wave.enemyHealth);
             follower.Initialize(_chunkGrid.PathChunks, terrain);
             if (wave._useSpecificEnemies)
@@ -319,8 +285,6 @@ namespace Generation.TrueGen.Systems
                 follower.SetDamage(wave.damageToPlayer);
                 follower.SetCoinsReward(wave.coinsReward);
             }
-            follower.SetAudioLibrary(audioLibrary);
-
             follower.gameObject.layer = enemyLayer;
             
             follower.onPathCompleteEvent.AddListener(OnEnemyReachedEnd);
