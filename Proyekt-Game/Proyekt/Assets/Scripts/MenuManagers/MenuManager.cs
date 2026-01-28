@@ -4,6 +4,9 @@ using UnityEngine.SceneManagement;
 
 public class MenuManager : MonoBehaviour
 {
+
+
+    public GameObject Panel;
     // Closes the game
     public void QuitGame()
     {
@@ -27,4 +30,10 @@ public class MenuManager : MonoBehaviour
     {
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
     }
+
+    public void OpenPanel()
+    {
+        gameObject.SetActive(true);
+    }
+
 }

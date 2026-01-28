@@ -9,6 +9,9 @@ EditorBuildSettings:
     path: Assets/Scenes/TestTwo/MainMenu.unity
     guid: bca6fa8e455cf1141a46c318b70d7f48
   - enabled: 1
+    path: Assets/Scenes/TestTwo/LoreScene.unity
+    guid: 9ee80ffbe271ad4459592760ed2d1dfd
+  - enabled: 1
     path: Assets/Scenes/TestTwo/General 1.unity
     guid: eb5dad85816b2f14da3810cd86b2c81e
   - enabled: 1
