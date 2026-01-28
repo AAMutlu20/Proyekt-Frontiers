@@ -16,10 +16,8 @@ namespace Generation.TrueGen.Manager
         [SerializeField] private bool generateOnStart = true;
         [SerializeField] private float generationDelay;
         
-        [Header("Terrain Mode")]
-        [SerializeField] private bool useUnityTerrain = true;
+        [Header("Terrain")]
         [SerializeField] private Terrain existingTerrain;
-        [SerializeField] private int terrainResolution = 512;
         
         [Header("Generation Settings")]
         [SerializeField] private int gridSize = 20;
@@ -31,15 +29,16 @@ namespace Generation.TrueGen.Manager
         [Header("Path Settings")]
         [SerializeField] private float pathDepth = 0.3f;
         [SerializeField] private float spiralTightness = 0.6f;
-        [SerializeField] private bool addPathSides = true;
         
         [Header("Props")]
-        [SerializeField] private PropDefinition[] propDefinitions;
+        [SerializeField] private GameObject[] grassPrefabs;
+        [SerializeField] private GameObject[] treePrefabs;
+        [SerializeField] private GameObject[] rockPrefabs;
+        [SerializeField] private GameObject[] bushPrefabs;
         [SerializeField] private bool generateProps;
         
         [Header("Materials")]
         [SerializeField] private TerrainMaterialSet materialSet;
-        [SerializeField] private Material gridOverlayMaterial;
         
         [Header("Wave System")]
         [SerializeField] private bool enableWaveSystem = true;
@@ -60,6 +59,7 @@ namespace Generation.TrueGen.Manager
         private ChunkGrid _chunkGrid;
         private WaveManager _waveManager;
         private Terrain _terrain;
+        private int _lastUsedSeed; // Store the actual seed used for generation
 
         public UnityEvent<EnemyPathFollower> onEnemySpawned;
         public UnityEvent onAllWavesCompleted;
@@ -109,11 +109,9 @@ namespace Generation.TrueGen.Manager
             {
                 if (economyRef.CanAfford(buildingCost))
                 {
-                    if(placer.TryPlaceBuildingAtMouse(buildingToPlace))
-                    {
-                        economyRef.withDrag(buildingCost);
-                        buildingToPlaceSOS.IncreasePriceOfBuilding();
-                    }
+                    if (!placer.TryPlaceBuildingAtMouse(buildingToPlace)) return;
+                    economyRef.withDrag(buildingCost);
+                    buildingToPlaceSOS.IncreasePriceOfBuilding();
                 }
                 else
                 {
@@ -129,37 +127,23 @@ namespace Generation.TrueGen.Manager
         [ContextMenu("Generate Terrain")]
         public void GenerateTerrain()
         {
-            if (_terrainObject && !useUnityTerrain)
-                DestroyImmediate(_terrainObject);
-            
             if (!materialSet)
             {
                 Debug.LogError("TerrainMaterialSet not assigned!");
                 return;
             }
             
-            if (useUnityTerrain)
-            {
-                GenerateTerrainMode();
-            }
-            else
-            {
-                GenerateMeshMode();
-            }
-        }
-
-        /// <summary>
-        /// Generate terrain using existing Unity Terrain from scene
-        /// </summary>
-        private void GenerateTerrainMode()
-        {
             if (!existingTerrain)
             {
                 Debug.LogError("❌ No terrain assigned! Please assign an existing Terrain in the inspector.");
                 return;
             }
             
+            // CLEANUP: Remove all old props before generating new terrain
+            CleanupOldGeneration();
+            
             var actualSeed = randomizeSeed ? Random.Range(0, 999999) : seed;
+            _lastUsedSeed = actualSeed; // Store for reference
             Debug.Log($"🌍 Generating UNITY TERRAIN with seed: {actualSeed}");
             
             _terrain = existingTerrain;
@@ -209,10 +193,10 @@ namespace Generation.TrueGen.Manager
             Debug.Log("✓ Terrain heightmap and textures applied");
             
             // Step 8: Place props
-            if (generateProps && propDefinitions is { Length: > 0 })
+            if (generateProps)
             {
                 var propGen = new PropGenerator(actualSeed + 3, transform);
-                propGen.GenerateProps(_chunks, pathChunks, propDefinitions, _terrain);
+                propGen.GenerateProps(_chunks, pathChunks, grassPrefabs, treePrefabs, rockPrefabs, bushPrefabs, _terrain);
             }
             
             // Step 9: Setup ChunkGrid
@@ -226,6 +210,11 @@ namespace Generation.TrueGen.Manager
             if (!buildingPlacement)
                 buildingPlacement = _terrainObject.AddComponent<BuildingPlacement>();
             buildingPlacement.Initialize(_chunkGrid);
+            
+            // Step 10.5: Building placement indicator
+            var placementIndicator = _terrainObject.GetComponent<BuildingPlacementIndicator>();
+            if (!placementIndicator)
+                placementIndicator = _terrainObject.AddComponent<BuildingPlacementIndicator>();
             
             // Step 11: Wave Manager
             if (enableWaveSystem)
@@ -243,6 +232,7 @@ namespace Generation.TrueGen.Manager
             }
             
             Debug.Log($"✓ Generated TERRAIN: {gridSize}x{gridSize} grid with {pathChunks.Count} waypoints");
+            Debug.Log($"🎲 Seed used: {actualSeed} (Copy this to regenerate the same terrain!)");
             
             onTerrainGenerated?.Invoke();
         }
@@ -356,124 +346,57 @@ namespace Generation.TrueGen.Manager
             Debug.Log("✓ Added subtle hills to peripheral areas (path stays flat)");
         }
 
-        /// <summary>
-        /// Generate terrain using custom mesh system
-        /// </summary>
-        private void GenerateMeshMode()
-        {
-            var actualSeed = randomizeSeed ? Random.Range(0, 999999) : seed;
-            Debug.Log($"🎨 Generating MESH TERRAIN with seed: {actualSeed}");
-            
-            var chunkGen = new ChunkGenerator(actualSeed);
-            _chunks = chunkGen.GenerateDistortedGrid(gridSize, gridSize, chunkSize, distortionAmount);
-            
-            var pathGen = new PathGenerator(actualSeed + 1);
-            var pathChunks = pathGen.GenerateSpiralPath(_chunks, gridSize, gridSize, spiralTightness);
-            
-            PathGenerator.MarkCastleArea(_chunks, gridSize, gridSize, castleSize: 3);
-            PathGenerator.ApplyPathToChunks(pathChunks, pathDepth);
-            
-            if (generateProps && propDefinitions is { Length: > 0 })
-            {
-                var propGen = new PropGenerator(actualSeed + 3, transform);
-                propGen.GenerateProps(_chunks, pathChunks, propDefinitions, null);
-            }
-            
-            var meshBuilder = new TerrainMeshBuilder();
-            var terrainMesh = meshBuilder.BuildCombinedMesh(_chunks, materialSet, false);
-            
-            _terrainObject = new GameObject("GeneratedTerrain");
-            _terrainObject.transform.SetParent(transform);
-            _terrainObject.transform.localPosition = Vector3.zero;
-            
-            var mf = _terrainObject.AddComponent<MeshFilter>();
-            mf.mesh = terrainMesh;
-            
-            var mr = _terrainObject.AddComponent<MeshRenderer>();
-            var materials = new Material[5];
-            materials[0] = materialSet.buildableMaterial;
-            materials[1] = materialSet.pathMaterial;
-            materials[2] = materialSet.blockedMaterial;
-            materials[3] = materialSet.decorativeMaterial;
-            materials[4] = materialSet.wallMaterial;
-            mr.materials = materials;
-            
-            var mc = _terrainObject.AddComponent<MeshCollider>();
-            mc.sharedMesh = terrainMesh;
-            
-            var smoothPathObj = new GameObject("SmoothPath");
-            smoothPathObj.transform.SetParent(_terrainObject.transform);
-            smoothPathObj.transform.localPosition = Vector3.zero;
-            
-            var pathMesh = SmoothPathMeshGenerator.GenerateSmoothPathMesh(
-                pathChunks, 
-                pathWidth: chunkSize * 0.7f,
-                pathDepth: pathDepth,
-                segmentsPerChunk: 6
-            );
-            
-            var pathMf = smoothPathObj.AddComponent<MeshFilter>();
-            pathMf.mesh = pathMesh;
-            
-            var pathMr = smoothPathObj.AddComponent<MeshRenderer>();
-            pathMr.material = materialSet.pathMaterial;
-            pathMr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            
-            if (addPathSides)
-            {
-                var wallsObj = new GameObject("PathWalls");
-                wallsObj.transform.SetParent(_terrainObject.transform);
-                wallsObj.transform.localPosition = Vector3.zero;
-                
-                var wallsMesh = SmoothPathMeshGenerator.GenerateSmoothPathWalls(
-                    pathChunks,
-                    pathWidth: chunkSize * 0.7f,
-                    pathDepth: pathDepth,
-                    segmentsPerChunk: 6
-                );
-                
-                var wallsMf = wallsObj.AddComponent<MeshFilter>();
-                wallsMf.mesh = wallsMesh;
-                
-                var wallsMr = wallsObj.AddComponent<MeshRenderer>();
-                wallsMr.material = materialSet.wallMaterial;
-                wallsMr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
-            }
-            
-            var pathCollider = smoothPathObj.AddComponent<MeshCollider>();
-            pathCollider.sharedMesh = pathMesh;
-            pathCollider.convex = false;
-            
-            _chunkGrid = _terrainObject.AddComponent<ChunkGrid>();
-            _chunkGrid.Initialize(_chunks, pathChunks);
-            
-            var buildingPlacement = _terrainObject.AddComponent<BuildingPlacement>();
-            buildingPlacement.Initialize(_chunkGrid);
-            
-            if (gridOverlayMaterial)
-            {
-                var gridOverlay = _terrainObject.AddComponent<GridOverlayController>();
-                gridOverlay.Initialize(gridOverlayMaterial);
-            }
-            
-            if (enableWaveSystem)
-            {
-                _waveManager = _terrainObject.AddComponent<WaveManager>();
-                _waveManager.onAllWavesCompleted.AddListener(AllWavesCompleted);
-                _waveManager.Initialize(_chunkGrid, economyRef, enemyPrefab, enemyLayer);
-                _waveManager.onEnemySpawned.AddListener((enemy) => onEnemySpawned?.Invoke(enemy));
-                
-                Debug.Log("✓ Wave system initialized");
-            }
-            
-            Debug.Log($"✓ Generated MESH: {gridSize}x{gridSize} terrain with {pathChunks.Count} path chunks");
-            
-            onTerrainGenerated?.Invoke();
-        }
-
         private void AllWavesCompleted()
         {
             onAllWavesCompleted?.Invoke();
+        }
+        
+        /// <summary>
+        /// Clean up old generation before creating new terrain
+        /// </summary>
+        private void CleanupOldGeneration()
+        {
+            Debug.Log("🧹 Cleaning up old generation...");
+            
+            // Find and destroy all old props (children of TerrainManager)
+            var propsToDestroy = new System.Collections.Generic.List<GameObject>();
+            
+            foreach (Transform child in transform)
+            {
+                // Don't destroy the terrain itself
+                if (child.gameObject == _terrainObject)
+                    continue;
+                
+                // Destroy all prop objects (Grass, Tree, Rock, Bush, Prop)
+                if (child.name.StartsWith("Grass_") || 
+                    child.name.StartsWith("Tree_") || 
+                    child.name.StartsWith("Rock_") || 
+                    child.name.StartsWith("Bush_") || 
+                    child.name.StartsWith("Prop_"))
+                {
+                    propsToDestroy.Add(child.gameObject);
+                }
+            }
+            
+            // Destroy all collected props
+            foreach (var prop in propsToDestroy)
+            {
+                if (Application.isPlaying)
+                    Destroy(prop);
+                else
+                    DestroyImmediate(prop);
+            }
+            
+            if (propsToDestroy.Count > 0)
+                Debug.Log($"✓ Destroyed {propsToDestroy.Count} old props");
+            
+            // Hide placement indicator if it exists
+            if (_terrainObject)
+            {
+                var indicator = _terrainObject.GetComponent<BuildingPlacementIndicator>();
+                if (indicator)
+                    indicator.HideIndicator();
+            }
         }
 
         [ContextMenu("Spawn Test Enemy")]
@@ -524,6 +447,33 @@ namespace Generation.TrueGen.Manager
             randomizeSeed = true;
             GenerateTerrain();
         }
+        
+        [ContextMenu("Regenerate Terrain (Same Seed)")]
+        public void RegenerateWithSameSeed()
+        {
+            if (_lastUsedSeed == 0)
+            {
+                Debug.LogWarning("No terrain has been generated yet!");
+                return;
+            }
+            
+            randomizeSeed = false;
+            seed = _lastUsedSeed;
+            GenerateTerrain();
+        }
+        
+        [ContextMenu("Copy Current Seed to Clipboard")]
+        public void CopySeedToClipboard()
+        {
+            if (_lastUsedSeed == 0)
+            {
+                Debug.LogWarning("No terrain has been generated yet!");
+                return;
+            }
+            
+            GUIUtility.systemCopyBuffer = _lastUsedSeed.ToString();
+            Debug.Log($"📋 Copied seed to clipboard: {_lastUsedSeed}");
+        }
 
         public void SelectBuilding(int pIndex)
         {
@@ -537,11 +487,30 @@ namespace Generation.TrueGen.Manager
             
             selectedBuildingPrefab = buildingDatabase.GetBuilding(pIndex).Building;
             selectedBuildIndex = pIndex;
+            
+            // Show placement indicator
+            var indicator = _terrainObject?.GetComponent<BuildingPlacementIndicator>();
+            if (indicator)
+                indicator.ShowIndicator();
+        }
+        
+        /// <summary>
+        /// Deselect current building and hide indicator
+        /// </summary>
+        public void DeselectBuilding()
+        {
+            selectedBuildingPrefab = null;
+            selectedBuildIndex = -1;
+            
+            // Hide placement indicator
+            var indicator = _terrainObject?.GetComponent<BuildingPlacementIndicator>();
+            if (indicator)
+                indicator.HideIndicator();
         }
         
         public ChunkGrid GetChunkGrid() => _chunkGrid;
         public WaveManager GetWaveManager() => _waveManager;
-        public int GetCurrentSeed() => seed;
+        public int GetCurrentSeed() => _lastUsedSeed; // Return the actual seed that was used
         public Terrain GetTerrain() => _terrain;
     }
 }

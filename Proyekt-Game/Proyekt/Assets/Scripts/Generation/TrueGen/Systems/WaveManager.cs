@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Audio;
 using Generation.TrueGen.Core;
 using irminNavmeshEnemyAiUnityPackage;
 using UnityEngine;
@@ -24,6 +25,9 @@ namespace Generation.TrueGen.Systems
         [Header("Economy")]
         [SerializeField] private Economy economyRef;
         
+        [Header("Audio")]
+        [SerializeField] private GameAudioClips audioClips;
+        
         private ChunkGrid _chunkGrid;
         private readonly List<EnemyPathFollower> _activeEnemies = new();
         private int _currentWaveIndex;
@@ -39,11 +43,13 @@ namespace Generation.TrueGen.Systems
         public UnityEvent<EnemyPathFollower> onEnemySpawned = new();
         public UnityEvent onAllWavesCompleted = new();
 
-        public WaveDefinition[] WaveDefinitions { get { return waves; } set { waves = value; } }
+        public WaveDefinition[] WaveDefinitions {
+            set => waves = value;
+        }
         
         public void Initialize(ChunkGrid chunkGrid, Economy economy, GameObject enemyPrefab, int layer)
         {
-            if (DatabaseAccessor.Singleton != null) { _enemyDatabase = DatabaseAccessor.Singleton.GeneralEnemyDatabase; }
+            if (DatabaseAccessor.Singleton) { _enemyDatabase = DatabaseAccessor.Singleton.GeneralEnemyDatabase; }
 
             _chunkGrid = chunkGrid;
             economyRef = economy;
@@ -80,6 +86,14 @@ namespace Generation.TrueGen.Systems
             }
 
             UI_WaveCounter.Singleton.SetWaveText(_currentWaveIndex, waves.Length);
+            
+            // Initialize audio - start game music and ambiance with fade in
+            if (!audioClips) return;
+            if (audioClips.gameMusic)
+                AudioManager.Instance?.PlayMusic(audioClips.gameMusic, 0.5f, 2f);
+                
+            if (audioClips.ambianceLoop)
+                AudioManager.Instance?.PlayAmbiance(audioClips.ambianceLoop, 0.3f, 2f);
         }
         
         private void Update()
@@ -160,6 +174,12 @@ namespace Generation.TrueGen.Systems
                 
                 onWaveStarted?.Invoke(wave.waveNumber);
                 
+                // Play wave spawn sound
+                if (audioClips && audioClips.waveSpawnSound)
+                {
+                    AudioManager.Instance?.PlaySFX(audioClips.waveSpawnSound);
+                }
+                
                 yield return StartCoroutine(SpawnWave(wave));
                 
                 Debug.Log($"Wave {wave.waveNumber} spawned! Waiting for enemies to be defeated...");
@@ -182,6 +202,16 @@ namespace Generation.TrueGen.Systems
             }
             
             Debug.Log("=== All Waves Completed! Victory! ===");
+            
+            // Play victory sound and fade out music/ambiance
+            if (audioClips)
+            {
+                AudioManager.Instance?.StopMusic(1f);
+                AudioManager.Instance?.StopAmbiance(1f);
+                
+                if (audioClips.victorySound)
+                    AudioManager.Instance?.PlaySFX(audioClips.victorySound);
+            }
             
             onAllWavesCompleted?.Invoke();
         }

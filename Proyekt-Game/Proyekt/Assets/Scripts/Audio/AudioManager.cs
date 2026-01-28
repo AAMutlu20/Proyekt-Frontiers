@@ -1,10 +1,11 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.Audio;
 
 namespace Audio
 {
     /// <summary>
-    /// Simple audio manager for music, ambiance, and SFX
+    /// Simple audio manager for music, ambiance, and SFX with fade support
     /// </summary>
     public class AudioManager : MonoBehaviour
     {
@@ -15,10 +16,16 @@ namespace Audio
         [SerializeField] private AudioMixerGroup sfxGroup;
         [SerializeField] private AudioMixerGroup ambianceGroup;
     
+        [Header("Fade Settings")]
+        [SerializeField] private float defaultFadeDuration = 2f;
+    
         [Header("Audio Sources")]
-        private AudioSource _musicSource;
-        private AudioSource _ambianceSource;
-        private AudioSource _sfxSource;
+        private AudioSource musicSource;
+        private AudioSource ambianceSource;
+        private AudioSource sfxSource;
+    
+        private Coroutine musicFadeCoroutine;
+        private Coroutine ambianceFadeCoroutine;
     
         private void Awake()
         {
@@ -32,60 +39,82 @@ namespace Audio
             DontDestroyOnLoad(gameObject);
         
             // Create audio sources
-            _musicSource = gameObject.AddComponent<AudioSource>();
-            _musicSource.outputAudioMixerGroup = musicGroup;
-            _musicSource.loop = true;
-            _musicSource.playOnAwake = false;
+            musicSource = gameObject.AddComponent<AudioSource>();
+            musicSource.outputAudioMixerGroup = musicGroup;
+            musicSource.loop = true;
+            musicSource.playOnAwake = false;
+            musicSource.volume = 0f; // Start at 0 for fade in
         
-            _ambianceSource = gameObject.AddComponent<AudioSource>();
-            _ambianceSource.outputAudioMixerGroup = ambianceGroup;
-            _ambianceSource.loop = true;
-            _ambianceSource.playOnAwake = false;
+            ambianceSource = gameObject.AddComponent<AudioSource>();
+            ambianceSource.outputAudioMixerGroup = ambianceGroup;
+            ambianceSource.loop = true;
+            ambianceSource.playOnAwake = false;
+            ambianceSource.volume = 0f; // Start at 0 for fade in
         
-            _sfxSource = gameObject.AddComponent<AudioSource>();
-            _sfxSource.outputAudioMixerGroup = sfxGroup;
-            _sfxSource.loop = false;
-            _sfxSource.playOnAwake = false;
+            sfxSource = gameObject.AddComponent<AudioSource>();
+            sfxSource.outputAudioMixerGroup = sfxGroup;
+            sfxSource.loop = false;
+            sfxSource.playOnAwake = false;
         }
     
         /// <summary>
-        /// Play music (loops automatically)
+        /// Play music with fade in (loops automatically)
         /// </summary>
-        public void PlayMusic(AudioClip clip, float volume = 0.5f)
+        public void PlayMusic(AudioClip clip, float targetVolume = 0.5f, float fadeDuration = -1f)
         {
             if (!clip) return;
         
-            _musicSource.clip = clip;
-            _musicSource.volume = volume;
-            _musicSource.Play();
+            if (fadeDuration < 0) fadeDuration = defaultFadeDuration;
+        
+            if (musicFadeCoroutine != null)
+                StopCoroutine(musicFadeCoroutine);
+        
+            musicSource.clip = clip;
+            musicSource.Play();
+            musicFadeCoroutine = StartCoroutine(FadeAudioSource(musicSource, targetVolume, fadeDuration));
         }
     
         /// <summary>
-        /// Stop music
+        /// Stop music with fade out
         /// </summary>
-        public void StopMusic()
+        public void StopMusic(float fadeDuration = -1f)
         {
-            _musicSource.Stop();
+            if (fadeDuration < 0) fadeDuration = defaultFadeDuration;
+        
+            if (musicFadeCoroutine != null)
+                StopCoroutine(musicFadeCoroutine);
+        
+            musicFadeCoroutine = StartCoroutine(FadeOutAndStop(musicSource, fadeDuration));
         }
     
         /// <summary>
-        /// Play ambiance (loops automatically)
+        /// Play ambiance with fade in (loops automatically)
         /// </summary>
-        public void PlayAmbiance(AudioClip clip, float volume = 0.3f)
+        public void PlayAmbiance(AudioClip clip, float targetVolume = 0.3f, float fadeDuration = -1f)
         {
             if (!clip) return;
         
-            _ambianceSource.clip = clip;
-            _ambianceSource.volume = volume;
-            _ambianceSource.Play();
+            if (fadeDuration < 0) fadeDuration = defaultFadeDuration;
+        
+            if (ambianceFadeCoroutine != null)
+                StopCoroutine(ambianceFadeCoroutine);
+        
+            ambianceSource.clip = clip;
+            ambianceSource.Play();
+            ambianceFadeCoroutine = StartCoroutine(FadeAudioSource(ambianceSource, targetVolume, fadeDuration));
         }
     
         /// <summary>
-        /// Stop ambiance
+        /// Stop ambiance with fade out
         /// </summary>
-        public void StopAmbiance()
+        public void StopAmbiance(float fadeDuration = -1f)
         {
-            _ambianceSource.Stop();
+            if (fadeDuration < 0) fadeDuration = defaultFadeDuration;
+        
+            if (ambianceFadeCoroutine != null)
+                StopCoroutine(ambianceFadeCoroutine);
+        
+            ambianceFadeCoroutine = StartCoroutine(FadeOutAndStop(ambianceSource, fadeDuration));
         }
     
         /// <summary>
@@ -95,7 +124,7 @@ namespace Audio
         {
             if (!clip) return;
         
-            _sfxSource.PlayOneShot(clip, volume);
+            sfxSource.PlayOneShot(clip, volume);
         }
     
         /// <summary>
@@ -106,6 +135,43 @@ namespace Audio
             if (!clip) return;
         
             AudioSource.PlayClipAtPoint(clip, position, volume);
+        }
+    
+        /// <summary>
+        /// Fade audio source to target volume
+        /// </summary>
+        private IEnumerator FadeAudioSource(AudioSource source, float targetVolume, float duration)
+        {
+            float startVolume = source.volume;
+            float elapsed = 0f;
+        
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                source.volume = Mathf.Lerp(startVolume, targetVolume, elapsed / duration);
+                yield return null;
+            }
+        
+            source.volume = targetVolume;
+        }
+    
+        /// <summary>
+        /// Fade out and stop audio source
+        /// </summary>
+        private IEnumerator FadeOutAndStop(AudioSource source, float duration)
+        {
+            float startVolume = source.volume;
+            float elapsed = 0f;
+        
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                source.volume = Mathf.Lerp(startVolume, 0f, elapsed / duration);
+                yield return null;
+            }
+        
+            source.volume = 0f;
+            source.Stop();
         }
     }
 }
