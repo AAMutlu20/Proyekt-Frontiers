@@ -42,7 +42,6 @@ GameObject:
   - component: {fileID: 1985231698841505595}
   - component: {fileID: 6343931528566755710}
   - component: {fileID: 7764829722073554922}
-  - component: {fileID: 3269607182722429187}
   - component: {fileID: 5320020549523959897}
   m_Layer: 0
   m_Name: Catapult
@@ -108,20 +107,6 @@ NavMeshObstacle:
   m_CarveOnlyStationary: 1
   m_Center: {x: 0, y: 0, z: 0}
   m_TimeToStationary: 0.5
---- !u!114 &3269607182722429187
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 125224942810221662}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f73ed7d4947df1043a3be99873f4451b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Audio.Bridges.TowerAudioController
-  audioLibrary: {fileID: 0}
-  playShootSoundOnFire: 1
 --- !u!114 &5320020549523959897
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -134,7 +119,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4579174785b4b7d469618e2c91391b10, type: 3}
   m_Name: 
   m_EditorClassIdentifier: irminNavmeshEnemyAiUnityPackage::Catapult
-  _towerAudioController: {fileID: 3269607182722429187}
+  _shootAudioClip: {fileID: 8300000, guid: 5bf0fc04e9957fd478ab743b98df7222, type: 3}
   _catapultTargetDetectionSystem: {fileID: 4920524214772378085}
   _catapultYRotationSystem: {fileID: 541310183900346827}
   _shootCooldownTimer:
@@ -480,7 +465,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4579174785b4b7d469618e2c91391b10, type: 3}
   m_Name: 
   m_EditorClassIdentifier: irminNavmeshEnemyAiUnityPackage::Catapult
-  _towerAudioController: {fileID: 0}
+  _shootAudioClip: {fileID: 0}
   _catapultTargetDetectionSystem: {fileID: 4920524214772378085}
   _catapultYRotationSystem: {fileID: 541310183900346827}
   _shootCooldownTimer:
@@ -947,7 +932,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4579174785b4b7d469618e2c91391b10, type: 3}
   m_Name: 
   m_EditorClassIdentifier: irminNavmeshEnemyAiUnityPackage::Catapult
-  _towerAudioController: {fileID: 0}
+  _shootAudioClip: {fileID: 0}
   _catapultTargetDetectionSystem: {fileID: 4920524214772378085}
   _catapultYRotationSystem: {fileID: 541310183900346827}
   _shootCooldownTimer:

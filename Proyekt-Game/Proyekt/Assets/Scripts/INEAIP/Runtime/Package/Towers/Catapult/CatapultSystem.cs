@@ -2,6 +2,7 @@
 // Editors: -
 // Description: A "catapult"s system that uses a seperate detection system to detect targets, then rotates to face them and uses dotween to animate a projectile in an arc to the target. When the animation is complete a method can execute to check for and damage damagables within blast radius.
 
+using Audio;
 using DG.Tweening;
 using IrminTimerPackage.Tools;
 using System;
@@ -11,6 +12,7 @@ namespace irminNavmeshEnemyAiUnityPackage
 {
     public class CatapultSystem : MonoBehaviour
     {
+        [SerializeField] AudioClip _shootAudioClip;
         /// <summary>
         /// Detection system. Basically a seperate.
         /// </summary>
@@ -208,7 +210,12 @@ namespace irminNavmeshEnemyAiUnityPackage
             mid,
             end,
             };
-            
+
+            if(_shootAudioClip != null)
+            {
+                AudioManager.Instance.PlaySFX(_shootAudioClip);
+            }
+
             GameObject shootObject = _currentlySpawnedShootObject;
             _currentlySpawnedShootObject.transform.DOPath(path, _doTweenArcAnimationDuration, _pathType).SetEase(_doTweenEase).SetLookAt(0.01f).OnComplete(() =>
             {
