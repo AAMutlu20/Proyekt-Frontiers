@@ -308,6 +308,7 @@ namespace Generation.TrueGen.Systems
                 follower.SetSpeed(wave._specificEnemies[pSpecificEnemy].EnemySpeed);
                 follower.SetDamage(wave._specificEnemies[pSpecificEnemy].DamageToPlayer);
                 follower.SetCoinsReward(wave._specificEnemies[pSpecificEnemy].CoinsReward);
+                healthSystem.AudioClips = wave._specificEnemies[pSpecificEnemy].AudioClips;
             }
             else
             {

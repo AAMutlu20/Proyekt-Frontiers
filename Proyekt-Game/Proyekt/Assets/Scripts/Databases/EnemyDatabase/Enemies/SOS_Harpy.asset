@@ -18,3 +18,4 @@ MonoBehaviour:
   _damageToPlayer: 2
   _coinsReward: 2
   _layer: 21
+  _audioClips: {fileID: 11400000, guid: 369393508f63a3444ad51c20ce526304, type: 2}

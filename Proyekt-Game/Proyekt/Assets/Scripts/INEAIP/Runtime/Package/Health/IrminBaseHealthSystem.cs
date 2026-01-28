@@ -1,8 +1,9 @@
+using Audio;
 using irminNavmeshEnemyAiUnityPackage;
 using IrminTimerPackage.Tools;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
-using Audio;
 
 namespace irminNavmeshEnemyAiUnityPackage
 {
@@ -39,6 +40,7 @@ namespace irminNavmeshEnemyAiUnityPackage
         public FactionMemberComponent FactionMemberComponent { get { return _factionMemberComponent; } set { _factionMemberComponent = value; } }
         public int Faction { get { return _factionMemberComponent.FactionID; } set { _factionMemberComponent.FactionID = value; } }
         public bool DestroyOnMinHealthReached { get { return _destroyOnMinHealthReached; } set { _destroyOnMinHealthReached = value; } }
+        public GameAudioClips AudioClips { get { return audioClips; } set { audioClips = value; } }
 
         /// <summary>
         /// First variable: Damage income.
@@ -192,11 +194,7 @@ namespace irminNavmeshEnemyAiUnityPackage
                 AudioManager.Instance?.StopMusic(1f);
                 AudioManager.Instance?.StopAmbiance(1f);
                 
-                // Play defeat sound
-                if (audioClips.defeatSound)
-                {
-                    AudioManager.Instance?.PlaySFX(audioClips.defeatSound);
-                }
+                
                 
                 Debug.Log("Player defeated! Playing defeat sound.");
             }
@@ -313,7 +311,23 @@ namespace irminNavmeshEnemyAiUnityPackage
 
         private void InvokeOnMinHealthReachedUnityEvent()
         {
+            // Play defeat sound
+            if (audioClips != null && audioClips.defeatSound)
+            {
+                AudioManager.Instance?.PlaySFX(audioClips.defeatSound);
+            }
             OnMinHealthReachedUnityEvent?.Invoke();
         }
+
+        /// <summary>
+        /// Returns a random death sound from the list
+        /// </summary>
+        /// <returns>A random deathsound from the list. This can be null if entries in the list are null (for no death sound possibility)</returns>
+        //public AudioClip GetRandomDeathsoundFromList()
+        //{
+        //    if (_deathSounds.Count <= 0) return null;
+        //    int randomNumber = UnityEngine.Random.Range(0, _deathSounds.Count);
+        //    return _deathSounds[randomNumber];
+        //}
     }
 }

@@ -14,13 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameAudioClips
   menuMusic: {fileID: 8300000, guid: 32e1fc05ecc2f6e4d9acea370ba7231b, type: 3}
   gameMusic: {fileID: 8300000, guid: 32e1fc05ecc2f6e4d9acea370ba7231b, type: 3}
-  ambianceLoop: {fileID: 0}
-  waveSpawnSound: {fileID: 0}
-  victorySound: {fileID: 0}
-  defeatSound: {fileID: 0}
-  buttonClickSound: {fileID: 0}
-  buttonHoverSound: {fileID: 0}
-  towerPlaceSound: {fileID: 0}
+  ambianceLoop: {fileID: 8300000, guid: d2749f555475dcf40a8a44c6180704d5, type: 3}
+  waveSpawnSound: {fileID: 8300000, guid: 81652031b64c342cc8dbc59c138d77c5, type: 3}
+  victorySound: {fileID: 8300000, guid: 3b8c1e1a091fbee4dac100efd4ad7556, type: 3}
+  defeatSound: {fileID: 8300000, guid: e06c21c31ba79b2408ca595a985e447c, type: 3}
+  buttonClickSound: {fileID: 8300000, guid: 724131bc8a7f34041bb9f1701f0cb58d, type: 3}
+  buttonHoverSound: {fileID: 8300000, guid: 5039414d94a6e4e70a5ab9e8833e992a, type: 3}
+  towerPlaceSound: {fileID: 8300000, guid: 130a177e727814a2ea78a886ab72213d, type: 3}
   towerShootSound: {fileID: 0}
-  enemyHitSound: {fileID: 0}
-  enemyDeathSound: {fileID: 0}
+  enemyHitSound: {fileID: 8300000, guid: e06c21c31ba79b2408ca595a985e447c, type: 3}
+  enemyDeathSound: {fileID: 8300000, guid: e06c21c31ba79b2408ca595a985e447c, type: 3}

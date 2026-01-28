@@ -1,2 +1,15 @@
 fileFormatVersion: 2
 guid: ac7537c04fbd51d419f25750ebc676f0
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - _factionMemberComponent: {instanceID: 0}
+  - _healthUI: {instanceID: 0}
+  - _gameObjectPool: {instanceID: 0}
+  - audioClips: {fileID: 11400000, guid: 369393508f63a3444ad51c20ce526304, type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
