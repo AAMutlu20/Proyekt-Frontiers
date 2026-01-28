@@ -4,7 +4,7 @@ namespace Generation.TrueGen.Core
     {
         Rock,
         Tree,
-        Hole,
+        Grass,
         Bush,
         Stone
     }

@@ -1,3 +1,4 @@
+using Audio;
 using Generation.TrueGen.Core;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -12,6 +13,9 @@ namespace Generation.TrueGen.Systems
         
         [Header("Settings")]
         [SerializeField] private LayerMask terrainLayer = -1;
+        
+        [Header("Audio")]
+        [SerializeField] private GameAudioClips audioClips;
         
         private Terrain _terrain;
         
@@ -94,6 +98,12 @@ namespace Generation.TrueGen.Systems
             // Place building
             var building = Instantiate(buildingPrefab);
             building.transform.position = placementPos;
+            
+            // Play tower place sound
+            if (audioClips && audioClips.towerPlaceSound)
+            {
+                AudioManager.Instance?.PlaySFX3D(audioClips.towerPlaceSound, placementPos, 1f);
+            }
             
             // Mark chunks as occupied
             var occupiedChunks = chunkGrid.GetChunksInFootprint(

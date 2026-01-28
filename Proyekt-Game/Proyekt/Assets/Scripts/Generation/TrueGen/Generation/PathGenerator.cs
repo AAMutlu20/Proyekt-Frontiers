@@ -87,9 +87,6 @@ namespace Generation.TrueGen.Generation
                 path.Add(gateChunk);
             }
             
-            Debug.Log($"✓ Generated simple spiral path with {path.Count} chunks");
-            Debug.Log($"   Path ends at gate: ({gateX}, {gateY})");
-            Debug.Log($"   Enemies spawn at edge, walk to gate");
             
             return path;
         }

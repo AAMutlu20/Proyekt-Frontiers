@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bb24dd2d6d284fb419003876d937f291, type: 3}
+  m_Name: MatSet
+  m_EditorClassIdentifier: Assembly-CSharp::Generation.TrueGen.Visuals.TerrainMaterialSet
+  buildableMaterial: {fileID: 2100000, guid: 0abc2319ec2fb7949abf2098b4936d68, type: 2}
+  pathMaterial: {fileID: 2100000, guid: e2f6a8ddeb37a2e4691dfbab6fce8684, type: 2}
+  blockedMaterial: {fileID: 2100000, guid: ce3f0d46186f9384ab5a022a44a4082e, type: 2}
+  decorativeMaterial: {fileID: 2100000, guid: c225d82b39f54bd4dbb5865b73c0d9e3, type: 2}
+  wallMaterial: {fileID: 2100000, guid: 1eb9b6c65f4726346a9f918c3a07eab8, type: 2}
+  buildableTiling: 0.9
+  pathTiling: 1
+  blockedTiling: 1
+  decorativeTiling: 1
+  grassLayer: {fileID: 8574412962073106934, guid: eef7cc6328491d9438649d53050a7167, type: 2}
+  pathLayer: {fileID: 8574412962073106934, guid: d5936f27afb528949884f154c0b518ed, type: 2}
+  blockedLayer: {fileID: 8574412962073106934, guid: 54156e10e3bb01a4b8012466af3c01f3, type: 2}
+  decorativeLayer: {fileID: 8574412962073106934, guid: cdc998e4096cc024aab04b60e061c4b4, type: 2}

@@ -1,3 +1,4 @@
+using Audio;
 using irminNavmeshEnemyAiUnityPackage;
 using IrminTimerPackage.Tools;
 using UnityEngine;
@@ -25,10 +26,14 @@ namespace irminNavmeshEnemyAiUnityPackage
 
         [SerializeField] protected HealthUI _healthUI;
 
-        [SerializeField] IrminTimer _temporaryInvulnerablityTimer = new();
+        [SerializeField] IrminTimer _temporaryInvulnerabltyTimer = new();
 
         [SerializeField] bool _usePooling;
         [SerializeField] GameObjectPool _gameObjectPool;
+        
+        [Header("Audio (For Player Only)")]
+        [SerializeField] private GameAudioClips audioClips;
+        [SerializeField] private bool isPlayer = false; // Set to true for player
 
 
         public FactionMemberComponent FactionMemberComponent { get { return _factionMemberComponent; } set { _factionMemberComponent = value; } }
@@ -69,11 +74,11 @@ namespace irminNavmeshEnemyAiUnityPackage
             {
                 SetCurrentHealthToMaxHealth();
             }
-            _temporaryInvulnerablityTimer.OnTimeElapsed += EndInvulnerability;
-            if (_temporaryInvulnerablityTimer.Time > 0)
+            _temporaryInvulnerabltyTimer.OnTimeElapsed += EndInvulnerability;
+            if (_temporaryInvulnerabltyTimer.Time > 0)
             {
                 _invulnerable = true;
-                _temporaryInvulnerablityTimer.StartTimer();
+                _temporaryInvulnerabltyTimer.StartTimer();
             }
         }
 
@@ -90,7 +95,7 @@ namespace irminNavmeshEnemyAiUnityPackage
 
         protected virtual void Update()
         {
-            _temporaryInvulnerablityTimer.UpdateTimer(Time.deltaTime);
+            _temporaryInvulnerabltyTimer.UpdateTimer(Time.deltaTime);
         }
 
         private void EndInvulnerability()
@@ -180,6 +185,23 @@ namespace irminNavmeshEnemyAiUnityPackage
 
         private void SetHealthToMin(float pHealthBeforeChange)
         {
+            // NEW: Play defeat sound if this is the player
+            if (isPlayer && audioClips)
+            {
+                // Fade out music and ambiance
+                AudioManager.Instance?.StopMusic(1f);
+                AudioManager.Instance?.StopAmbiance(1f);
+                
+                // Play defeat sound
+                if (audioClips.defeatSound)
+                {
+                    AudioManager.Instance?.PlaySFX(audioClips.defeatSound);
+                }
+                
+                Debug.Log("Player defeated! Playing defeat sound.");
+            }
+            
+            // Existing code:
             _currentHealth = _minHealth;
             OnHealthChanged?.Invoke(pHealthBeforeChange, _currentHealth);
             OnMinHealthReached?.Invoke();
