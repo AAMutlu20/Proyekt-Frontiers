@@ -1,2 +1,23 @@
 fileFormatVersion: 2
 guid: b7a08f604f80a204092ebba0e0d973e0
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - menuMusic: {fileID: 8300000, guid: 32e1fc05ecc2f6e4d9acea370ba7231b, type: 3}
+  - gameMusic: {fileID: 8300000, guid: 32e1fc05ecc2f6e4d9acea370ba7231b, type: 3}
+  - ambianceLoop: {instanceID: 0}
+  - waveSpawnSound: {instanceID: 0}
+  - victorySound: {instanceID: 0}
+  - defeatSound: {instanceID: 0}
+  - buttonClickSound: {instanceID: 0}
+  - buttonHoverSound: {instanceID: 0}
+  - towerPlaceSound: {instanceID: 0}
+  - towerShootSound: {instanceID: 0}
+  - enemyHitSound: {instanceID: 0}
+  - enemyDeathSound: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
