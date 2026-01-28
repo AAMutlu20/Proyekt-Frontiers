@@ -1,8 +1,8 @@
-using Audio;
 using irminNavmeshEnemyAiUnityPackage;
 using IrminTimerPackage.Tools;
 using UnityEngine;
 using UnityEngine.Events;
+using Audio;
 
 namespace irminNavmeshEnemyAiUnityPackage
 {
